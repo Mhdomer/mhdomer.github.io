@@ -16,7 +16,7 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image: assets/notes-img/devsecopslabs.png
+image: https://veritis.com/wp-content/uploads/2022/06/all-you-need-to-know-about-devsecops-and-its-implementation.jpg
 ---
 
 ## How to Use This Index
