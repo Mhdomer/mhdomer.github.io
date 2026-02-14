@@ -42,7 +42,7 @@ cd -> change
 
 ##  You can find me online at:
 
-![My signature image](../../assets/img/footer-signature.png)
+![My signature image](/assets/img/footer-signature.png)
 
 - **X (Twitter):** [Md3omer](https://x.com/Md3omer )
 - **GitHub:** [Mhdomer](https://github.comMhdomer)  
