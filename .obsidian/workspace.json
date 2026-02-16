@@ -183,8 +183,12 @@
       "bases:Create new base": false
     }
   },
-  "active": "673251fc8e67c818",
+  "active": "ecfd1eb68117418d",
   "lastOpenFiles": [
+    "_site/assets/oscp/banner.png",
+    "_site/assets/oscp",
+    "assets/oscp/banner.png",
+    "assets/oscp",
     "_posts/_Template/_post-template.md",
     "assets/css/style.scss.md",
     "assets/css/style.scss",
@@ -206,8 +210,6 @@
     "_site/assets/OSCP/banner.png",
     "_site/assets/OSCP",
     "_site/categories/oscp-cert/index.html",
-    "_site/categories/oscp-cert",
-    "_site/tags/week1/index.html",
     "_posts/FYP/2026-02-14-Proposal.md",
     "assets/OSCP/banner.png",
     "_posts/THM-Rooms/2026-02-14-Linux-System-Hardening.md.md",
