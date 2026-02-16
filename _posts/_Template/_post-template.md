@@ -18,9 +18,23 @@ mermaid: false
 image:
 ---
 
-# Your Post Title Here
+# ## 📌 Overview
 
-Start writing your post here...
+Write a short introduction explaining what this post is about.
+
+---
+
+## 🛠️ Main Content
+
+Start writing your content here.
+
+You can use:
+
+- Bullet points
+- Code blocks:
+
+````bash
+sudo nmap -sC -sV 10.10.10.10
 
 
 
@@ -28,11 +42,20 @@ Start writing your post here...
 
 
 
+````
 
 
+---
 
+## 📚 References
 
-
+<div class="references">
+<ul>
+  <li><a href="#" target="_blank">Official Documentation</a></li>
+  <li><a href="#" target="_blank">Research Paper</a></li>
+  <li><a href="#" target="_blank">Related Blog Post</a></li>
+</ul>
+</div>
 
 
 
