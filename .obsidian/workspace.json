@@ -11,14 +11,12 @@
             "id": "7e37998f97a96254",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "image",
               "state": {
-                "file": "_posts/OSCP_Cert/2026-02-11-Week1-Plan.md",
-                "mode": "source",
-                "source": false
+                "file": "assets/oscp/banner.png"
               },
-              "icon": "lucide-file",
-              "title": "2026-02-11-Week1-Plan"
+              "icon": "lucide-image",
+              "title": "banner"
             }
           }
         ]
@@ -186,9 +184,9 @@
   "active": "7e37998f97a96254",
   "lastOpenFiles": [
     "_posts/OSCP_Cert/2026-02-11-WEEK1.md",
+    "_posts/OSCP_Cert/2026-02-11-Week1-Plan.md",
     "assets/oscp/banner.png",
     "assets/img/Photo.jpg",
-    "_posts/OSCP_Cert/2026-02-11-Week1-Plan.md",
     "_posts/THM-Rooms/2026-02-14-Linux-System-Hardening.md",
     "_site/assets/oscp/banner.png",
     "_site/assets/oscp",
