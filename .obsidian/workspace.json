@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "0bf12cfdc0323e1b",
+        "id": "19990ff2d87dbea0",
         "type": "tabs",
         "children": [
           {
-            "id": "673251fc8e67c818",
+            "id": "7e37998f97a96254",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -183,11 +183,15 @@
       "bases:Create new base": false
     }
   },
-  "active": "ecfd1eb68117418d",
+  "active": "7e37998f97a96254",
   "lastOpenFiles": [
+    "_posts/OSCP_Cert/2026-02-11-WEEK1.md",
+    "assets/oscp/banner.png",
+    "assets/img/Photo.jpg",
+    "_posts/OSCP_Cert/2026-02-11-Week1-Plan.md",
+    "_posts/THM-Rooms/2026-02-14-Linux-System-Hardening.md",
     "_site/assets/oscp/banner.png",
     "_site/assets/oscp",
-    "assets/oscp/banner.png",
     "assets/oscp",
     "_posts/_Template/_post-template.md",
     "assets/css/style.scss.md",
@@ -198,14 +202,11 @@
     "assets/css.md",
     "_site/assets/css.md",
     "_site/assets/Untitled.md",
-    "_posts/OSCP_Cert/2026-02-11-Week1-Plan.md",
     "_site/categories/week1/index.html",
     "_site/categories/week1",
-    "_posts/OSCP_Cert/2026-02-11-WEEK1.md",
     "_site/posts/Week1-Plan/index.html",
     "_site/posts/Week1-Plan",
     "_posts/Notes/2026-02-14-linuxcli-notes.md",
-    "_posts/THM-Rooms/2026-02-14-Linux-System-Hardening.md",
     "_posts/100-day-challenge/2026-02-14-Day-1.md",
     "_site/assets/OSCP/banner.png",
     "_site/assets/OSCP",
@@ -222,7 +223,6 @@
     "about.md",
     "_site/tabs/Navigate.md",
     "_tabs/Navigate.md",
-    "assets/img/Photo.jpg",
     "assets/img/footer-signature.png",
     "_site/assets/img/Photo.jpg",
     "_site/assets/img/footer-signature.png",
