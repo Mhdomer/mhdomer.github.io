@@ -47,7 +47,7 @@ nano /etc/hosts
 # Add: 10.10.70.174 cmess.thm
 ```
 
-![hostfilecong](/assets/Pasted%20image%2020260217201532.png)
+![hostfilecong](/assets/thm/Pasted%20image%2020260217201532.png)
 
 ### Nmap Scan
 
@@ -80,7 +80,7 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
 The main website displayed a standard Gila CMS blog:
 
-![maininterface](/assets/Pasted%20image%2020260217201612.png)
+![maininterface](/assets/thm/Pasted%20image%2020260217201612.png)
 
 ### Directory Enumeration with Ffuf
 
@@ -90,7 +90,7 @@ ffuf -w /usr/share/wordlists/rockyou.txt -u http://10.10.70.174/FUZZ -fw 431
 
 **Key Discovery**: `/login` directory
 
-![login](/assets/Pasted%20image%2020260217201652.png)
+![login](/assets/thm/Pasted%20image%2020260217201652.png)
 
 ### Subdomain/Virtual Host Enumeration
 
@@ -110,7 +110,7 @@ Added to `/etc/hosts`:
 
 The `dev` subdomain revealed sensitive information:
 
-![dev subdomain](/assets/Pasted%20image%2020260217201710.png)
+![dev subdomain](/assets/thm/Pasted%20image%2020260217201710.png)
 
 **Credentials Extracted**:
 - Username: `andre@cmess.thm`
@@ -120,7 +120,7 @@ The `dev` subdomain revealed sensitive information:
 
 Used credentials to access `/admin`:
 
-![admin dashboard](/assets/Pasted%20image%2020260217201735.png)
+![admin dashboard](/assets/thm/Pasted%20image%2020260217201735.png)
 
 **Version Discovery**: Gila CMS 1.10.9 (vulnerable to authenticated RCE)
 
