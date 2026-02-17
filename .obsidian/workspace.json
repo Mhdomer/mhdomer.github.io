@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_posts/TryHackMe/2025CMess.md",
+                "file": "_posts/TryHackMe/2026-02-14-Linux-System-Hardening.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2025CMess"
+              "title": "2026-02-14-Linux-System-Hardening"
             }
           }
         ]
@@ -185,6 +185,7 @@
   },
   "active": "ecfd1eb68117418d",
   "lastOpenFiles": [
+    "_posts/TryHackMe/2025-02-17-CMess.md",
     "assets/thm/Pasted image 20260217201735.png",
     "assets/thm/Pasted image 20260217201710.png",
     "assets/thm/Pasted image 20260217201652.png",
@@ -199,7 +200,6 @@
     "assets/Pasted image 20260217201532.png",
     "_site/posts/Phase1/index.html",
     "_site/posts/Phase1",
-    "_site/assets/thm/Pasted image 20260217074732.png",
     "_site/assets/thm",
     "assets/thm",
     "_posts/_Template/_post-template.md",
