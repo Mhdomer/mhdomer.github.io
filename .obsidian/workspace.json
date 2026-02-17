@@ -11,12 +11,14 @@
             "id": "7e37998f97a96254",
             "type": "leaf",
             "state": {
-              "type": "image",
+              "type": "markdown",
               "state": {
-                "file": "assets/oscp/banner.png"
+                "file": "_posts/TryHackMe/2025CMess.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-image",
-              "title": "banner"
+              "icon": "lucide-file",
+              "title": "2025CMess"
             }
           }
         ]
@@ -51,7 +53,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "tag:obsidian",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -183,15 +185,31 @@
   },
   "active": "7e37998f97a96254",
   "lastOpenFiles": [
+    "_posts/TryHackMe/2026-02-14-Linux-System-Hardening.md",
+    "_posts/TryHackMe/2025CMess.md",
+    "assets/Pasted image 20260217201735.png",
+    "assets/Pasted image 20260217201710.png",
+    "assets/Pasted image 20260217201652.png",
+    "assets/Pasted image 20260217201612.png",
+    "assets/Pasted image 20260217201532.png",
+    "_site/posts/Phase1/index.html",
+    "_site/posts/Phase1",
+    "_site/assets/thm/Pasted image 20260217074732.png",
+    "_site/assets/thm",
+    "assets/thm/Pasted image 20260217074732.png",
+    "assets/thm",
+    "assets/THM/Pasted image 20260217074732.png",
+    "assets/Pasted image 20260217074732.png",
+    "_posts/_Template/_post-template.md",
+    "_posts/FYP/2026-02-17-Phase1.md",
+    "_posts/FYP/2026-02-14-Proposal.md",
+    "assets/Pasted image 20260217011906.png",
+    "_posts/100-day-challenge/2026-02-14-Day-1.md",
+    "_posts/FYP/2026-02-17-Phase1",
     "_posts/OSCP_Cert/2026-02-11-WEEK1.md",
     "_posts/OSCP_Cert/2026-02-11-Week1-Plan.md",
-    "assets/oscp/banner.png",
-    "assets/img/Photo.jpg",
-    "_posts/THM-Rooms/2026-02-14-Linux-System-Hardening.md",
-    "_site/assets/oscp/banner.png",
     "_site/assets/oscp",
     "assets/oscp",
-    "_posts/_Template/_post-template.md",
     "assets/css/style.scss.md",
     "assets/css/style.scss",
     "_site/assets/css/style.scss.md",
@@ -201,16 +219,7 @@
     "_site/assets/css.md",
     "_site/assets/Untitled.md",
     "_site/categories/week1/index.html",
-    "_site/categories/week1",
-    "_site/posts/Week1-Plan/index.html",
-    "_site/posts/Week1-Plan",
     "_posts/Notes/2026-02-14-linuxcli-notes.md",
-    "_posts/100-day-challenge/2026-02-14-Day-1.md",
-    "_site/assets/OSCP/banner.png",
-    "_site/assets/OSCP",
-    "_site/categories/oscp-cert/index.html",
-    "_posts/FYP/2026-02-14-Proposal.md",
-    "assets/OSCP/banner.png",
     "_posts/THM-Rooms/2026-02-14-Linux-System-Hardening.md.md",
     "_posts/FYP/2026-02-14-Proposal.md.md",
     "_posts/_Template/_post-template.md.md",
@@ -220,13 +229,6 @@
     "Md3omer.md",
     "about.md",
     "_site/tabs/Navigate.md",
-    "_tabs/Navigate.md",
-    "assets/img/footer-signature.png",
-    "_site/assets/img/Photo.jpg",
-    "_site/assets/img/footer-signature.png",
-    "_posts/OSCP-Study/2026-02-14-WEEK1.md.md",
-    "_posts/Notes/2026-02-14-linuxcli-notes.md.md",
-    "_site/assets/image/footer-signature.png",
-    "_site/assets/image/footer-signature.png.png"
+    "_tabs/Navigate.md"
   ]
 }

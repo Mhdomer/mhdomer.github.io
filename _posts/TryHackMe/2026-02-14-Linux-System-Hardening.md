@@ -3,11 +3,12 @@ layout: post
 title: Linux System Hardening
 date: 2026-02-14T20:51:00
 categories:
-  - THM
+  - TryHackMe
 tags:
   - linux
   - logs
   - firewall
+  - thm
 author: muhammed
 description: Learn how to improve the security posture of your Linux systems.
 toc: true
@@ -32,7 +33,7 @@ image: https://tryhackme-images.s3.amazonaws.com/room-icons/68ab00dd034f022f110e
 
 
 
-We can consider adding a GRUB password depending on the Linux system we want to protect. Many tools help achieve that. One tool is **grub2-mkpasswd-pbkdf2,** which prompts you to input your password twice and generates a hash for you. The resulting hash should be added to the appropriate configuration file depending on the Linux distribution (examples: Fedora and Ubuntu). This configuration would prevent unauthorised users from resetting your root password. It will require the user to supply a password to access advanced boot configurations via GRUB, including logging in with root access.
+We can consider adding a GRUB password depending on the Linux system we want to protect. Many tools help achieve that. One tool is **grub2-mkpasswd-pbkdf2,** which prompts you to input your password twice and generates a hash for you. The resulting hash should be added to the appropriate configuration file depending on the Linux distribution (examples: Fedora and Ubuntu). This configuration would prevent unauthorized users from resetting your root password. It will require the user to supply a password to access advanced boot configurations via GRUB, including logging in with root access.
 
 
 
@@ -46,13 +47,7 @@ We can consider adding a GRUB password depending on the Linux system we want to 
 
 ## Filesystem Encryption
 
-
-
-
-
-
-
-
+![firewall](/assets/thm/Pasted%20image%2020260217074732.png)
 
 
 
