@@ -50,6 +50,130 @@ We can consider adding a GRUB password depending on the Linux system we want to 
 ![firewall](/assets/thm/Pasted%20image%2020260217074732.png)
 
 
+using **LUKS( Linux unified key setup) we can provide encryption to Linux systems
+
+![disk layout](/assets/Pasted%20image%2020260218230113.png)
+We have the following fields:  
+
+- **LUKS phdr:** It stands for _LUKS Partition Header_. LUKS phdr stores information about the UUID (Universally Unique Identifier), the used cipher, the cipher mode, the key length, and the checksum of the master key.
+- **KM**: KM stands for _Key Material_, where we have KM1, KM2, …, KM8. Each key material section is associated with a key slot, which can be indicated as active in the LUKS phdr. When the key slot is active, the associated key material section contains a copy of the master key encrypted with a user's password. In other words, we might have the master key encrypted with the first user's password and saved in KM1, encrypted with the second user's password and saved in KM2, and so on.
+- **Bulk Data**: This refers to the data encrypted by the master key. The master key is saved and encrypted by the user's password in a key material section.
+
+**LUKS** reuses existing block encryption implementations. The pseudocode to encrypt data uses the following syntax:
+
+`enc_data = encrypt(cipher_name, cipher_mode, key, original, original_length)`
+
+and to decrypt using the similar pseudocode but with the enc_data as an input 
+
+`original = decrypt(cipher_name, cipher_mode, key, enc_data, original_length)`
+
+
+to install **LUKS** in the command line use the following steps : 
+
+- Install `cryptsetup-luks`. (You can issue `apt install cryptsetup`, `yum install cryptsetup-luks` or `dnf install cryptsetup-luks` for Ubuntu/Debian, RHEL/Cent OS, and Fedora, respectively.)
+
+- Confirm the partition name using `fdisk -l`, `lsblk` or `blkid`. (Create a partition using `fdisk` if necessary.)
+- Set up the partition for LUKS encryption: `cryptsetup -y -v luksFormat /dev/sdb1`. (Replace `/dev/sdb1` with the partition name you want to encrypt.)
+- Create a mapping to access the partition: `cryptsetup luksOpen /dev/sdb1 EDCdrive`.
+- Confirm mapping details: `ls -l /dev/mapper/EDCdrive` and `cryptsetup -v status EDCdrive`.
+- Overwrite existing data with zero: `dd if=/dev/zero of=/dev/mapper/EDCdrive`.
+- Format the partition: `mkfs.ext4 /dev/mapper/EDCdrive -L "Strategos USB"`.
+- Mount it and start using it like a usual partition: `mount /dev/mapper/EDCdrive /media/secure-USB`.
+
+
+If you want to check the LUKS setting, you can issue the command `cryptsetup luksDump /dev/sdb1`
+
+---
+
+## Firewalls 
+
+Let’s briefly revisit the client/server model before we start. Any networked device can be a client, a server, or both simultaneously. The server offers a service, and the client connects to the server to use it. Examples of servers include web servers (HTTP and HTTPS), mail servers (SMTP(S), POP3(S), and IMAP(S)), name servers (DNS), and SSH servers. A server listens on a known TCP or UDP port number awaiting incoming client connection requests. The client initiates the connection request to the listening server, and the server responds to it.
+
+A firewall decides which packets can enter a system and which packets can leave a system
+
+
+Setting up a firewall offers many security benefits. First and foremost, firewall rules provide fine control over which packets can leave your system and which packets can enter your system. Consequently, firewall rules help mitigate various security risks by controlling network traffic between devices. More importantly, firewall rules can be devised to ensure that no client can act as a server. In other words, an attacker cannot start a reachable listening port on a target machine; the exploit can start a listening port, but the firewall will prevent all incoming connection attempts.
+
+There is 2 types of firewalls: 
+1) A host based firewall: 
+2) A client based firewall 
+
+
+The firewall has two main functions:
+
+- What can enter? Allow or deny packets from entering a system.
+- What can leave? Allow or deny packets from leaving a system.
+
+
+## Linux Firewalls
+
+
+On a Linux system, a solution such as [SELinux](https://github.com/SELinuxProject) or [AppArmor](https://www.apparmor.net/) can be used for more granular control over processes and their network access. For example, we can allow only the `/usr/bin/apache2` binary to use ports 80 and 443 while preventing any other binary from doing so on the underlying system. Both tools enforce access control policies based on the specific process or binary, providing a more comprehensive way to secure a Linux system.
+
+
+Let’s look take a closer look at the different available Linux firewalls.
+
+## Netfilter
+
+At the very core, we have netfilter. The netfilter project provides packet-filtering software for the Linux kernel 2.4.x and later versions. The netfilter hooks require a front-end such as `iptables` or `nftables` to manage.
+
+
+## iptables
+
+As a front-end, iptables provides the user-space command line tools to configure the packet filtering rule set using the netfilter hooks. For filtering the traffic, iptables has the following default chains:
+
+- **Input**: This chain applies to the packets incoming to the firewall.
+- **Output**: This chain applies to the packets outgoing from the firewall.
+- **Forward** This chain applies to the packets routed through the system.
+
+Let’s say that we want to be able to access the SSH server on our system remotely. For the SSH server to be able to communicate with the world, we need two things:
+
+1. Accept incoming packets to TCP port 22.
+2. Accept outgoing packets from TCP port 22.
+
+Let’s translate the above two requirements into `iptables` commands:
+
+`iptables -A INPUT -p tcp --dport 22 -j ACCEPT`
+
+- `-A INPUT` appends to the INPUT chain, i.e., packets destined for the system.
+- `-p tcp --dport 22` applies to TCP protocol with destination port 22.
+- `-j ACCEPT` specifies (jump to) target rule ACCEPT.
+
+`iptables -A OUTPUT -p tcp --sport 22 -j ACCEPT`
+
+- `-A OUTPUT` append to the OUTPUT chain, i.e., packets leaving the system.
+- `-p tcp --sport 22` applies to TCP protocol with source port 22.
+
+Let’s say you only want to allow traffic to the local SSH server and block everything else. In this case, you need to add two more rules to set the default behaviour of your firewall:
+
+- `iptables -A INPUT -j DROP` to block all incoming traffic not allowed in previous rules.
+- `iptables -A OUTPUT -j DROP` to block all outgoing traffic not allowed in previous rules.
+
+In brief, the rules below need to be applied in the following order:
+
+```shell-session
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -A OUTPUT -p tcp --sport 22 -j ACCEPT
+iptables -A INPUT -j DROP
+iptables -A OUTPUT -j DROP
+```
+
+## UFW
+
+UFW stands for uncomplicated firewall. this following simple command can set a firewall rule to allow SSH traffic 
+
+`ufw allow 22/tcp`
+
+then confirm the status using `ufw status`
+
+In the end before you configure a firewall you need to set the **Firewall policy** to be used  It all depends on the system you are protecting
+
+ the two main approaches are:
+
+- Block everything and allow certain exceptions.
+- Allow everything and block certain exceptions.
+
+
 
 
 
