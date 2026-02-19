@@ -173,7 +173,30 @@ In the end before you configure a firewall you need to set the **Firewall policy
 - Block everything and allow certain exceptions.
 - Allow everything and block certain exceptions.
 
+--- 
+## Remote Access 
 
+The configuration of the OpenSSH server can be controlled via the `sshd_config` file, usually located at `/etc/ssh/sshd_config`. You can disable the root login by adding the following line:
+
+`PermitRootLogin no`
+
+Although a password such as `9bNfX2gmDZ4o` is difficult to guess, most users find memorising it inconvenient. Imagine if the account belongs to the _sudoers_ (`sudo` group), and the user needs to type this password every time they need to issue a command with `sudo`. You may have to discipline to do that, but you cannot expect this to work for everyone.
+
+Many users are tempted to select a user-friendly password or share the same password across multiple accounts. Either approach would make the password easier for the attacker to guess.
+
+It would be best to rely on public key authentication with SSH to help improve the security of the remote login system and make it as fail-proof as possible.
+
+If you haven’t created an SSH key pair, you must issue the command `ssh-keygen -t rsa`. It will generate a private key saved in `id_rsa` and a public key saved in `id_rsa.pub`.
+
+For the SSH server to authenticate you using your public key instead of your passwords, your public key needs to be copied to the target SSH server. An easy way to do it would be by issuing the command `ssh-copy-id username@server` where `username` is your username, and `server` is the hostname or IP address of the SSH server.
+
+It is best to ensure you have access to the physical terminal before you disable password authentication to avoid locking yourself out. You might need to ensure having the following two lines in your `sshd_config` file.
+
+- `PubkeyAuthentication yes` to enable public key authentication
+    
+- `PasswordAuthentication no` to disable password authentication
+
+---
 
 
 
