@@ -25,14 +25,10 @@
             "id": "07af557d021b0d84",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "FYP/2026-02-12-my-first-post.md.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "2026-02-12-my-first-post.md"
+              "title": "New tab"
             }
           }
         ],

@@ -1,1 +1,9 @@
-{}
+{
+  "accentColor": "#56296a",
+  "cssTheme": "AnuPpuccin",
+  "theme": "system",
+  "baseFontSize": 17,
+  "textFontFamily": "",
+  "interfaceFontFamily": "Gadugi",
+  "monospaceFontFamily": "Consolas"
+}

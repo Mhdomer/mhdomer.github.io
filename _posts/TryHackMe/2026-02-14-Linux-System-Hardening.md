@@ -16,6 +16,7 @@ pin: false
 math: false
 mermaid: false
 image: https://tryhackme-images.s3.amazonaws.com/room-icons/68ab00dd034f022f110e1b2ed098bf7d.png
+Link: "[[TryHackMe.md]]"
 ---
 
 ## Objectives
