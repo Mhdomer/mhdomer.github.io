@@ -5,9 +5,6 @@ categories:
   - Blog
   - Tech
 tags:
-  - obsidian
-  - jekyll
-  - chirpy
 author: muhammed
 description: Short summary of the post for previews and SEO.
 toc: true

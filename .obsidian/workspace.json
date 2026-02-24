@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_posts/_posts.md",
+                "file": "_posts/TryHackMe/2026-02-24-Network-Device-Hardening.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "_posts"
+              "title": "2026-02-24-Network-Device-Hardening"
             }
           }
         ]
@@ -53,7 +53,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "tag:chirpy",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -164,9 +164,19 @@
               "icon": "lucide-list",
               "title": "Outline of 2026-02-12-my-first-post.md"
             }
+          },
+          {
+            "id": "95e15b1969fba16c",
+            "type": "leaf",
+            "state": {
+              "type": "advanced-tables-toolbar",
+              "state": {},
+              "icon": "spreadsheet",
+              "title": "Advanced Tables"
+            }
           }
         ],
-        "currentTab": 2
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -189,52 +199,51 @@
   },
   "active": "e7a7b303c61786dc",
   "lastOpenFiles": [
+    "_posts/OSCP_Cert/2026-02-11-WEEK1.md",
+    "_site/posts/Network-Security-Protocols/index.html",
+    "_site/posts/Network-Security-Protocols",
+    "_site/posts/Network-Device-Hardening/index.html",
+    "_site/posts/Network-Device-Hardening",
+    "_site/assets/Pasted image 20260224124305.png",
+    "_site/assets/Pasted image 20260224124208.png",
+    "_site/assets/Pasted image 20260224123724.png",
+    "_site/assets/Pasted image 20260224123442.png",
+    "_site/categories/labs/index.html",
+    "_site/categories/labs",
+    "_site/categories/security-engineer-path/index.html",
+    "_site/categories/security-engineer-path",
+    "_site/tags/network/index.html",
+    "_site/tags/network",
+    "_posts/OSCP_Cert/2026-02-11-Week1-Plan.md",
+    "_posts/Notes/2026-02-14-linuxcli-notes.md",
+    "_posts/FYP/2026-02-14-Proposal.md",
+    "_posts/100-day-challenge/2026-02-14-Day-1.md",
+    "_posts/TryHackMe/2026-02-24-Network-Security-Protocols.md",
+    "_posts/TryHackMe/2026-02-24-Network-Device-Hardening.md",
+    "_posts/TryHackMe/2026-02-17-CMess.md",
+    "_posts/TryHackMe/2026-02-14-Linux-System-Hardening.md",
+    "assets/Pasted image 20260224124305.png",
+    "assets/Pasted image 20260224124208.png",
+    "assets/Pasted image 20260224123724.png",
+    "assets/Pasted image 20260224123442.png",
+    "_posts/_Template/_post-template.md",
+    "Untitled.md",
+    "Untitled.canvas",
+    "_posts/TryHackMe/TryHackMe.md",
+    "_posts/TryHackMe/TryHackme.md",
     "README.md",
     "_posts/_posts.md",
-    "Untitled.canvas",
-    "_posts/TryHackMe/2026-02-17-CMess.md",
-    "_posts/100-day-challenge/2026-02-14-Day-1.md",
-    "_posts/OSCP_Cert/2026-02-11-Week1-Plan.md",
-    "_posts/_Template/_post-template.md",
-    "_posts/TryHackMe/2026-02-14-Linux-System-Hardening.md",
     "_posts/TryHackMe/TryHackMe.md.md",
     "_posts/TryHackMe.md/TryHackMe.md.md",
-    "_posts/TryHackMe",
     "_posts/TryHackMe.md/2026-02-14-Linux-System-Hardening.md",
     "_posts/TryHackMe.md/2026-02-17-CMess.md",
-    "_posts/OSCP_Cert/2026-02-11-WEEK1.md",
     "_site/assets/Pasted image 20260218230113.png",
     "assets/Pasted image 20260218230113.png",
-    "_site/tags/thm/index.html",
-    "_site/tags/thm",
-    "_site/categories/tryhackme/index.html",
-    "_site/categories/tryhackme",
-    "_site/posts/CMess/index.html",
-    "_site/posts/CMess",
     "_posts/TryHackMe/2025CMess.md",
-    "assets/thm/Pasted image 20260217201735.png",
-    "assets/thm/Pasted image 20260217201710.png",
-    "assets/thm/Pasted image 20260217201652.png",
-    "assets/thm/Pasted image 20260217201612.png",
-    "assets/thm/Pasted image 20260217201532.png",
-    "assets/Pasted image 20260217201735.png",
-    "assets/Pasted image 20260217201710.png",
-    "assets/Pasted image 20260217201652.png",
-    "_site/posts/Phase1/index.html",
-    "_site/posts/Phase1",
-    "_site/assets/thm",
     "_posts/FYP/2026-02-17-Phase1.md",
-    "_posts/FYP/2026-02-14-Proposal.md",
     "assets/css/style.scss.md",
     "_site/assets/css/style.scss.md",
     "_site/assets/css/Untitled.md",
-    "assets/css.md",
-    "_site/assets/css.md",
-    "_site/assets/Untitled.md",
-    "_posts/Notes/2026-02-14-linuxcli-notes.md",
-    "_posts/THM-Rooms/2026-02-14-Linux-System-Hardening.md.md",
-    "_posts/FYP/2026-02-14-Proposal.md.md",
-    "_posts/_Template/_post-template.md.md",
-    "_site/index.md"
+    "assets/css.md"
   ]
 }

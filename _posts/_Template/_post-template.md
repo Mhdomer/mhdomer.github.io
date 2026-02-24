@@ -19,7 +19,7 @@ image:
 Link: "[[]]"
 ---
 
-# ## 📌 Overview
+# ##  Overview
 
 Write a short introduction explaining what this post is about.
 

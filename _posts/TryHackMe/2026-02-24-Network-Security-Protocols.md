@@ -1,11 +1,13 @@
 ---
 layout: post
 title: Your Post Title Here
-date: 2026-02-14 10:00:00 +0800
+date: 2026-02-24T13:00:00
 categories:
-  - Blog
-  - Tech
+  - TryHackMe
+  -  Security Engineer Path 
 tags:
+  - linux
+  - thm
 author: muhammed
 description: Short summary of the post for previews and SEO.
 toc: true
@@ -13,23 +15,38 @@ pin: false
 math: false
 mermaid: false
 image:
+Link: "[[]]"
 ---
 
-# Your Post Title Here
+# ##  Overview
 
-Start writing your post here...
+Write a short introduction explaining what this post is about.
+
+---
+
+## 🛠️ Main Content
+
+Start writing your content here.
+
+You can use:
+
+- Bullet points
+- Code blocks:
 
 
 
 
+---
 
+## 📚 References
 
-
-
-
-
-
-
+<div class="references">
+<ul>
+  <li><a href="#" target="_blank">Official Documentation</a></li>
+  <li><a href="#" target="_blank">Research Paper</a></li>
+  <li><a href="#" target="_blank">Related Blog Post</a></li>
+</ul>
+</div>
 
 
 
