@@ -2,9 +2,9 @@
 title: linuxcli
 date: 2026-02-14 10:00:00 +0800
 categories:
-  - Blog
-  - Tech
+  - General Notes & Materials 
 tags:
+  - Notes
 author: muhammed
 description: Short summary of the post for previews and SEO.
 toc: true

@@ -17,6 +17,7 @@ math: false
 mermaid: false
 image: https://tryhackme-images.s3.amazonaws.com/room-icons/5c89b6e357a2d77e2327ba5d1a0175af.png
 Link: "[[TryHackme]]"
+Link1: "[[Security-Engineer-Path-and-Notes]]"
 ---
 
 # Introduction 

@@ -3,12 +3,10 @@ layout: post
 title: Your Post Title Here
 date: 2026-02-14 10:00:00 +0800
 categories:
-  - Blog
-  - Tech
+  - TryHackMe
+  -  
 tags:
-  - obsidian
-  - jekyll
-  - chirpy
+  - thm
 author: muhammed
 description: Short summary of the post for previews and SEO.
 toc: true

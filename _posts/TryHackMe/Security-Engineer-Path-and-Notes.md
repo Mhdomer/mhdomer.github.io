@@ -1,12 +1,12 @@
 ---
 layout: post
-title: Your Post Title Here
-date: 2026-02-14 10:00:00 +0800
+title: Security Engineer Path and Notes
+date: 2026-02-25T10:00:00
 categories:
+  - TryHackMe
+  -  Security Engineer Path 
 tags:
-  - obsidian
-  - jekyll
-  - chirpy
+  - thm
 author: muhammed
 description: Short summary of the post for previews and SEO.
 toc: true
@@ -25,29 +25,21 @@ Link: "[[]]"
 
 ---
 
-## Heading 2 
-
-- 
-
-
----
-
-### Heading 3 
+## Application Layer
 
 
 
----
-
-
-
----
-
-
-#### Heading 4 
+### HTTPS Protocol
 
 
 
 
+
+#### Workflow - HTTPS
+
+
+
+#### Request and Response - HTTP
 
 
 
