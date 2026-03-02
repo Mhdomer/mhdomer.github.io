@@ -1,12 +1,14 @@
 ---
 layout: post
-title: Your Post Title Here
-date: 2026-02-14 10:00:00 +0800
+title: SharkChallengeI
+date: 2026-03-02T12:12:00
 categories:
+  - TryHackMe
+  - Labs 
 tags:
-  - obsidian
-  - jekyll
-  - chirpy
+  - thm
+  - network
+  - labs
 author: muhammed
 description: Short summary of the post for previews and SEO.
 toc: true
@@ -14,8 +16,8 @@ pin: false
 math: false
 mermaid: false
 image:
-Link: "[[]]"
-Link1:
+Link: "[[../LabsNotes/2026-03-02-TShark-The-Basics|2026-03-02-TShark-The-Basics]]"
+Link1: "[[TryHackme]]"
 ---
 
 # Introduction
