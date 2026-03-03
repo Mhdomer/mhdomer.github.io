@@ -1,27 +1,29 @@
 ---
 layout: post
-title: Expressway
-date: 2026-03-03T10:00:00
+title: Conversor
+date: 2026-03-03T10:03:00
 categories:
   - Hack The Box 
 tags:
-  - ipsec
-  - ike
   - htb
+  - reverseshell
+  - sqlite
+  - XSLTinjection
+  - PrivilegeEscalation
 author: muhammed
-description: A detailed walkthrough of the Expressway machine, covering IPsec enumeration, PSK hash cracking, and Sudo host-based privilege escalation.
+description: Walkthrough of the Conversor machine – web app XSLT injection, credential cracking from SQLite, and sudo privilege escalation with needrestart.
 toc: true
 pin: false
 math: false
 mermaid: false
-image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.hackthebox.com%2Fimages%2Flandingv3%2Fmega-menu-pro-cloud-labs.webp&f=1&nofb=1&ipt=f8c1e9727e3fbae0dc04ddafe6c54634eba4c31e0119a3c2bfd59cb8f8aedbab
+image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.hackthebox.com%2Fimages%2Flandingv3%2Fmega-menu-talent-search.webp&f=1&nofb=1&ipt=eb43991cd033cb97834b0d1b4ed474c66fcddc371a7a1f1bcf22357fc5bccd4a
 Link: "[[htb.md]]"
 Link1:
 ---
 
 # Expressway - HackTheBox Writeup
 
-[Expressway](https://app.hackthebox.com/machines/736) is a medium-difficulty Linux machine focused on network service enumeration, IPsec vulnerability exploitation, and Linux privilege escalation through a host-based sudo misconfiguration.
+[Expressway](https://app.hackthebox.com/machines/736) is a medium-difficulty Linux machine focused on network service enumeration, IPsec vulnerability exploitation, and Linux privilege escalation through a host based sudo misconfiguration.
 
 
 **Operating System**: Linux (Debian)  
@@ -205,6 +207,8 @@ Internal Hostname Discovery → Sudo Host-Based Rule Abuse → Root Access
 *   **ike-scan**: The primary tool for enumerating and attacking IKE/IPsec services.
 *   **psk-crack**: For cracking the extracted IKE PSK hash.
 *   **SSH**: For gaining shell access with the cracked credentials.
+
+
 ---
 
 ## 📚 References
