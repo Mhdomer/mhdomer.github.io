@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_posts/Final Year Project/2026-02-14-Proposal.md",
+                "file": "_posts/TryHackMe/LabsNotes/2026-03-02-TShark-The-Basics.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-02-14-Proposal"
+              "title": "2026-03-02-TShark-The-Basics"
             }
           }
         ]
@@ -78,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 395
+    "width": 395,
+    "collapsed": true
   },
   "right": {
     "id": "a3821355f884c4ea",
@@ -199,14 +200,21 @@
   },
   "active": "e7a7b303c61786dc",
   "lastOpenFiles": [
-    "_posts/TryHackMe/Security Engineer Path/2026-02-14-Linux-System-Hardening.md",
-    "_posts/TryHackMe/Security Engineer Path/2026-02-24-Network-Device-Hardening.md",
-    "_posts/TryHackMe/Security Engineer Path/2026-02-24-Network-Security-Protocols.md",
-    "_posts/TryHackMe/Security Engineer Path/Security-Engineer-Path-and-Notes.md",
-    "_posts/TryHackMe/Security Engineer Path/Virtualization and Containers.md",
-    "_posts/TryHackMe/LabsNotes/2026-03-02-TShark-The-Basics.md",
+    "assets/Pasted image 20260303185233.png",
+    "assets/Pasted image 20260303182812.png",
+    "assets/Pasted image 20260303181153.png",
+    "assets/Pasted image 20260303175955.png",
+    "assets/Pasted image 20260303174931.png",
+    "assets/Pasted image 20260303174138.png",
     "_posts/TryHackMe/Labs/2026-03-02-TSharkChallengeI-Teamwork.md",
+    "_posts/TryHackMe/Security Engineer Path/2026-02-24-Network-Device-Hardening.md",
     "_posts/TryHackMe/Labs/2026-02-17-CMess.md",
+    "_posts/TryHackMe/Security Engineer Path/2026-02-24-Network-Security-Protocols.md",
+    "_posts/TryHackMe/Security Engineer Path/2026-02-14-Linux-System-Hardening.md",
+    "_posts/TryHackMe/Security Engineer Path/Virtualization and Containers.md",
+    "_posts/TryHackMe/Security Engineer Path/Security-Engineer-Path-and-Notes.md",
+    "_posts/Final Year Project/2026-02-14-Proposal.md",
+    "_posts/TryHackMe/LabsNotes/2026-03-02-TShark-The-Basics.md",
     "_posts/TryHackMe/LabsNotes",
     "_posts/TryHackMe/Security Engineer Path",
     "_posts/TryHackMe/TryHackme.md",
@@ -222,20 +230,14 @@
     "_site/assets/Pasted image 20260227000015.png",
     "_site/assets/Pasted image 20260226215717.png",
     "_site/assets/Pasted image 20260226215635.png",
-    "_posts/Final Year Project/2026-02-14-Proposal.md",
     "assets/Pasted image 20260227000015.png",
     "assets/Pasted image 20260226215717.png",
-    "assets/Pasted image 20260226215635.png",
     "_posts/OSCP Certification/2026-02-11-Week1-Plan.md",
     "_posts/OSCP Certification/2026-02-11-WEEK1.md",
     "_posts/General Notes & Materials/2026-02-14-linuxcli-notes.md",
     "_posts/100-day-challenge/2026-02-14-Day-1.md",
     "_posts/Linux Shell Scripting/2026-02-25-Shell-Something-Out.md",
     "_posts/Linux Shell Scripting/Shell Scripting Notes.md",
-    "_site/assets/Pasted image 20260224124305.png",
-    "_site/assets/Pasted image 20260224124208.png",
-    "_site/assets/Pasted image 20260224123724.png",
-    "_site/assets/Pasted image 20260224123442.png",
     "Untitled.md",
     "Untitled.canvas",
     "_posts/TryHackMe/TryHackMe.md",
