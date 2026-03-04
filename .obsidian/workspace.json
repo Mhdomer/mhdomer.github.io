@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_posts/TryHackMe/LabsNotes/2026-03-04-TShark-CLI-Wireshark-Features.md",
+                "file": "_posts/TryHackMe/Labs/2026-03-02-TSharkChallengeI-Teamwork.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-03-04-TShark-CLI-Wireshark-Features"
+              "title": "2026-03-02-TSharkChallengeI-Teamwork"
             }
           }
         ]
@@ -78,8 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 395,
-    "collapsed": true
+    "width": 395
   },
   "right": {
     "id": "a3821355f884c4ea",
@@ -200,9 +199,13 @@
   },
   "active": "e7a7b303c61786dc",
   "lastOpenFiles": [
+    "assets/Pasted image 20260304205533.png",
+    "assets/Pasted image 20260304205412.png",
+    "_posts/TryHackMe/LabsNotes/2026-03-04-TShark-CLI-Wireshark-Features.md",
+    "_posts/TryHackMe/LabsNotes/2026-03-02-TShark-The-Basics.md",
+    "_posts/TryHackMe/Labs/2026-03-02-TSharkChallengeI-Teamwork.md",
     "assets/Pasted image 20260304181359.png",
     "_posts/HTB/2026-03-03-Conversor.md",
-    "_posts/TryHackMe/LabsNotes/2026-03-04-TShark-CLI-Wireshark-Features.md",
     "_posts/HTB/2026-03-03-Express-way.md",
     "_posts/HTB/htb.md.md",
     "_site/tags/chirpy/index.html",
@@ -223,12 +226,8 @@
     "_site/assets/Pasted image 20260303182812.png",
     "_site/assets/Pasted image 20260303181153.png",
     "_site/assets/Pasted image 20260303175955.png",
-    "_site/assets/Pasted image 20260303174931.png",
-    "_site/assets/Pasted image 20260303174138.png",
     "_posts/TryHackMe/Labs/2026-03-03-Root-me.md",
     "_posts/OSCP Certification/2026-02-11-WEEK1.md",
-    "_posts/TryHackMe/LabsNotes/2026-03-02-TShark-The-Basics.md",
-    "_posts/TryHackMe/Labs/2026-03-02-TSharkChallengeI-Teamwork.md",
     "_posts/TryHackMe/Security Engineer Path/2026-02-24-Network-Device-Hardening.md",
     "_posts/TryHackMe/Labs/2026-02-17-CMess.md",
     "_posts/TryHackMe/Security Engineer Path/2026-02-24-Network-Security-Protocols.md",
