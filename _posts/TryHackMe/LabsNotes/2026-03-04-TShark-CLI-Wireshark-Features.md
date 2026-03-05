@@ -3,11 +3,12 @@ layout: post
 title: "TShark: CLI Wireshark Features"
 date: 2026-03-04T10:00:00
 categories:
+  - TryHackMe
   - LabsNotes 
 tags:
-  - obsidian
-  - jekyll
-  - chirpy
+  - packets
+  - network
+  - linuxcli
 author: muhammed
 description: Take your TShark skills to the next level by implementing Wireshark functionalities in the CLI.
 toc: true
@@ -17,6 +18,7 @@ mermaid: false
 image: https://tryhackme-images.s3.amazonaws.com/room-icons/6131132af49360005df01ae3-1717742076303
 Link: "[[2026-03-02-TShark-The-Basics]]"
 Link1: "[[../Labs/2026-03-02-TSharkChallengeI-Teamwork|2026-03-02-TSharkChallengeI-Teamwork]]"
+link2: "[[../TryHackme|TryHackme]]"
 ---
 
 # TShark: CLI Wireshark Features Notes 

@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_posts/TryHackMe/Labs/2026-03-02-TSharkChallengeI-Teamwork.md",
+                "file": "_posts/General Notes & Materials/2026-03-05-Nmap.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-03-02-TSharkChallengeI-Teamwork"
+              "title": "2026-03-05-Nmap"
             }
           }
         ]
@@ -53,7 +53,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:chirpy",
+                "query": "tag:#Nmap",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -194,39 +194,44 @@
       "bases:Create new base": false,
       "table-editor-obsidian:Advanced Tables Toolbar": false,
       "homepage:Open homepage": false,
-      "omnisearch:Omnisearch": false
+      "omnisearch:Omnisearch": false,
+      "templater-obsidian:Templater": false
     }
   },
-  "active": "e7a7b303c61786dc",
+  "active": "ecfd1eb68117418d",
   "lastOpenFiles": [
+    "_posts/_Template/Shell Code Block.md",
+    "_posts/General Notes & Materials/2026-03-05-Nmap.md",
+    "_posts/TryHackMe/Labs/2026-03-05-LookUp.md",
+    "_posts/_Template/_post-template.md",
+    "_posts/TryHackMe/Labs/2026-03-02-TSharkChallengeI-Teamwork.md",
+    "_posts/TryHackMe/Labs/2026-03-03-Root-me.md",
+    "_posts/TryHackMe/LabsNotes/2026-03-04-TShark-CLI-Wireshark-Features.md",
+    "_site/posts/Nmap/index.html",
+    "_site/posts/Nmap",
+    "_site/posts/TShark-CLI-Wireshark-Features/index.html",
+    "_site/posts/TShark-CLI-Wireshark-Features",
+    "_site/posts/LookUp/index.html",
+    "_site/posts/LookUp",
+    "_site/assets/notes-img/nmap.png",
+    "_site/assets/notes-img",
+    "_site/assets/Pasted image 20260304205533.png",
+    "_site/assets/Pasted image 20260304205412.png",
+    "_site/assets/Pasted image 20260304181359.png",
+    "_site/tags/nmap/index.html",
+    "_site/tags/nmap",
+    "_site/tags/reconnaissance/index.html",
+    "_posts/General Notes & Materials/linuxcli-notes.md",
+    "_posts/HTB/2026-03-03-Express-way.md",
+    "assets/notes-img/nmap.png",
     "assets/Pasted image 20260304205533.png",
     "assets/Pasted image 20260304205412.png",
-    "_posts/TryHackMe/LabsNotes/2026-03-04-TShark-CLI-Wireshark-Features.md",
     "_posts/TryHackMe/LabsNotes/2026-03-02-TShark-The-Basics.md",
-    "_posts/TryHackMe/Labs/2026-03-02-TSharkChallengeI-Teamwork.md",
     "assets/Pasted image 20260304181359.png",
     "_posts/HTB/2026-03-03-Conversor.md",
-    "_posts/HTB/2026-03-03-Express-way.md",
     "_posts/HTB/htb.md.md",
-    "_site/tags/chirpy/index.html",
-    "_site/tags/chirpy",
-    "_site/tags/privilegeescalation/index.html",
-    "_site/tags/privilegeescalation",
-    "_site/tags/privile/index.html",
-    "_site/tags/privile",
-    "_site/tags/xsltinjection/index.html",
-    "_site/tags/xsltinjection",
-    "_site/tags/sqlite/index.html",
-    "_site/tags/sqlite",
     "_site/assets/Pasted image 20260303213057.png",
     "_site/assets/Pasted image 20260303212955.png",
-    "_site/assets/Pasted image 20260303212933.png",
-    "_site/assets/Pasted image 20260303212904.png",
-    "_site/assets/Pasted image 20260303185233.png",
-    "_site/assets/Pasted image 20260303182812.png",
-    "_site/assets/Pasted image 20260303181153.png",
-    "_site/assets/Pasted image 20260303175955.png",
-    "_posts/TryHackMe/Labs/2026-03-03-Root-me.md",
     "_posts/OSCP Certification/2026-02-11-WEEK1.md",
     "_posts/TryHackMe/Security Engineer Path/2026-02-24-Network-Device-Hardening.md",
     "_posts/TryHackMe/Labs/2026-02-17-CMess.md",
@@ -236,15 +241,11 @@
     "_posts/TryHackMe/Security Engineer Path/Security-Engineer-Path-and-Notes.md",
     "_posts/Final Year Project/2026-02-14-Proposal.md",
     "_posts/TryHackMe/TryHackme.md",
-    "_posts/_Template/_post-template.md",
     "_posts/OSCP Certification/2026-02-11-Week1-Plan.md",
-    "_posts/General Notes & Materials/2026-02-14-linuxcli-notes.md",
     "_posts/100-day-challenge/2026-02-14-Day-1.md",
     "_posts/Linux Shell Scripting/2026-02-25-Shell-Something-Out.md",
     "_posts/Linux Shell Scripting/Shell Scripting Notes.md",
     "Untitled.md",
-    "Untitled.canvas",
-    "_posts/TryHackMe/TryHackMe.md",
-    "README.md"
+    "Untitled.canvas"
   ]
 }

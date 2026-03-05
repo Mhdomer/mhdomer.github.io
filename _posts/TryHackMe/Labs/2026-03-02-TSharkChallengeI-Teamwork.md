@@ -10,7 +10,7 @@ tags:
   - network
   - labs
 author: muhammed
-description: Short summary of the post for previews and SEO.
+description: Put your TShark skills into practice and analyse some network traffic.
 toc: true
 pin: false
 math: false
@@ -35,7 +35,7 @@ Given a pcap file we need to filter based on the questions below
 
 ### What is the name of the malicious/suspicious domain? 
 
-```
+```shell
 tshark -r directory-curiosity.pcap -Y " dns " | grep 'com'
 ```
 
@@ -52,7 +52,11 @@ testing domains in virus total and found that
 
 ### What is the total number of HTTP requests sent to the malicious domain?
 
-`tshark -r directory-curiosity.pcap -Y "http.request and http.host contains jx2-bavuong.com" | wc -l` 
+``
+
+```shell
+tshark -r directory-curiosity.pcap -Y "http.request and http.host contains jx2-bavuong.com" | wc -l
+```
 
 
 **Answer: 14** 
@@ -61,7 +65,7 @@ testing domains in virus total and found that
 
 ### What is the IP address associated with the malicious domain?
 
-```
+```shell
 tshark -r directory-curiosity.pcap -Y "http.request and http.host contains jx2-bavuong.com" 
 ```
 
@@ -87,7 +91,7 @@ Investigate the output carefully.
 
 ### What is the number of listed files?
 
-```
+```shell
 tshark -r directory-curiosity.pcap -Y "tcp.stream eq 0" -z follow,tcp,ascii,0
 ```
 
@@ -145,7 +149,7 @@ Search the SHA256 value of the file on VirtusTotal.
 ### What does the "Lastline Sandbox" flag this as?
 
 
-
+**Answer: MALWARE TROJAN**
 
 
 ---

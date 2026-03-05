@@ -6,5 +6,22 @@
       ],
       "key": "X"
     }
+  ],
+  "templater-obsidian:_posts/_Template/Shell Code Block.md": [
+    {
+      "modifiers": [
+        "Mod"
+      ],
+      "key": "S"
+    }
+  ],
+  "editor:save-file": [
+    {
+      "modifiers": [
+        "Mod",
+        "Shift"
+      ],
+      "key": "S"
+    }
   ]
 }
