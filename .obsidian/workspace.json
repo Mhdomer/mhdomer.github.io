@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_posts/MindCraft Cloud Deployment/2026-03-24-Phase1-Infrastructure-Setup (Networking & EC2).md",
+                "file": "_posts/MindCraft Cloud Deployment/2026-03-24-Introduction-about-Application.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-03-24-Phase1-Infrastructure-Setup (Networking & EC2)"
+              "title": "2026-03-24-Introduction-about-Application"
             }
           }
         ]
@@ -200,6 +200,8 @@
   },
   "active": "e7a7b303c61786dc",
   "lastOpenFiles": [
+    "_posts/MindCraft Cloud Deployment/2026-03-24-Phase1-Infrastructure-Setup (Networking & EC2).md",
+    "_posts/MindCraft Cloud Deployment/2026-03-24-Phase1-Infrastructure-Setup.md",
     "assets/Pasted image 20260324191758.png",
     "assets/Pasted image 20260324185453.png",
     "assets/Pasted image 20260324185347.png",
@@ -210,9 +212,7 @@
     "assets/Pasted image 20260324182508.png",
     "assets/Pasted image 20260324182227.png",
     "assets/Pasted image 20260324181729.png",
-    "assets/Pasted image 20260324181228.png",
     "_posts/MindCraft Cloud Deployment/2026-03-24-Introduction-about-Application.md",
-    "_posts/MindCraft Cloud Deployment/2026-03-24-Phase1-Infrastructure-Setup (Networking & EC2).md",
     "_posts/MindCraft Cloud Deployment",
     "Untitled",
     "_posts/Semester 6/Network Programming/Introduction.md",
