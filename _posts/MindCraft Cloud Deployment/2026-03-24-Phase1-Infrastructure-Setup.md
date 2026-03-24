@@ -148,7 +148,7 @@ To wrap up my **Phase 1**
 
 <div class="references">
   <ul>
-    <li><a href="(https://aws.amazon.com/getting-started/hands-on/)" target="_blank">Official Documentation on AWS</a></li>
+    <li><a href="https://aws.amazon.com/getting-started/hands-on/" target="_blank">Official Documentation on AWS</a></li>
     
     
     <li>
