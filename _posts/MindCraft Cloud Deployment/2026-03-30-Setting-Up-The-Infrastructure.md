@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Phase 0: Setting-Up-The-Infostructure"
+title: "Phase 0: Setting-Up-The-Infrastructure"
 date: 2026-03-30T10:00:00
 categories:
   - MindCraft Cloud Deployment
@@ -24,19 +24,19 @@ Link1:
 # Step 1: The VPC & Subnet Architecture
 
 
-![h](/assets/Pasted%20image%2020260330125932.png)
+![h](/assets/mindcraft/Pasted%20image%2020260330125932.png)
 
 ## 1.1 Creating a VPC 
 
 Created A VPC MindCraft-Fortress-VPC
 
-![j](/assets/Pasted%20image%2020260330130522.png)
+![j](/assets/mindcraft/Pasted%20image%2020260330130522.png)
 
 with a CIDR OF 10.0.0.0/16 
 
 then enabled DNS hostnames for **Node.js** app to communicate with **Firestore** and for RDS to function
 
-![ee](/assets/Pasted%20image%2020260330130632.png)
+![ee](/assets/mindcraft/Pasted%20image%2020260330130632.png)
 
 
 ## 1.2 Subnet Allocation Table
@@ -52,7 +52,7 @@ Created these 6 subnets manually in the VPC console. with 2 AZ as shown in Asia 
 | **Isolated** | `iso-data-az1`  | `10.0.21.0/24` | `southeast1a`         | Primary RDS (MySQL)       |
 | **Isolated** | `iso-data-az2`  | `10.0.22.0/24` | `southeast1b`         | Standby RDS (Slave)       |
 
-![h](/assets/Pasted%20image%2020260330132203.png)
+![h](/assets/mindcraft/Pasted%20image%2020260330132203.png)
 
 
 ---
@@ -67,11 +67,11 @@ A private subnet has no route to the internet. Since the app needs to talk to **
     
 - **Attached** it to your `MindCraft-Fortress-VPC`
 
-![hh](/assets/Pasted%20image%2020260330132445.png)
+![hh](/assets/mindcraft/Pasted%20image%2020260330132445.png)
 
 attach to my VPC 
 
-![h](/assets/Pasted%20image%2020260330132528.png)
+![h](/assets/mindcraft/Pasted%20image%2020260330132528.png)
 
 
 ## 2.2 The NAT Instance (The $0 Solution)
@@ -91,9 +91,9 @@ attach to my VPC
 
 
 
-![H](/assets/Pasted%20image%2020260330133413.png)
+![H](/assets/mindcraft/Pasted%20image%2020260330133413.png)
 
-![k](/assets/Pasted%20image%2020260330140517.png)
+![k](/assets/mindcraft/Pasted%20image%2020260330140517.png)
 
 
 ---
@@ -117,7 +117,7 @@ i will need **three** separate route tables to enforce the 3-tier isolation.
 
 
 
-![j](/assets/Pasted%20image%2020260330153840.png)
+![j](/assets/mindcraft/Pasted%20image%2020260330153840.png)
 
 ---
 
@@ -165,14 +165,14 @@ Edited inbound rules:
 |110|HTTPS|TCP|443|0.0.0.0/0|ALLOW|
 |120|SSH|TCP|22|**Your IP**|ALLOW|
 |*|ALL|ALL|ALL|0.0.0.0/0|DENY|
-![k](/assets/Pasted%20image%2020260330151727.png)
+![k](/assets/mindcraft/Pasted%20image%2020260330151727.png)
 
 ####  Outbound Rules
 
 |Rule #|Type|Port|Destination|Allow|
 |---|---|---|---|---|
 |100|ALL|ALL|0.0.0.0/0|ALLOW|
-![l](/assets/Pasted%20image%2020260330151802.png)
+![l](/assets/mindcraft/Pasted%20image%2020260330151802.png)
 ### 2. Private NACL (App Tier)
 
 #### Associate subnets
@@ -194,7 +194,7 @@ Allow ONLY from public subnets:
 | 110    | ALL TCP | 0–65535 | 10.0.2.0/24 | ALLOW |
 | *      | ALL     | ALL     | 0.0.0.0/0   | DENY  |
 
-![h](/assets/Pasted%20image%2020260330151935.png)
+![h](/assets/mindcraft/Pasted%20image%2020260330151935.png)
 
 
 ####  Outbound Rules
@@ -213,7 +213,7 @@ it wont allow the response packet and need to be stated manually, To be safe, al
 |---|---|---|---|---|
 |130|Custom TCP|1024–65535|0.0.0.0/0|ALLOW|
 
-![jj](/assets/Pasted%20image%2020260330155231.png)
+![jj](/assets/mindcraft/Pasted%20image%2020260330155231.png)
 
 ---
 
@@ -225,14 +225,14 @@ it wont allow the response packet and need to be stated manually, To be safe, al
 |---|---|---|---|---|
 |120|Custom TCP|1024–65535|0.0.0.0/0|ALLOW|
 
-![h](/assets/Pasted%20image%2020260330154459.png)
+![h](/assets/mindcraft/Pasted%20image%2020260330154459.png)
 
 ---
 
 # Step 5: Flow Logs section
 
 
-![k](/assets/Pasted%20image%2020260330165258.png)
+![k](/assets/mindcraft/Pasted%20image%2020260330165258.png)
 
 
 ### Basic config
@@ -266,7 +266,7 @@ then Create the flow log
 # Final Phase 1 Diagram 
 
 
-![DIAGRAM](/assets/Pasted%20image%2020260330175222.png)
+![DIAGRAM](/assets/mindcraft/Pasted%20image%2020260330175222.png)
 
 
 
