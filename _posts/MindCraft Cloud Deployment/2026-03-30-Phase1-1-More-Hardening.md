@@ -225,7 +225,7 @@ it wont allow the response packet and need to be stated manually, To be safe, al
 |---|---|---|---|---|
 |120|Custom TCP|1024–65535|0.0.0.0/0|ALLOW|
 
-![](../../assets/Pasted%20image%2020260330154459.png)
+![h](/assets/Pasted%20image%2020260330154459.png)
 
 ---
 
