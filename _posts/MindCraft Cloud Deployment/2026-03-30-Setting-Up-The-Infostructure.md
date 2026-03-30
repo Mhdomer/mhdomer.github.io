@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Setting-Up-The-Infostructure
+title: "Phase 0: Setting-Up-The-Infostructure"
 date: 2026-03-30T10:00:00
 categories:
   - MindCraft Cloud Deployment
