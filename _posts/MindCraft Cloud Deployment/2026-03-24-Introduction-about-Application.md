@@ -14,7 +14,7 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image: https://elearning.utm.my/25261/pluginfile.php/360492/mod_forum/post/24934/WhatsApp%20Image%202025-10-22%20at%2021.44.28_7c8ccdc1.jpg
+image: https://mind-craft-k21f.vercel.app/logoMindCraft.jpg
 Link: "[[]]"
 Link1:
 ---
