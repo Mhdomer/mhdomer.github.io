@@ -5,7 +5,7 @@ order: 4
 ---
 
 
-**Hi there, I'm Muhamed Omar!**
+**Hi there, I'm Muhamed Omar Makhlouf!**
 
 I’m a 3rd year student at **Universiti Teknologi Malaysia (UTM)** studying Networking and Security. with a strong interest in netowrking and cloud
 
