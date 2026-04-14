@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Building a Secure MERN Backend From a Firebase App — Phase 1 Walkthrough
+title: "Phase 1: Building a Secure MERN Backend From a Firebase App —Walkthrough"
 date: 2026-04-14T10:00:00
 categories:
   - MindCraft Cloud Deployment
