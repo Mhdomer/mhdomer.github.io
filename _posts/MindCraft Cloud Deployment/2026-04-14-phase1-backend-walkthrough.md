@@ -23,7 +23,7 @@ image: https://cdn.salla.sa/xArrjp/qKRJLW2AHJlt7ywZ1mDFaHBr3eMW2saQz1Nuxl0z.png
 Link: "[[2026-03-24-Introduction-about-Application]]"
 Link1:
 ---
-In my [Introduction about the Application](/posts/introduction-about-application/), I wrote about why I decided to migrate MindCraft away from Firebase.
+In my [Introduction about the Application](/posts/Introduction-about-Application/), I wrote about why I decided to migrate MindCraft away from Firebase.
 This post is the technical walkthrough of how Phase 1 actually happened — the decisions, the trade-offs, and the parts that took longer than expected.
 
 Phase 1 had one job: replace Firebase entirely with a self-managed backend, and do it in a way
