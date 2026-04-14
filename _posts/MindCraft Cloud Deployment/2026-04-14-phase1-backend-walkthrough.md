@@ -23,7 +23,7 @@ image: https://cdn.salla.sa/xArrjp/qKRJLW2AHJlt7ywZ1mDFaHBr3eMW2saQz1Nuxl0z.png
 Link: "[[2026-03-24-Introduction-about-Application]]"
 Link1:
 ---
-In my [2026-03-24-Introduction-about-Application](2026-03-24-Introduction-about-Application.md), I wrote about why I decided to migrate MindCraft away from Firebase.
+In my [Introduction about the Application](/posts/introduction-about-application/), I wrote about why I decided to migrate MindCraft away from Firebase.
 This post is the technical walkthrough of how Phase 1 actually happened — the decisions, the trade-offs, and the parts that took longer than expected.
 
 Phase 1 had one job: replace Firebase entirely with a self-managed backend, and do it in a way
@@ -80,7 +80,7 @@ That's what needed to be replaced.
 
 The obvious move was to pick a database. I documented this in
 
-[ADR-001](../adr/001-mongodb-over-firebase-firestore.md) — the short version:
+ADR-001 — the short version:
 
   
 
@@ -268,7 +268,7 @@ JWT is standard. The interesting decision is where you put it.
 
 The two options are localStorage and cookies. I went with `httpOnly` cookies and documented
 
-why in [ADR-002](../adr/002-jwt-over-firebase-auth.md).
+why in ADR-002.
 
   
 
@@ -348,7 +348,7 @@ instances or apply different Security Groups.
 
   
 
-[ADR-003](../adr/003-express-api-tier-separation.md) covers this. The result was a standalone
+ADR-003 covers this. The result was a standalone
 
 `server/` directory — a full Express application that runs on port 3001.
 
