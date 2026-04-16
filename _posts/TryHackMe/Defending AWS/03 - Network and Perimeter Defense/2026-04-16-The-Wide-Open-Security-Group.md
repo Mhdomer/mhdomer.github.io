@@ -22,7 +22,7 @@ pin: false
 math: false
 mermaid: true
 permalink: /posts/The-Wide-Open-Security-Group/
-image:
+image: https://cdn-images.tryhackme.com/room-icons/68baea2454c82afe90fd7020-1781605985489
   path: /assets/img/posts/aws_security_group_referencing_excalidraw.png
   alt: "AWS Security Group Referencing Architecture Breakdown"
 ---
