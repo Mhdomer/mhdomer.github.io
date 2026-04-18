@@ -282,9 +282,6 @@ We need to create traffic noise to test and simulate capture filters. We will us
 - Then, run the given cURL command in Terminal-2 to create network noise.
 - View sniffed packets results in Terminal-1.
 
-![t](../../../assets/thm/Pasted%20image%2020260303185233.png)
-
-
 Being comfortable with the command line and TShark filters requires time and practice. You can use the below table to practice TShark capture filters.
 
 |   |   |
