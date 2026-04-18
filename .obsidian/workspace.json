@@ -4,21 +4,19 @@
     "type": "split",
     "children": [
       {
-        "id": "4509724f8bf84da7",
+        "id": "77cd349776b20be8",
         "type": "tabs",
         "children": [
           {
-            "id": "e7a7b303c61786dc",
+            "id": "e293e350869c5dbc",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "image",
               "state": {
-                "file": "INTERN LI/Resume and CV/Resume latex code.md",
-                "mode": "source",
-                "source": false
+                "file": "assets/Pasted image 20260330175222.png"
               },
-              "icon": "lucide-file",
-              "title": "Resume latex code"
+              "icon": "lucide-image",
+              "title": "Pasted image 20260330175222"
             }
           }
         ]
@@ -53,7 +51,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#Nmap",
+                "query": "tag:networking",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -78,7 +76,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 395
+    "width": 312
   },
   "right": {
     "id": "a3821355f884c4ea",
@@ -198,54 +196,54 @@
       "templater-obsidian:Templater": false
     }
   },
-  "active": "e7a7b303c61786dc",
+  "active": "e293e350869c5dbc",
   "lastOpenFiles": [
-    "FYP/Changes to be made.md",
-    "FYP/Interview paper.md",
-    "INTERN LI/Resume and CV/Resume latex code.md",
-    "INTERN LI/Resume and CV",
-    "INTERN LI/Required Doc UTM/Verification of intern acceptance from the company.pdf",
-    "INTERN LI/Required Doc UTM/Intern Supervisor Performance Report week 16.pdf",
-    "INTERN LI/Required Doc UTM/Guideline for Company (Placement).pdf",
-    "INTERN LI/Required Doc UTM/Form for Placement Application (Approval) BLI-IC Step 1.pdf",
-    "INTERN LI/Required Doc UTM/Form for Company Acceptance BLI-2A after utm approval.pdf",
-    "INTERN LI/Required Doc UTM/2-PLACEMENT LETTER - ACCEPTED fill by the company.pdf",
-    "INTERN LI/Required Doc UTM",
-    "INTERN LI/Intern logs and report/Log Book.pdf",
-    "INTERN LI/Intern logs and report",
-    "INTERN LI/Companies List Doc/google sheet link.md",
-    "Semester 6/Network Programming/Introduction.md",
-    "_posts/MindCraft Cloud Deployment/2026-03-24-Introduction-about-Application.md",
-    "Markdown Files/MindCrafr Md files/Phases.md.md",
-    "Markdown Files/MindCrafr Md files/The Whole Process.md.md",
-    "_posts/MindCraft Cloud Deployment/2026-03-30-Phase1-1-More-Hardening.md",
-    "_site/Markdown Files/MindCrafr Md files/The Whole Process.md.md",
-    "_site/Markdown Files/MindCrafr Md files/Untitled.md",
-    "_site/Markdown Files/MindCrafr Md files/Phases.md.md",
-    "_posts/Final Year Project/2026-02-14-Proposal.md",
-    "_site/assets/Pasted image 20260330175222.png",
-    "_site/assets/Pasted image 20260330165258.png",
-    "_site/assets/Pasted image 20260330154459.png",
-    "_site/assets/Pasted image 20260330155231.png",
-    "_site/assets/Pasted image 20260330151935.png",
-    "_site/assets/Pasted image 20260330151802.png",
-    "_site/assets/Pasted image 20260330151727.png",
-    "_site/assets/Pasted image 20260330153840.png",
-    "_site/assets/Pasted image 20260330140517.png",
-    "_site/assets/Pasted image 20260330133413.png",
-    "_site/Markdown Files/FYP MD/Phases.md.md",
-    "_site/Dolfined Courses Recap/CLF-C02 + SAA-C03/VPC101.md",
-    "README.md",
-    "Dolfined Courses Recap/CLF-C02 + SAA-C03/VPC101.md",
-    "_posts/MindCraft Cloud Deployment/2026-03-24-Phase1-Infrastructure-Setup.md",
-    "Dolfined Courses Recap/RHCSA1/2026-03-28-DAY1.md",
-    "Dolfined Courses Recap/RHCSA1/2026-03-28-Commands.md",
-    "_posts/MindCraft Cloud Deployment/2026-03-24-Phase1-Infrastructure-Setup (Networking & EC2).md",
-    "_posts/TryHackMe/Security Engineer Path/2026-03-09-Vulnerability-Management.md",
-    "_posts/Semester 6/Untitled.md",
+    "_site/assets/thm/Pasted image 20260303212955.png",
+    "_site/assets/thm/Pasted image 20260303212933.png",
+    "_site/assets/thm/Pasted image 20260303212904.png",
+    "_site/assets/thm/Pasted image 20260303185233.png",
+    "_site/assets/thm/Pasted image 20260303182812.png",
+    "_site/assets/thm/Pasted image 20260303181153.png",
+    "_site/assets/thm/Pasted image 20260303175955.png",
+    "_site/assets/thm/Pasted image 20260303174931.png",
+    "_site/assets/thm/Pasted image 20260303174138.png",
+    "_site/assets/thm/Pasted image 20260227000015.png",
+    "_site/assets/thm/Pasted image 20260226215717.png",
+    "_site/assets/mindcraft",
+    "assets/mindcraft",
+    "_posts/TryHackMe/Security Engineer Path/2026-02-14-Linux-System-Hardening.md",
     "_posts/TryHackMe/Labs/2026-03-05-LookUp.md",
+    "_posts/TryHackMe/Labs/2026-03-03-Root-me.md",
+    "_posts/TryHackMe/Labs/2026-02-17-CMess.md",
+    "_posts/TryHackMe/DevSecOps/2026-04-15-introduction-to-k8s.md",
+    "_posts/MindCraft Cloud Deployment/2026-03-24-Introduction-about-Application.md",
+    "_posts/MindCraft Cloud Deployment/2026-03-24-Phase1-Infrastructure-Setup.md",
+    "_posts/TryHackMe/Labs/2026-03-02-TSharkChallengeI-Teamwork.md",
     "_posts/TryHackMe/DevSecOps/2026-03-05-Introduction-to-DevSecOps.md",
-    "_posts/General Notes & Materials/2026-03-05-Nmap.md",
+    "RoadMaps and Career/5 Month Full Focus Plan.md",
+    "_site/posts/introduction-to-k8s/index.html",
+    "_site/posts/introduction-to-k8s",
+    "_site/assets/main",
+    "_site/RoadMaps and Career/Roadmaps.md",
+    "_site/Projects Idea and implementation/Projects scratch.md",
+    "_site/Main/Resume and Cv Materials/Resume Template.docx",
+    "_site/Main/Resume and Cv Materials",
+    "_site/Main/ROAD MAPS/دراسة ذاتية بدون محاضرات حية - [Arabic] AWS (_Azure) Solutions Architect and Cloud DevOps Engineer (1).pdf",
+    "_site/Main/ROAD MAPS/Infrastructure Technical Engineer Track Final Review by NETWORKAT ACAD.pdf",
+    "_site/Main/ROAD MAPS",
+    "_site/Main/MYFYP/FYP DOCS/Proposal/Changes to be made.md",
+    "_site/Main/MYFYP/FYP DOCS/PRD FILES/RDS.md",
+    "_site/Main/MYFYP/FYP DOCS/PRD FILES/Agents.md",
+    "_site/INTERN LI/Real Intern-Job Descriptions/Security Engineer I (SEC), AWS Security Incident Response.md",
+    "_site/INTERN LI/Interview Prep/Interview prep.md",
+    "_site/INTERN LI/Companies List Doc/Links.md",
+    "_site/INTERN LI/Landing Intern Tips/Process.md",
+    "_site/INTERN LI/Landing Intern Tips/5 daily application plan.md",
+    "RoadMaps and Career/Cloud security Roadmap.md",
+    "Projects Idea and implementation/Enterprise Network Infrastructure Project.md",
+    "Projects Idea and implementation/Zero Trust Network on AWS.md",
+    "Projects Idea and implementation/Kubernetes with Shift-Left Security.md",
+    "Projects Idea and implementation/DevSecOps Pipeline with Full Security Gates.md",
     "Untitled.canvas"
   ]
 }

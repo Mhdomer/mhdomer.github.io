@@ -66,7 +66,7 @@ Hypervisors are separated into **two** categories that are determined by their p
 
 **Type 1 hypervisors**, also known as **bare metal hypervisors**, create an abstraction layer directly between hardware and virtual machines without a common operating system between them. Instead, the hypervisor is the operating system and is often _headless_, with only a web-based management portal remotely accessed. These hypervisors are designed for scale and to deploy a large number of virtual machines at once. They are extremely lightweight to dedicate the most resources to virtual machines. Below is a diagram of a type 1 hypervisor architecture.
 
-![gg](/assets/Pasted%20image%2020260227000015.png)
+![gg](../../../assets/thm/Pasted%20image%2020260227000015.png)
 
 Examples of type 1 hypervisors include *VMware ESXi, Proxmox, VMware vSphere, Xen, and KVM.*
 

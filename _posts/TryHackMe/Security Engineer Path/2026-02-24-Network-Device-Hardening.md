@@ -111,22 +111,22 @@ Password: TryHackMe
 
 **Setting up the device:** While setting up any network device, it is necessary to fill in all relevant details like hostname, timezone, logging, and more. These features assist in conducting incident handling in case of a compromise. For example, logging must be enabled to log all the events with the default alert level Debug. Similarly, timezone and time synchronisation must be set accurately to properly correlate events with their occurrence time. You can enable and modify these settings through System > System and select the desired option.
 
-![system](/assets/Pasted%20image%2020260224123442.png)
+![system](../../../assets/thm/Pasted%20image%2020260224123442.png)
 
 
 **Change default credentials**: Usually, the admin web interface is protected through a username and password, and people tend to ignore changing the default. A threat actor can access the router's admin interface and compromise the whole network using default credentials. We can change the default password in OpenWrt through System > Administration, enter a new password, and click the Save button.
 
-![pass](/assets/Pasted%20image%2020260224123724.png)
+![pass](../../../assets/thm/Pasted%20image%2020260224123724.png)
 
 
 **Enable secure network protocols:**  For a network device to maintain the confidentiality, integrity, and availability of network traffic, secure protocols must be enabled. Secure protocols like HTTPS, SSH, and SSL/TLS offer encrypted authentication mechanisms and communications to stop unauthorised access and eavesdropping. By enabling secure protocols on a router, you can reduce the risk of data breaches, man-in-the-middle attacks, and other security threats. You can enable SSH in OpenWrt through System > Administration > SSH Access, then select the interface and port number and click Save & Apply. Moreover, you can also add specific public SSH-Keys for passwordless login.
 
-![ssh](/assets/Pasted%20image%2020260224124208.png)
+![ssh](../../../assets/thm/Pasted%20image%2020260224124208.png)
 
 
 **Disabling unnecessary scripts:** Almost every network device executes some startup scripts to provide a better user experience to a user. For example, crontab is executed on startup to verify and execute any cron job. Threat actors try to gain persistent access on a network device by adding their malicious scripts on the startup. We can add/remove startup scripts and set the priority through System > Startup. 
 
-![services](/assets/Pasted%20image%2020260224124305.png)
+![services](../../../assets/thm/Pasted%20image%2020260224124305.png)
 
 
 

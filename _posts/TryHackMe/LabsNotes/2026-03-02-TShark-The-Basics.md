@@ -26,7 +26,7 @@ TShark is an open-source command-line network traffic analyser. It is created by
 
 installing tshark 
 
-![t](assets/Pasted%20image%2020260303174931.png)
+![t](../../../assets/thm/Pasted%20image%2020260303174931.png)
 
 ---
 
@@ -49,7 +49,7 @@ to give this command a try here:
 
 **capinfos**
 
-![capinfo](/assets/Pasted%20image%2020260303174138.png)
+![capinfo](../../../assets/thm/Pasted%20image%2020260303174138.png)
 
 you can pipline this comamnd with grep or any other command to filter data 
 
@@ -98,7 +98,7 @@ Sniffing can be done with and without selecting a specific interface. When a par
 moral of the story is there is no specific interface selected ex `` tshark ``  it will sniff the default interface number 1 
 
 to specify an interface use this  `thark -i <interface number > `
-![tt](/assets/Pasted%20image%2020260303175955.png)
+![tt](../../../assets/thm/Pasted%20image%2020260303175955.png)
 
 
 ---
@@ -207,7 +207,7 @@ Transmission Control Protocol, Src Port: 3372, Dst Port: 80, Seq: 0, Len: 0
 
 Verbosity provides full packet details and makes it difficult to investigate (long and complex terminal output for each packet). However, it is still helpful for in-depth packet analysis and scripting, making TShark stand out. Remember, the best utilisation time of verbosity is after filtering the packets. You can compare the above output with the below screenshot and see the scripting, carving, and correlation opportunities you have!
 
-![h](assets/Pasted%20image%2020260303181153.png)
+![h](../../../assets/thm/Pasted%20image%2020260303181153.png)
 
 
 
@@ -247,7 +247,7 @@ user@ubuntu$ ls
 -rw------- 1 ubuntu ubuntu   autostop-demo_..5_2022.pcap
 ```
 
-![t](/assets/Pasted%20image%2020260303182812.png)
+![t](../../../assets/thm/Pasted%20image%2020260303182812.png)
 
 
 ---
@@ -291,7 +291,7 @@ We need to create traffic noise to test and simulate capture filters. We will us
 - Then, run the given cURL command in Terminal-2 to create network noise.
 - View sniffed packets results in Terminal-1.
 
-![t](/assets/Pasted%20image%2020260303185233.png)
+![t](../../../assets/thm/Pasted%20image%2020260303185233.png)
 
 
 Being comfortable with the command line and TShark filters requires time and practice. You can use the below table to practice TShark capture filters.

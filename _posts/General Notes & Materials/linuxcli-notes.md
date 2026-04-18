@@ -1,4 +1,5 @@
 ---
+layout: post
 title: linuxcli
 date: 2026-02-14 10:00:00 +0800
 categories:
@@ -47,19 +48,39 @@ echo "10.10.10.0 lookup.thm" | sudo tee -a /etc/hosts
 ```
 
 ---
+## Namespaces and cgroups 
+
+**namespaces**: is the concept of isolating a process from other process and make it in a " bubble " that it sees only its own isolated version of those resources 
 
 
+Normally, all processes share the same system resources — the same network, same process list, same filesystem root, etc. Namespaces create a "bubble" around a process so it only sees its own isolated version of those resources.
 
 
+This is the core technology behind **containers** (like Docker).
 
+## Types of Namespaces
 
+|Namespace|Flag|Isolates|
+|---|---|---|
+|**PID**|`CLONE_NEWPID`|Process IDs — processes see only their own PID tree|
+|**Network**|`CLONE_NEWNET`|Network interfaces, IP addresses, routing tables, ports|
+|**Mount**|`CLONE_NEWNS`|Filesystem mount points|
+|**UTS**|`CLONE_NEWUTS`|Hostname and domain name|
+|**IPC**|`CLONE_NEWIPC`|Inter-process communication (shared memory, semaphores)|
+|**User**|`CLONE_NEWUSER`|User and group IDs (UID/GID mapping)|
+|**Cgroup**|`CLONE_NEWCGROUP`|Cgroup root directory visibility|
+|**Time**|`CLONE_NEWTIME`|System clocks (boot time, monotonic)|
 
+## Namespaces vs. cgroups
 
+These two features are often used together but do different things:
 
+- **Namespaces** → control what a process _can see_ < التحكم فالي البروسيس يقدر يشوفه >
+- **cgroups** → control how many _resources_ (CPU, RAM) a process can use < التحكم فالي البروسيس يقدر يستخدمه (ram, CPU)
 
+Together they form the foundation of **Linux containers**.
 
-
-
+---
 
 
 
