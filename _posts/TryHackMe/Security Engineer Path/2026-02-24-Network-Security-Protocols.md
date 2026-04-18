@@ -190,7 +190,6 @@ SSL/TLS handshake is performed to encrypt the communication between client and 
 6. Session Keys Generated: The client and the server generate session keys based on client random bytes, random server bytes and premaster secret. Both will arrive at the same results; **this session key is not transmitted**, and encryption and decryption are based on this key.
 7. Ready Messages: The client and server send a “finished” message using the session key to indicate that the session is ready for transmission. The client and server are now ready to exchange messages over SSL/TLS encrypted connection.
 
-![h](../../../assets/thm/Pasted%20image%2020260226215635.png)
 
 TLS is a wrapper that encrypts communication of communication protocols. It has port numbers for various protocols, such as 443 for HTTPS and 990 for FTPS.
 
@@ -215,8 +214,6 @@ Consider a scenario when user A wants to connect with client B over the Internet
 - **Data Transfer**
     - After successfully associating both clients with a proxy server, both clients can exchange data and share information that will be routed through the proxy server.
 
-
-![h](../../../assets/thm/Pasted%20image%2020260226215717.png)
 
 
 

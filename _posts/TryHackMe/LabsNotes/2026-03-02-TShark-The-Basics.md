@@ -24,9 +24,7 @@ Link1: "[[TryHackme]]"
 
 TShark is an open-source command-line network traffic analyser. It is created by the Wireshark developers and has most of the features of Wireshark. It is commonly used as a command-line version of Wireshark. However, it can also be used like tcpdump. Therefore it is preferred for comprehensive packet assessments.
 
-installing tshark 
-
-![t](../../../assets/thm/Pasted%20image%2020260303174931.png)
+installing tshark
 
 ---
 
@@ -48,8 +46,6 @@ TShark is a text based tool it used in packet analysis and data curving as well 
 to give this command a try here: 
 
 **capinfos**
-
-![capinfo](../../../assets/thm/Pasted%20image%2020260303174138.png)
 
 you can pipline this comamnd with grep or any other command to filter data 
 
@@ -98,7 +94,6 @@ Sniffing can be done with and without selecting a specific interface. When a par
 moral of the story is there is no specific interface selected ex `` tshark ``  it will sniff the default interface number 1 
 
 to specify an interface use this  `thark -i <interface number > `
-![tt](../../../assets/thm/Pasted%20image%2020260303175955.png)
 
 
 ---
@@ -207,8 +202,6 @@ Transmission Control Protocol, Src Port: 3372, Dst Port: 80, Seq: 0, Len: 0
 
 Verbosity provides full packet details and makes it difficult to investigate (long and complex terminal output for each packet). However, it is still helpful for in-depth packet analysis and scripting, making TShark stand out. Remember, the best utilisation time of verbosity is after filtering the packets. You can compare the above output with the below screenshot and see the scripting, carving, and correlation opportunities you have!
 
-![h](../../../assets/thm/Pasted%20image%2020260303181153.png)
-
 
 
 ---
@@ -246,8 +239,6 @@ user@ubuntu$ ls
 -rw------- 1 ubuntu ubuntu   autostop-demo_..4_2022.pcap
 -rw------- 1 ubuntu ubuntu   autostop-demo_..5_2022.pcap
 ```
-
-![t](../../../assets/thm/Pasted%20image%2020260303182812.png)
 
 
 ---

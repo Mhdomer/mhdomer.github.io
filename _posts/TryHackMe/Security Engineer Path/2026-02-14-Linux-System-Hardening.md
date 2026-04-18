@@ -57,7 +57,6 @@ We can consider adding a GRUB password depending on the Linux system we want to 
 
 using **LUKS( Linux unified key setup) we can provide encryption to Linux systems
 
-![disk layout](../../../assets/thm/Pasted%20image%2020260218230113.png)
 We have the following fields:  
 
 - **LUKS phdr:** It stands for _LUKS Partition Header_. LUKS phdr stores information about the UUID (Universally Unique Identifier), the used cipher, the cipher mode, the key length, and the checksum of the master key.
