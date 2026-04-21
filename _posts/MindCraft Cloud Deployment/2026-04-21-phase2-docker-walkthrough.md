@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Containerizing a 3-Tier MERN Stack With Docker Compose — Phase 2 Walkthrough
+title: "Phase 2: Containerizing a 3-Tier MERN Stack With Docker Compose — Walkthrough"
 date: 2026-04-21T10:00:00
 categories:
   - MindCraft Cloud Deployment
