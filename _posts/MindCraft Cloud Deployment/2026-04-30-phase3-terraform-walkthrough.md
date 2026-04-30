@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Provisioning a 3-Tier AWS Network with Terraform — Phase 3 Walkthrough
+title: "Phase 3: Provisioning a 3-Tier AWS Network with Terraform —  Walkthrough"
 date: 2026-04-30T10:00:00
 categories:
   - MindCraft Cloud Deployment
@@ -23,9 +23,6 @@ image: https://cdn.corenexis.com/files/c/4399863720.png
 Link: "[[2026-03-24-Introduction-about-Application]]"
 Link1:
 ---
----
-
-
 Phase 2 gave us a working MERN stack running in Docker. Three containers, one command,
 
 fully isolated networks. Phase 3 takes that same architecture and provisions the real
@@ -60,9 +57,7 @@ That's the goal. Here's what it took to get there.
 
 Terraform is Infrastructure as Code — you describe the resources you want in `.tf`
 
-files, and Terraform figures out what to create, update, or delete to match that
-
-description.
+files, and Terraform figures out what to create, update, or delete to match that description.
 
   
 
@@ -1101,15 +1096,3 @@ on that instance, the URL in the Terraform output becomes a live application.
   
 
 Source: [github.com/Mhdomer/mindcraft-aws-migration](https://github.com/Mhdomer/mindcraft-aws-migration)
-
-  
----
-
-
-##  You can find me online at:
-
-![My signature image](/assets/img/footer-signature.png)
-
-- **GitHub:** [Mhdomer](https://github.comMhdomer)  
-- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
