@@ -74,6 +74,131 @@ This is my attempt to push the project further  beyond grades, into something pr
 Next, I’ll start preparing the project for deployment and setting up the environment to get it running outside my local machine.
 
 
+## The Problem: Firebase Looked Great Until It Didn't
+
+  
+
+When we built MindCraft as a team, Firebase made perfect sense. One SDK, auth and database handled, deployed in minutes. For a 7-person team with a semester deadline, that was the right call.
+  
+
+Firebase is a Backend-as-a-Service. Google manages everything below the application layer. That means:
+
+- No Security Groups to configure
+
+- No private subnets to reason about
+
+- No port isolation between services
+
+- No Linux server to harden
+
+For a frontend role, Firebase is fine. For a cloud/security role at a company that runs its own infrastructure, 
+  
+## What the Migration Actually Involves
+
+
+I mapped out exactly what "removing Firebase" means in practice:
+  
+
+| What Firebase Gave Us | What We Replace It With |
+
+|Service / Feature|Replacement / Implementation|
+|---|---|
+|Firestore (database)|MongoDB on EC2 in a private subnet|
+|Firebase Auth|JWT with bcrypt, `httpOnly` cookies|
+|Firebase Hosting|Nginx + Next.js Docker container on EC2|
+|Firebase Admin SDK|Express.js + Mongoose|
+
+That's essentially a full MERN stack migration wrapped inside a DevSecOps project.
+
+## The Part Nobody Talks About: The Data Migration
+
+  
+The trickiest part wasn't the Express routes or the JWT implementation. It was the ID mapping problem.
+
+
+Firestore uses arbitrary string IDs. MongoDB uses ObjectIds. Every relationship reference (`courseId`, `createdBy`, etc.) needed to be translated consistently. The solution: build a `Map` in memory during migration that tracks `firestoreId → ObjectId` and resolve references as you go.
+
+  
+
+```javascript
+
+// Every Firestore ID gets a consistent MongoDB ObjectId
+
+const idMap = new Map();
+
+  
+
+function getOrCreateId(firebaseId) {
+
+  if (!idMap.has(firebaseId)) {
+
+    idMap.set(firebaseId, new mongoose.Types.ObjectId());
+
+  }
+
+  return idMap.get(firebaseId);
+
+}
+
+```
+
+  
+## Security Decisions I'm Proud Of
+
+  
+#### JWT in an `httpOnly` Cookie (Not localStorage)
+XSS attacks can't steal httpOnly cookies, localStorage is a common mistake]
+#### Rate Limiting on Auth Endpoints
+#### Helmet.js: One Line, 10 Security Headers
+
+#### bcrypt with 12 Salt Rounds
+
+
+  
+
+## Architecture Decision Records
+
+  
+
+One practice I picked up during this project: writing ADRs (Architecture Decision Records). Every major technical choice gets a short document explaining: 
+
+- Why this decision was needed
+
+- What was decided
+
+- What trade-offs were accepted
+
+- What alternatives were rejected
+
+to find it go through the ADR section under the MindCraft Deployment
+  
+This turned out to be the most useful documentation I wrote — not just for the blog, but for interview prep. When an interviewer asks "why MongoDB over DynamoDB?", I have a three-paragraph answer ready.
+
+  
+
+## What's Next
+
+  
+
+- [ ] Docker Compose to run the full stack locally
+
+- [ ] Frontend auth context rewrite (Firebase Auth → JWT)
+
+- [ ] Terraform for the AWS 3-tier network
+
+- [ ] GitHub Actions pipeline with Trivy + SonarCloud
+
+  
+
+  
+
+---
+
+  
+
+*The full source is on [GitHub](https://github.com/Mhdomer/mindcraft-aws-migration). If you're doing something similar, feel free to reach out on [LinkedIn](https://linkedin.com/in/Mhd3omar).*
+
+
 
 
 
