@@ -3,7 +3,7 @@ layout: post
 title: linuxcli
 date: 2026-02-14 10:00:00 +0800
 categories:
-  - General Notes & Materials 
+  - General Notes & Materials
 tags:
   - Notes
   - bash

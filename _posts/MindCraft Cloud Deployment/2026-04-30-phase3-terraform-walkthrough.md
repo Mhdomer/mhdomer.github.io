@@ -10,7 +10,7 @@ tags:
   - cloud
   - terraform
   - i-ac
-  - CICD
+  - cicd
   - devsecops
   - docker
 author: muhammed

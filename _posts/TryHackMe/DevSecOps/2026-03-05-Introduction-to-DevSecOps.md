@@ -9,7 +9,7 @@ tags:
   - devops
   - deployment
   - development
-  - CICD
+  - cicd
 author: muhammed
 description: Learn about the story of DevSecOps, Software Development Models & Shifting Left.
 toc: true

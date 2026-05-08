@@ -5,7 +5,7 @@ date: 2026-05-06T10:00:00
 categories:
   - MindCraft Cloud Deployment
 tags:
-  - CICD
+  - cicd
   - aws
   - pipeline
   - devsecops
