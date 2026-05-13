@@ -4,6 +4,7 @@ title: AWS CloudFront — CDN, Distributions, Cache Policies, and Security
 date: 2026-05-13T10:00:00
 categories:
   - AWS Learning Path
+  - Networking
 tags:
   - aws
   - cloudfront
@@ -16,7 +17,7 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image:
+image: assets/notes-img/cloudfront.png
 Link: "[[]]"
 Link1:
 img:
@@ -32,6 +33,9 @@ The result: lower latency, higher throughput, reduced load on your origin, and b
 
 CloudFront is a **global service** — it has no region.
 You configure it once and it operates globally across all edge locations automatically.
+
+
+
 
 ---
 
@@ -52,7 +56,7 @@ You configure it once and it operates globally across all edge locations automat
 
 ## Creating a Distribution
 
-> 📸 **SCREENSHOT:** CloudFront → Distributions → Create Distribution.
+> **SCREENSHOT:** CloudFront → Distributions → Create Distribution.
 > Show the Origin domain field with an S3 bucket selected, and the default cache behaviour section below it.
 
 ### From the console
@@ -412,3 +416,74 @@ aws cloudfront update-distribution --id EDFDVBD6EXAMPLE \
 # Delete distribution
 aws cloudfront delete-distribution --id EDFDVBD6EXAMPLE --if-match ETAG
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##  You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.comMhdomer)  
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
+- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##  You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.comMhdomer)  
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
+- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
