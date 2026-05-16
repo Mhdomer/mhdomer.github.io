@@ -4,6 +4,7 @@ title: AWS Load Balancers — ALB, NLB, Target Groups, and Listeners
 date: 2026-05-16T10:00:00
 categories:
   - AWS Learning Path
+  - Networking
 tags:
   - aws
   - alb
@@ -16,7 +17,7 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image:
+image: assets/notes-img/AWSELB.png
 Link: "[[]]"
 Link1:
 img:
@@ -366,3 +367,12 @@ aws elbv2 describe-rules --listener-arn ARN
 aws elbv2 register-targets --target-group-arn ARN --targets Id=i-xxx
 aws elbv2 deregister-targets --target-group-arn ARN --targets Id=i-xxx
 ```
+
+
+##  You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.comMhdomer)  
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
+- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
