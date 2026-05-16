@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_posts/General Notes & Materials/2026-05-08-YAML-and-GitHub-Actions.md",
+                "file": "_posts/General Notes & Materials/linuxcli-notes.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-05-08-YAML-and-GitHub-Actions"
+              "title": "linuxcli-notes"
             }
           }
         ]
@@ -199,6 +199,15 @@
   },
   "active": "c0cf9262aac01f02",
   "lastOpenFiles": [
+    "_posts/Linux Shell Scripting/2026-03-04-Have-a-Good-Command.md",
+    "_posts/Linux Shell Scripting/2026-02-25-Shell-Something-Out.md",
+    "_posts/Linux Shell Scripting/Shell Scripting Notes.md",
+    "_posts/OSCP Certification/2026-02-20-WEEK2-Plan.md",
+    "_posts/OSCP Certification/2026-02-11-Week1-Plan.md",
+    "_posts/OSCP Certification/2026-02-11-WEEK1.md",
+    "_posts/General Notes & Materials/linuxcli-notes.md",
+    "_posts/General Notes & Materials/2026-05-08-YAML-and-GitHub-Actions.md",
+    "_posts/OSCP Certification/2026-02-27-WEEK3-Plan.md",
     "_posts/MindCraft Cloud Deployment/sedFGCs5K",
     "_posts/MindCraft Cloud Deployment/sed1Efsc9",
     "_posts/MindCraft Cloud Deployment/sedjVW2vq",
@@ -224,13 +233,9 @@
     "assets/notes-img/Unconfirmed 219379.crdownload",
     "_posts/General Notes & Materials/2026-03-05-Nmap.md",
     "_posts/Linux Shell Scripting/2026-03-11-File-In-File-Out.md",
-    "_posts/Linux Shell Scripting/2026-03-04-Have-a-Good-Command.md",
     "_posts/Linux Shell Scripting/2026-03-18-Texting-and-Driving.md",
     "_posts/Linux Shell Scripting/2026-04-01-The-Backup-Plan.md",
     "_posts/Linux Shell Scripting/2026-03-25-Tangled-Web.md",
-    "_posts/Linux Shell Scripting/2026-02-25-Shell-Something-Out.md",
-    "_site/tags/automation/index.html",
-    "_posts/General Notes & Materials/2026-05-08-YAML-and-GitHub-Actions.md",
     "_posts/Linux Shell Scripting/2026-04-21-Administration-Calls.md",
     "_posts/Linux Shell Scripting/2026-04-14-Put-on-the-Monitors-Cap.md",
     "_posts/Linux Shell Scripting/2026-04-07-The-Old-Boy-Network.md",
@@ -240,11 +245,6 @@
     "_posts/MindCraft Cloud Deployment/2026-04-14-phase1-backend-walkthrough.md",
     "_posts/MindCraft Cloud Deployment/2026-04-30-phase3-terraform-walkthrough.md",
     "_posts/MindCraft Cloud Deployment/2026-05-06-cicd-prerequisites-walkthrough.md",
-    "_posts/MindCraft Cloud Deployment/2026-03-24-Introduction-about-Application.md",
-    "_posts/MindCraft Cloud Deployment/2026-05-06-phase5-observability-walkthrough.md",
-    "_posts/OSCP Certification/2026-03-25-WEEK7-Plan.md",
-    "_posts/OSCP Certification/2026-03-11-WEEK5-Plan.md",
-    "_posts/OSCP Certification/2026-02-27-WEEK3-Plan.md",
     "Untitled.canvas"
   ]
 }
