@@ -40,11 +40,11 @@ tshark -r directory-curiosity.pcap -Y " dns " | grep 'com'
 ```
 
 
-![f](/assets/Pasted%20image%2020260304205412.png)
+![f](/assets/thm/Pasted%20image%2020260304205412.png)
 
 testing domains in virus total and found that 
 
-![g](assets/Pasted%20image%2020260304205533.png)
+![g](/assets/thm/Pasted%20image%2020260304205533.png)
 
 **Answer: jx2-bavuong.com**
 
