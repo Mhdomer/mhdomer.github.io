@@ -3,7 +3,8 @@ layout: post
 title: AWS CLI & IAM — Credentials, Roles, Policies, and Attack Paths
 date: 2026-05-09T10:00:00
 categories:
-  - AWS Learning Path
+  - AWS Learning Path 
+  - Foundations
 tags:
   - aws
   - iam
