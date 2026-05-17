@@ -4,6 +4,7 @@ title: AWS Global Infrastructure — Regions, AZs, and Edge Locations
 date: 2026-05-17T11:00:00
 categories:
   - AWS Learning Path
+  - Foundations
 tags:
   - aws
   - cloud
@@ -15,7 +16,7 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image:
+image: /assets/notes-img/awsinfra.png
 Link: "[[]]"
 Link1:
 img:
@@ -297,3 +298,13 @@ aws ssm get-parameters-by-path \
 | Wavelength Zone | Inside 5G networks | Sub-5ms for mobile devices |
 | Edge Location | 400+ worldwide | CloudFront CDN and Route 53 DNS |
 | AWS Backbone | Global private fibre | Fast, private inter-region traffic |
+
+
+
+##  You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.comMhdomer)  
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
+- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
