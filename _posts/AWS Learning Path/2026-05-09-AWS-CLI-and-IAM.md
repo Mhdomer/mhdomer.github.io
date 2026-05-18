@@ -16,7 +16,7 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image:
+image: https://miro.medium.com/v2/resize:fit:1400/0*1TVfE-HlBlwX0hHs.png
 Link: "[[]]"
 Link1:
 img:
