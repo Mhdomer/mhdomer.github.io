@@ -54,7 +54,7 @@ TShark can provide colourised outputs to help analysts speed up the analysis and
 ```shell-session
 user@ubuntu$ tshark -r colour.pcap --color 
 ```
-![l](/assets/Pasted%20image%2020260304181359.png)
+![l](/assets/thm/Pasted%20image%2020260304181359.png)
 
 ### Statistics | Protocol Hierarchy
 
