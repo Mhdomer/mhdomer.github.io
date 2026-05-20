@@ -17,13 +17,13 @@ image:
 Link: "[[]]"
 ---
 
-# ## 📌 Overview
+# ##  Overview
 
 this is a node to point out to the other nodes in the same folder 
 
 ---
 
-## 🛠️ Main Content
+##  Main Content
 
 Start writing your content here.
 
