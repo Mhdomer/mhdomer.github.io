@@ -4,6 +4,7 @@ title: AWS VPC Architecture Patterns — Inbound, Outbound, and Inspection VPCs
 date: 2026-05-21T10:00:00
 categories:
   - AWS Learning Path
+  - Networking
 tags:
   - aws
   - vpc
@@ -16,7 +17,7 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image:
+image: /assets/notes-img/vpinout.png
 Link: "[[]]"
 Link1:
 img:
@@ -28,6 +29,7 @@ A single VPC works fine for a small application.
 As you grow — multiple teams, multiple environments, compliance requirements, third-party security appliances — you need to think about how VPCs relate to each other and how traffic flows between them.
 
 Enterprise AWS accounts typically split networking into **dedicated VPCs by function**:
+
 
 | VPC | Purpose |
 |---|---|
@@ -335,3 +337,18 @@ aws ec2 describe-vpc-endpoint-services --output table
 # Flow logs (to see traffic in inspection VPC)
 aws ec2 describe-flow-logs --output table
 ```
+
+
+
+
+
+
+
+
+##  You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.comMhdomer)  
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
+- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
