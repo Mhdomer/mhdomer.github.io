@@ -17,7 +17,7 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image:
+image: /assets/notes-img/RDSnarora.png
 Link: "[[]]"
 Link1:
 img:

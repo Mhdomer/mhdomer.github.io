@@ -4,7 +4,7 @@ title: SharkChallengeI
 date: 2026-03-02T12:12:00
 categories:
   - TryHackMe
-  - Labs 
+  - writeUps 
 tags:
   - thm
   - network

@@ -15,7 +15,7 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image: https://cdn.corenexis.com/files/c/9945582720.png
+image: /assets/mindcraft/phase2.png
 Link: "[[2026-03-24-Introduction-about-Application]]"
 Link1:
 ---
