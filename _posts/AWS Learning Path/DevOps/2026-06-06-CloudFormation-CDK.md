@@ -18,7 +18,7 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image:
+image: /assets/notes-img/cloudformation.png
 Link: "[[]]"
 Link1:
 img:

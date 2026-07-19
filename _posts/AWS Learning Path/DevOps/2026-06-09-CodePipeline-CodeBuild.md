@@ -19,7 +19,7 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image:
+image: /assets/notes-img/codepipeline.png
 Link: "[[]]"
 Link1:
 img:
@@ -111,7 +111,7 @@ aws codepipeline list-pipelines --output table
             "Owner": "myorg",
             "Repo": "web-app",
             "Branch": "main",
-            "OAuthToken": "{{resolve:secretsmanager:github-token}}"
+            "OAuthToken": "{% raw %}{{resolve:secretsmanager:github-token}}{% endraw %}"
           },
           "outputArtifacts": [{"name": "SourceCode"}]
         }]
