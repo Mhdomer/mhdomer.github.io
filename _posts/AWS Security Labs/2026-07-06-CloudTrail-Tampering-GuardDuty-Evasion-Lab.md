@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab — CloudTrail Tampering and GuardDuty Evasion: How Attackers Go Dark"
+title: "Lab CloudTrail Tampering and GuardDuty Evasion: How Attackers Go Dark"
 date: 2026-07-06T10:00:00
 categories:
   - AWS Security Labs
@@ -16,12 +16,12 @@ tags:
   - cloud-attack
   - lab
 author: muhammed
-description: A hands-on lab demonstrating how an attacker with an over-privileged "on-call" role disables CloudTrail, suspends GuardDuty, and deletes CloudWatch log groups to operate undetected — and how organization trails, delegated GuardDuty administration, S3 Object Lock, and SCPs make logging survive even a fully compromised member account.
+description: A hands-on lab demonstrating how an attacker with an over-privileged "on-call" role disables CloudTrail, suspends GuardDuty, and deletes CloudWatch log groups to operate undetected  and how organization trails, delegated GuardDuty administration, S3 Object Lock, and SCPs make logging survive even a fully compromised member account.
 toc: true
 pin: false
 math: false
 mermaid: false
-image:
+image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fpersol-serverworks.co.jp%2Fblog%2FCloudTrail.png&f=1&nofb=1&ipt=d5ad7480aa9c8223793334ec2a929c22e65d1f849ad968d87b7da1050662e20f
 ---
 
 ## Objective
@@ -38,9 +38,9 @@ Then show what stops this from working: organization trails, delegated GuardDuty
 
 Every previous lab in this series ended with a line like "GuardDuty finding: `X`." That framing quietly assumes GuardDuty is still running, and CloudTrail is still recording, by the time the attacker does something worth detecting.
 
-Real intrusions don't work that way. Once an attacker lands credentials with enough reach — often exactly the "just in case" permissions given to on-call and platform teams — the first move isn't the noisy one. It's turning off the lights: stop the trail, suspend the detector, delete the flow logs. Only after that does the attacker create backdoor users, exfiltrate data, or pivot across accounts, because now none of it gets written down.
+Real intrusions don't work that way. Once an attacker lands credentials with enough reach  often exactly the "just in case" permissions given to on-call and platform teams the first move isn't the noisy one. It's turning off the lights: stop the trail, suspend the detector, delete the flow logs. Only after that does the attacker create backdoor users, exfiltrate data, or pivot across accounts, because now none of it gets written down.
 
-This lab is deliberately not about a flashy technical exploit. It's about a handful of unglamorous API calls — `StopLogging`, `DeleteTrail`, `UpdateDetector`, `DeleteLogGroup` — that are far more dangerous than most of the "attacks" in this series, because they don't just cause damage, they erase the ability to know damage happened at all.
+This lab is deliberately not about a flashy technical exploit. It's about a handful of unglamorous API calls  `StopLogging`, `DeleteTrail`, `UpdateDetector`, `DeleteLogGroup`  that are far more dangerous than most of the "attacks" in this series, because they don't just cause damage, they erase the ability to know damage happened at all.
 
 ---
 
@@ -185,9 +185,9 @@ aws iam create-role --role-name sre-oncall-role --assume-role-policy-document fi
 aws iam put-role-policy --role-name sre-oncall-role --policy-name sre-oncall-inline --policy-document file://sre-oncall-policy.json
 ```
 
-> 📸 **SCREENSHOT:** IAM console showing `sre-oncall-role`'s inline policy with `cloudtrail:DeleteTrail`, `guardduty:DeleteDetector`, and `logs:DeleteLogGroup` all granted account-wide
+IAM console showing `sre-oncall-role`'s inline policy with `cloudtrail:DeleteTrail`, `guardduty:DeleteDetector`, and `logs:DeleteLogGroup` all granted account-wide
 
-Assume the role to simulate the attacker who has obtained these credentials — through phishing, a leaked access key, or any of the credential-theft paths covered in earlier labs in this series.
+Assume the role to simulate the attacker who has obtained these credentials  through phishing, a leaked access key, or any of the credential-theft paths covered in earlier labs in this series.
 
 ---
 
@@ -206,7 +206,7 @@ aws logs describe-log-groups
 aws ec2 describe-flow-logs
 ```
 
-This reconnaissance is itself logged as `LookupEvents` / read-only management events — normal and easy to miss among the noise of legitimate `Describe*`/`Get*`/`List*` calls that happen constantly in any account. It's the destructive calls that follow that matter.
+This reconnaissance is itself logged as `LookupEvents` / read-only management events  normal and easy to miss among the noise of legitimate `Describe*`/`Get*`/`List*` calls that happen constantly in any account. It's the destructive calls that follow that matter.
 
 ---
 
@@ -229,7 +229,7 @@ aws cloudtrail delete-trail --name management-trail
 
 > 📸 **SCREENSHOT:** `aws cloudtrail get-trail-status` showing `"IsLogging": false` immediately after `stop-logging`
 
-Both `StopLogging` and `DeleteTrail` are themselves CloudTrail management events — but only up until the exact moment logging actually stops. A single-account trail can record its own shutdown call, and then nothing after. This is the core limitation of relying on one trail as your only source of truth: it is a security control the same identity that owns the account can always turn off.
+Both `StopLogging` and `DeleteTrail` are themselves CloudTrail management events  but only up until the exact moment logging actually stops. A single-account trail can record its own shutdown call, and then nothing after. This is the core limitation of relying on one trail as your only source of truth: it is a security control the same identity that owns the account can always turn off.
 
 ---
 
@@ -253,7 +253,7 @@ aws guardduty archive-findings \
   --finding-ids finding-id-1 finding-id-2
 ```
 
-> 📸 **SCREENSHOT:** GuardDuty console showing the detector toggled to disabled, or a batch of findings moved to "Archived"
+ GuardDuty console showing the detector toggled to disabled, or a batch of findings moved to "Archived"
 
 **GuardDuty finding (if it still catches this):**
 
@@ -261,7 +261,7 @@ aws guardduty archive-findings \
 Stealth:IAMUser/CloudTrailLoggingDisabled
 ```
 
-This finding type exists specifically for this scenario — GuardDuty watching for its own logging source being turned off. The catch: it depends on the detector itself still being alive and able to process the `StopLogging` event before (or if) it's also disabled. In a single-account setup where one identity controls both CloudTrail and GuardDuty, there's a real race — whichever gets disabled first may prevent the other's tampering from ever being flagged.
+This finding type exists specifically for this scenario  GuardDuty watching for its own logging source being turned off. The catch: it depends on the detector itself still being alive and able to process the `StopLogging` event before (or if) it's also disabled. In a single-account setup where one identity controls both CloudTrail and GuardDuty, there's a real race  whichever gets disabled first may prevent the other's tampering from ever being flagged.
 
 ---
 
@@ -276,17 +276,17 @@ FLOW_LOG_ID=$(aws ec2 describe-flow-logs --query 'FlowLogs[0].FlowLogId' --outpu
 aws ec2 delete-flow-logs --flow-log-ids $FLOW_LOG_ID
 ```
 
-From here, the attacker can create a backdoor IAM user with `AdministratorAccess`, pivot across the account, or exfiltrate whatever they want — and in this account, none of it has a CloudTrail record, a GuardDuty finding, or a flow log entry. This is the point of the lab: everything after Phase 4 is invisible to a defender relying only on this account's local controls.
+From here, the attacker can create a backdoor IAM user with `AdministratorAccess`, pivot across the account, or exfiltrate whatever they want  and in this account, none of it has a CloudTrail record, a GuardDuty finding, or a flow log entry. This is the point of the lab: everything after Phase 4 is invisible to a defender relying only on this account's local controls.
 
 ---
 
 ## Phase 5 — Detection Despite the Evasion Attempt
 
-This is where the lab flips from attacker to defender. None of Phases 2–4 should have been possible without tripping an alarm — if the account had been set up correctly beforehand.
+This is where the lab flips from attacker to defender. None of Phases 2–4 should have been possible without tripping an alarm  if the account had been set up correctly beforehand.
 
 ### Fix 1 — Organization CloudTrail Trail
 
-An organization trail is created once, from the AWS Organizations management account (or a delegated administrator), and applies to every member account. Member-account principals — including admins — cannot stop, modify, or delete it.
+An organization trail is created once, from the AWS Organizations management account (or a delegated administrator), and applies to every member account. Member-account principals including admins  cannot stop, modify, or delete it.
 
 ```bash
 # Run from the Organizations management account
@@ -299,7 +299,7 @@ aws cloudtrail create-trail \
 aws cloudtrail start-logging --name org-management-trail
 ```
 
-`sre-oncall-role` in the member account has no API surface that can touch `org-management-trail` at all — it isn't visible via `describe-trails` run from inside the member account in the way that would let it be altered. This alone converts the attack in Phases 2–3 from "logging destroyed" to "local trail destroyed, org trail intact."
+`sre-oncall-role` in the member account has no API surface that can touch `org-management-trail` at all  it isn't visible via `describe-trails` run from inside the member account in the way that would let it be altered. This alone converts the attack in Phases 2–3 from "logging destroyed" to "local trail destroyed, org trail intact."
 
 ### Fix 2 — Delegated GuardDuty Administrator
 
@@ -332,11 +332,11 @@ aws s3api put-object-lock-configuration \
 aws cloudtrail update-trail --name org-management-trail --enable-log-file-validation
 ```
 
-Log file validation lets you cryptographically prove after the fact whether any delivered log file was altered or deleted — turning "did the attacker touch the logs" from a guess into a verifiable check.
+Log file validation lets you cryptographically prove after the fact whether any delivered log file was altered or deleted  turning "did the attacker touch the logs" from a guess into a verifiable check.
 
 ### Fix 4 — Service Control Policy Denying Destructive Logging Actions
 
-The single most important fix: an SCP applied at the OU level, so it binds every account in scope regardless of what IAM policies exist inside them — including accounts an attacker fully compromises.
+The single most important fix: an SCP applied at the OU level, so it binds every account in scope regardless of what IAM policies exist inside them  including accounts an attacker fully compromises.
 
 ```json
 {
@@ -377,7 +377,7 @@ aws organizations attach-policy \
   --target-id ou-example-workloads
 ```
 
-This is the control that actually matters here: an SCP is enforced at the Organizations level and evaluated before any IAM policy in the account. Even a fully compromised account admin — or the root user — cannot perform a denied action unless they're the single named break-glass role, which should itself require a separate approval workflow to assume.
+This is the control that actually matters here: an SCP is enforced at the Organizations level and evaluated before any IAM policy in the account. Even a fully compromised account admin or the root user  cannot perform a denied action unless they're the single named break-glass role, which should itself require a separate approval workflow to assume.
 
 ### Fix 5 — Real-Time Alerting on the Tampering Itself
 
@@ -404,9 +404,9 @@ aws events put-targets \
   --targets "Id"="1","Arn"="arn:aws:sns:us-east-1:123456789012:security-alerts"
 ```
 
-> 📸 **SCREENSHOT:** EventBridge rule `detect-logging-tampering` firing and an SNS notification landing within seconds of the `StopLogging` call
+ EventBridge rule `detect-logging-tampering` firing and an SNS notification landing within seconds of the `StopLogging` call
 
-Wiring this to page the security team directly — not just log a finding — closes the race condition from Phase 3: even if GuardDuty itself gets disabled a moment later, the EventBridge rule has already fired from the initial CloudTrail management event, because EventBridge processes the org trail independent of any single account's detector state.
+Wiring this to page the security team directly  not just log a finding closes the race condition from Phase 3: even if GuardDuty itself gets disabled a moment later, the EventBridge rule has already fired from the initial CloudTrail management event, because EventBridge processes the org trail independent of any single account's detector state.
 
 ### Fix 6 — Continuous Compliance Checks
 
@@ -426,16 +426,16 @@ AWS Config continuously re-checks these conditions independent of any single eve
 
 ### Fix 7 — Stop Granting Standing "Just in Case" Logging Permissions
 
-The root cause in this lab wasn't a technical exploit — it was `sre-oncall-role` having `cloudtrail:DeleteTrail` and `guardduty:DeleteDetector` as standing permissions for a role used daily. Move break-glass logging/security administration to IAM Identity Center permission sets with short session durations and a separate approval step, rather than baking it into an always-on operational role.
+The root cause in this lab wasn't a technical exploit  it was `sre-oncall-role` having `cloudtrail:DeleteTrail` and `guardduty:DeleteDetector` as standing permissions for a role used daily. Move break-glass logging/security administration to IAM Identity Center permission sets with short session durations and a separate approval step, rather than baking it into an always-on operational role.
 
 ---
 
 ## Key Takeaways
 
-- Disabling logging and detection is usually an attacker's *first* move after gaining sufficient access, not a late-stage cleanup step — alerting only on "suspicious activity" and not on security-control changes misses the highest-signal event in the whole intrusion
-- A single-account CloudTrail trail can record its own shutdown call, but only up to that exact moment — after that, silence. Resilience requires a trail the compromised account cannot control at all
+- Disabling logging and detection is usually an attacker's *first* move after gaining sufficient access, not a late-stage cleanup step  alerting only on "suspicious activity" and not on security-control changes misses the highest-signal event in the whole intrusion
+- A single-account CloudTrail trail can record its own shutdown call, but only up to that exact moment  after that, silence. Resilience requires a trail the compromised account cannot control at all
 - GuardDuty's `Stealth:IAMUser/CloudTrailLoggingDisabled` finding exists for exactly this scenario, but it's only reliable when GuardDuty itself is organizationally delegated and not dependent on the same account being attacked
-- SCPs are the one control that survives compromise of a member account's own admin or root user — IAM policies inside that account are not a security boundary against that account's own identities
+- SCPs are the one control that survives compromise of a member account's own admin or root user  IAM policies inside that account are not a security boundary against that account's own identities
 - "Just in case" standing permissions for on-call/ops roles are themselves a liability; the ability to destroy evidence should require the same rigor as the incident it's meant to respond to
 
 ---

