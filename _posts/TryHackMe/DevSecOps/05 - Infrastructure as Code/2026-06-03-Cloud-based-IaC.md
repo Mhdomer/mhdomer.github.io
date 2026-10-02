@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "Cloud-based IaC - Terraform, AWS CloudFormation, and Secure IaC Practices"
 date: 2026-06-03T18:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -21,7 +21,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/0719ee1c2ee2d370c4feaf82cbc859e7.png
 ---
 
 ## Overview

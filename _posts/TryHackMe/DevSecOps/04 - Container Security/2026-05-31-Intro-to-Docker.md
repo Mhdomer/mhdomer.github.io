@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "Intro to Docker - Image Lifecycle, Dockerfiles, Compose Orchestration, and Socket Architecture"
 date: 2026-05-31T16:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -20,7 +20,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/66704dd0e54a1f39bff7b1a1-1735574684594
 ---
 
 ## Overview

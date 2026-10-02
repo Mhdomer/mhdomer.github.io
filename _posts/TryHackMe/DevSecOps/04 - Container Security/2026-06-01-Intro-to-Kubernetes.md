@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "Intro to Kubernetes - Cluster Architecture, Declarative YAML, Kubectl Operations, and RBAC Hardening"
 date: 2026-06-01T10:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -20,7 +20,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/c0f390dc2315196fbf10ae2eddb2b2f4.png
 ---
 
 ## Overview

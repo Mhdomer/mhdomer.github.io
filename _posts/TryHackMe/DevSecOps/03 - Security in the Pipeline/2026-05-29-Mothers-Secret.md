@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "Mother's Secret - Code Review, Route State Machine Exploitation, and Path Traversal in Node.js"
 date: 2026-05-29T10:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -20,7 +20,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/2e9eabce2b052b3da2df535ff2636225.png
 ---
 
 ## Overview

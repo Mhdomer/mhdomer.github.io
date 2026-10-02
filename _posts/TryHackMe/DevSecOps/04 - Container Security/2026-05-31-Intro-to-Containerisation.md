@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "Intro to Containerisation - Docker Architecture, Linux Namespaces, and Process Isolation"
 date: 2026-05-31T10:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -19,7 +19,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/54c8b0434d00d19e6e5c301f4c7bad5f.png
 ---
 
 ## Overview

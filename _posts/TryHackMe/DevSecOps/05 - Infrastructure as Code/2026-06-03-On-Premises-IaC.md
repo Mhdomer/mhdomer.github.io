@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "On-Premises IaC - Vagrant Provisioning, Ansible Automation, and Pipeline Exploitation"
 date: 2026-06-03T14:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -20,7 +20,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/c819a5a3b2300bd8d62890071643090b.png
 ---
 
 ## Overview

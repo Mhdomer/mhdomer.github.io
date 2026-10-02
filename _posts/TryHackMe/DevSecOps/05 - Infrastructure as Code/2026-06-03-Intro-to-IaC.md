@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "Intro to IaC - Declarative vs Imperative, Lifecycle, and Virtualisation Primitives"
 date: 2026-06-03T10:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -21,7 +21,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/54c07dc780df0ff984a4b47d0e506780.png
 ---
 
 ## Overview

@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "Intro to Pipeline Automation - CI/CD Architecture, Build Agent Security, and Environment Segmentation"
 date: 2026-05-19T10:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -19,7 +19,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/66704dd0e54a1f39bff7b1a1-1735574672403
 ---
 
 ## Overview

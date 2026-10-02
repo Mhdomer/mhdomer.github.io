@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "CI/CD and Build Security - Pipeline Exploitation, Build Runner Poisoning, and Environment Segregation"
 date: 2026-05-22T10:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -20,7 +20,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/49688427a6da353a664c0059639ea881.png
 ---
 
 ## Overview

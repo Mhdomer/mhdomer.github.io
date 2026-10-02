@@ -4,7 +4,7 @@ title: "Introduction to DevSecOps - Cultural Evolution, Shift-Left Security, and
 date: 2026-05-14T10:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -18,7 +18,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/00050c31a2b84443dcc58d4513939515.png
 ---
 
 ## Overview

@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "Container Vulnerabilities - Breakouts via Privileged Capabilities, Docker Sockets, Exposed TCP, and Host Namespaces"
 date: 2026-06-02T10:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -21,7 +21,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/b5ef4f6f97cdfe8717246d1ba7383717.png
 ---
 
 ## Overview

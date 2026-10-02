@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "Source Code Security - Git Internals, Credential Hygiene, and Secrets Management in CI/CD"
 date: 2026-05-20T10:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -19,7 +19,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/9840c90efb47614678e120343c0432c8.png
 ---
 
 ## Overview

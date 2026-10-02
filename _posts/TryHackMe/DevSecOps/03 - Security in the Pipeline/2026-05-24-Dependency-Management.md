@@ -1,10 +1,10 @@
-﻿---
+---
 layout: post
 title: "Dependency Management - Supply Chain Attacks, S3 Skimmers, and Python Dependency Confusion"
 date: 2026-05-24T10:00:00+03:00
 categories:
   - TryHackMe
-  - DevSecOps
+  - DevSecOps Learning Path
 tags:
   - tryhackme
   - devsecops
@@ -21,7 +21,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
-image:
+image: https://cdn-images.tryhackme.com/room-icons/317702e9ed406144f96699d72b09ef9c.png
 ---
 
 ## Overview
