@@ -1,4 +1,4 @@
-﻿---
+---
 layout: post
 title: "Introduction to DevSecOps - Cultural Evolution, Shift-Left Security, and Pipeline Shared Responsibility"
 date: 2026-05-14T10:00:00+03:00
@@ -67,7 +67,7 @@ When bugs or security flaws were discovered during testing or after deployment, 
 - Security teams rejected releases days before deployment deadlines, forcing expensive code rewrites and severe backlog accumulation.
 
 ### The Agile Methodology (2001)
-To break the rigid schedules of Waterfall, the [Agile Manifesto](http://agilemanifesto.org/) was established around four foundational values:
+To break the rigid schedules of Waterfall, the [Agile Manifesto](https://agilemanifesto.org/) was established around four foundational values:
 1. **Individuals and interactions** over processes and tools.
 2. **Working software** over comprehensive documentation.
 3. **Customer collaboration** over contract negotiation.
