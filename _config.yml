@@ -219,6 +219,9 @@ exclude:
   - purgecss.js
   - "*.config.js"
   - "package*.json"
+  - linkedin
+  - INTERN LI
+  - Project Plans
 
 jekyll-archives:
   enabled: [categories, tags]

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS CloudTrail and AWS Config — Audit Logging and Compliance
+title: AWS CloudTrail and AWS Config - Audit Logging and Compliance
 date: 2026-06-13T10:00:00
 categories:
   - SCS-C03 Cloud Security Speciality
@@ -14,7 +14,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 1 — CloudTrail organisation trails, log integrity validation, Athena analysis, Config rules, conformance packs, and automated remediation
+description: SCS-C03 Domain 1 - CloudTrail organisation trails, log integrity validation, Athena analysis, Config rules, conformance packs, and automated remediation
 toc: true
 pin: false
 math: false
@@ -27,7 +27,7 @@ img:
 
 ## AWS CloudTrail
 
-**CloudTrail** records every API call made in your AWS account — who did what, when, from where.
+**CloudTrail** records every API call made in your AWS account - who did what, when, from where.
 It is the primary audit trail for AWS.
 Every action in the console, CLI, SDK, or any AWS service that calls another AWS service creates a CloudTrail event.
 
@@ -38,8 +38,8 @@ Every action in the console, CLI, SDK, or any AWS service that calls another AWS
 | Type | Scope | Use Case |
 |---|---|---|
 | **Single-region trail** | One region only | Legacy, avoid |
-| **Multi-region trail** | All current and future regions | Standard — always use this |
-| **Organisation trail** | All accounts in an AWS Organization | Security baseline — enables centralised logging |
+| **Multi-region trail** | All current and future regions | Standard - always use this |
+| **Organisation trail** | All accounts in an AWS Organization | Security baseline - enables centralised logging |
 
 ### Organisation Trail
 
@@ -74,9 +74,9 @@ aws cloudtrail start-logging --name org-audit-trail
 
 | Event Type | What It Captures | Default? |
 |---|---|---|
-| **Management events** | Control plane — create, modify, delete resources | Enabled (free) |
-| **Data events** | Data plane — S3 object reads/writes, Lambda invocations, DynamoDB GetItem | Disabled (costs extra) |
-| **Insights events** | Anomalous API activity — unusual call volumes | Disabled (costs extra) |
+| **Management events** | Control plane - create, modify, delete resources | Enabled (free) |
+| **Data events** | Data plane - S3 object reads/writes, Lambda invocations, DynamoDB GetItem | Disabled (costs extra) |
+| **Insights events** | Anomalous API activity - unusual call volumes | Disabled (costs extra) |
 
 **For the exam:** Data events are critical for S3 forensics and detecting data exfiltration.
 Enable them on sensitive buckets (at minimum) or account-wide.
@@ -138,7 +138,7 @@ Enable **MFA Delete** on the bucket versioning so deletions require MFA.
 ## Querying CloudTrail with Athena
 
 CloudTrail logs are stored as JSON in S3.
-Use **Athena** to query them with SQL — far faster than searching raw JSON.
+Use **Athena** to query them with SQL - far faster than searching raw JSON.
 
 CloudTrail can automatically create an Athena table for you.
 
@@ -210,7 +210,7 @@ aws logs put-metric-filter \
 **AWS Config** records the configuration state of your AWS resources over time.
 It answers: "What did this resource look like at a specific point in time?" and "Has this resource drifted from its required configuration?"
 
-Config is complementary to CloudTrail — CloudTrail records API calls (events), Config records resource state (snapshots and history).
+Config is complementary to CloudTrail - CloudTrail records API calls (events), Config records resource state (snapshots and history).
 
 ### Config Components
 
@@ -342,7 +342,7 @@ aws configservice put-configuration-aggregator \
 
 ---
 
-## CloudTrail vs Config — Exam Distinction
+## CloudTrail vs Config: Exam Distinction
 
 | | CloudTrail | Config |
 |---|---|---|
@@ -370,3 +370,13 @@ aws configservice get-resource-config-history \
   --resource-type AWS::EC2::SecurityGroup \
   --resource-id sg-abc123
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

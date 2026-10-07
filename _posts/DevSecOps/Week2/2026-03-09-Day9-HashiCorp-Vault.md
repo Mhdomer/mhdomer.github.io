@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 2 — Day 9: HashiCorp Vault Basics"
+title: "Day 9: HashiCorp Vault - Centralized Secrets and Dynamic Tokens"
 date: 2026-03-09 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - CloudSecurity
   - DevSecOps
 author: muhammed
-description: A full walkthrough of HashiCorp Vault — architecture, secrets engines, auth methods, dynamic secrets, and hands-on usage for multi-cloud and on-prem secrets management.
+description: A full walkthrough of HashiCorp Vault - architecture, secrets engines, auth methods, dynamic secrets, and hands-on usage for multi-cloud and on-prem secrets management.
 toc: true
 pin: false
 math: false
@@ -22,7 +22,7 @@ image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.datocms-a
 
 ## Why Vault When AWS Has Secrets Manager?
 
-AWS Secrets Manager is great — but it's AWS-only. If you have:
+AWS Secrets Manager is great - but it's AWS-only. If you have:
 - Multiple cloud providers (AWS + GCP + Azure)
 - On-prem infrastructure
 - Kubernetes clusters across different environments
@@ -52,22 +52,22 @@ AWS Secrets Manager is great — but it's AWS-only. If you have:
 │                                     │
 │  ┌─────────────────────────────┐    │
 │  │         Policies            │    │
-│  │  (HCL — who can do what)    │    │
+│  │  (HCL - who can do what)    │    │
 │  └─────────────────────────────┘    │
 └─────────────────────────────────────┘
 ```
 
 **Key concepts:**
-- **Secrets Engines** — plugins that store or generate secrets (KV store, AWS credentials, database passwords, certificates)
-- **Auth Methods** — how clients authenticate to Vault (tokens, AWS IAM, Kubernetes service accounts, LDAP)
-- **Policies** — HCL documents defining what paths an authenticated client can access
-- **Leases** — all dynamic secrets have a TTL; when the lease expires, Vault revokes the secret
+- **Secrets Engines** - plugins that store or generate secrets (KV store, AWS credentials, database passwords, certificates)
+- **Auth Methods** - how clients authenticate to Vault (tokens, AWS IAM, Kubernetes service accounts, LDAP)
+- **Policies** - HCL documents defining what paths an authenticated client can access
+- **Leases** - all dynamic secrets have a TTL; when the lease expires, Vault revokes the secret
 
 ---
 
 ## Running Vault Locally (Dev Mode)
 
-Dev mode runs an in-memory Vault with a root token — perfect for learning. **Never use dev mode in production.**
+Dev mode runs an in-memory Vault with a root token - perfect for learning. **Never use dev mode in production.**
 
 ```bash
 # Install Vault (Windows)
@@ -79,9 +79,8 @@ choco install vault
 vault server -dev
 ```
 
-> `[SCREENSHOT]` — *Terminal showing vault server -dev output with the Root Token and Unseal Key printed, and the UI address (http://127.0.0.1:8200)*
 
-The terminal will print a **Root Token** — copy it. Then in a new terminal:
+The terminal will print a **Root Token** - copy it. Then in a new terminal:
 
 ```bash
 # Set environment variables
@@ -92,7 +91,6 @@ export VAULT_TOKEN='<root-token-from-output>'
 vault status
 ```
 
-> `[SCREENSHOT]` — *Terminal showing vault status output with Sealed: false, Storage Type: inmem, HA Enabled: false*
 
 ---
 
@@ -100,9 +98,9 @@ vault status
 
 ### KV (Key-Value) Secrets Engine
 
-The simplest engine — stores static key-value pairs. Two versions:
-- **KV v1** — no versioning
-- **KV v2** — keeps a history of previous versions (default in dev mode)
+The simplest engine - stores static key-value pairs. Two versions:
+- **KV v1** - no versioning
+- **KV v2** - keeps a history of previous versions (default in dev mode)
 
 ```bash
 # Enable KV v2 at path "secret/"
@@ -118,7 +116,6 @@ vault kv get secret/myapp/db
 vault kv get -field=password secret/myapp/db
 ```
 
-> `[SCREENSHOT]` — *Terminal showing vault kv get output returning the key-value pairs for secret/myapp/db with metadata (version, created_time)*
 
 **KV v2 versioning:**
 ```bash
@@ -167,7 +164,6 @@ vault write aws/roles/s3-reader \
 vault read aws/creds/s3-reader
 ```
 
-> `[SCREENSHOT]` — *Terminal showing vault read aws/creds/s3-reader output with access_key, secret_key, and lease_duration (e.g. 768h)*
 
 The generated IAM user exists only for the lease duration. When the lease expires (or you revoke it), the IAM user is deleted automatically. No long-lived keys anywhere.
 
@@ -175,7 +171,7 @@ The generated IAM user exists only for the lease duration. When the lease expire
 
 ### Database Secrets Engine (Dynamic DB Credentials)
 
-Same concept for databases — Vault generates a unique username/password per request, valid for a limited time.
+Same concept for databases - Vault generates a unique username/password per request, valid for a limited time.
 
 ```bash
 # Enable database secrets engine
@@ -200,7 +196,6 @@ vault write database/roles/readonly \
 vault read database/creds/readonly
 ```
 
-> `[SCREENSHOT]` — *Terminal showing vault read database/creds/readonly output with a generated username like "v-readonly-abc123" and a random password with lease_duration 1h*
 
 Every application gets a unique DB user. If one app is compromised, its credentials expire within the hour and never worked for anything else.
 
@@ -222,7 +217,7 @@ vault token revoke <token>
 
 ### AWS IAM Auth
 
-Applications running on EC2, ECS, or Lambda authenticate using their IAM role — no token pre-seeding needed.
+Applications running on EC2, ECS, or Lambda authenticate using their IAM role - no token pre-seeding needed.
 
 ```bash
 # Enable AWS auth
@@ -241,7 +236,7 @@ vault write auth/aws/role/my-ec2-role \
   ttl=1h
 ```
 
-The EC2 instance calls Vault using its IAM role identity — Vault verifies with AWS that the role is who it claims to be. No static Vault token ever touches the instance.
+The EC2 instance calls Vault using its IAM role identity - Vault verifies with AWS that the role is who it claims to be. No static Vault token ever touches the instance.
 
 ---
 
@@ -250,7 +245,7 @@ The EC2 instance calls Vault using its IAM role identity — Vault verifies with
 Policies are HCL documents that define what a client can do.
 
 ```hcl
-# read-secrets.hcl — allow reading from secret/myapp/
+# read-secrets.hcl: allow reading from secret/myapp/
 path "secret/data/myapp/*" {
   capabilities = ["read", "list"]
 }
@@ -272,7 +267,6 @@ vault policy list
 vault policy read read-secrets
 ```
 
-> `[SCREENSHOT]` — *Terminal showing vault policy list output and vault policy read showing the HCL content of the read-secrets policy*
 
 **Capabilities:**
 | Capability | HTTP method | Description |
@@ -282,7 +276,7 @@ vault policy read read-secrets
 | `update` | POST | Update existing |
 | `delete` | DELETE | Delete |
 | `list` | LIST | List keys |
-| `deny` | — | Explicit deny, overrides everything |
+| `deny` | - | Explicit deny, overrides everything |
 
 ---
 
@@ -318,11 +312,10 @@ DB_PASS={{ with secret "secret/data/myapp/db" }}{{ .Data.data.password }}{{ end 
 ```
 {% endraw %}
 
-> `[SCREENSHOT]` — *Terminal showing vault agent starting up, authenticating via AWS IAM auth, and writing rendered templates to the destination file*
 
 ---
 
-## Lab — Run Vault in Dev Mode
+## Lab: Run Vault in Dev Mode
 
 **Objective:** Start Vault locally, store a secret, and retrieve it via CLI.
 
@@ -342,11 +335,9 @@ vault kv put secret/lab/apikey \
 vault kv get secret/lab/apikey
 ```
 
-> `[SCREENSHOT]` — *Terminal showing the vault kv get output with the service and token fields displayed*
 
-5. Open the Vault UI at `http://127.0.0.1:8200` — log in with the root token
+5. Open the Vault UI at `http://127.0.0.1:8200` - log in with the root token
 
-> `[SCREENSHOT]` — *Vault UI showing the secrets browser with the secret/lab/apikey secret visible and its key-value pairs*
 
 6. Write a second version:
 
@@ -360,17 +351,16 @@ vault kv put secret/lab/apikey token="ghp_updatedtoken456"
 vault kv get -version=1 secret/lab/apikey
 ```
 
-> `[SCREENSHOT]` — *Terminal showing vault kv get -version=1 returning the original token value from version 1*
 
 ---
 
 ## Key Takeaways
 
-- Vault is cloud-agnostic — use it when you need multi-cloud or vendor-independent secrets management
-- Dynamic secrets are the key differentiator — credentials that auto-expire reduce breach impact dramatically
-- Auth methods tie Vault to your existing identity systems — AWS IAM, Kubernetes, LDAP
-- Vault Agent removes the secret-zero problem — applications never need a static token
-- Dev mode is for learning only — production Vault needs HA, storage backend, and TLS
+- Vault is cloud-agnostic - use it when you need multi-cloud or vendor-independent secrets management
+- Dynamic secrets are the key differentiator - credentials that auto-expire reduce breach impact dramatically
+- Auth methods tie Vault to your existing identity systems - AWS IAM, Kubernetes, LDAP
+- Vault Agent removes the secret-zero problem - applications never need a static token
+- Dev mode is for learning only - production Vault needs HA, storage backend, and TLS
 
 ---
 
@@ -390,7 +380,6 @@ vault kv get -version=1 secret/lab/apikey
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

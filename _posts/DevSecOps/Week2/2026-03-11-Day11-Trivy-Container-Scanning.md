@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 2 — Day 11: Container Image Scanning with Trivy"
+title: "Day 11: Container Scanning with Trivy - Finding CVEs Before Deploy"
 date: 2026-03-11 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - DevSecOps
   - CI/CD
 author: muhammed
-description: A full walkthrough of Trivy — scanning container images, filesystems, Git repos, and IaC files for vulnerabilities and misconfigurations, plus integrating it into GitHub Actions.
+description: A full walkthrough of Trivy - scanning container images, filesystems, Git repos, and IaC files for vulnerabilities and misconfigurations, plus integrating it into GitHub Actions.
 toc: true
 pin: false
 math: false
@@ -59,7 +59,6 @@ trivy --version
 trivy image nginx:latest
 ```
 
-> `[SCREENSHOT]` — *Terminal showing trivy image nginx:latest output — a table with columns: Library, Vulnerability ID, Severity, Installed Version, Fixed Version, Title*
 
 Trivy scans:
 1. The OS packages (apt/apk/yum)
@@ -78,14 +77,13 @@ trivy image --severity CRITICAL,HIGH nginx:latest
 trivy image --severity CRITICAL nginx:latest
 ```
 
-> `[SCREENSHOT]` — *Terminal showing filtered output with only CRITICAL and HIGH rows, making the output much more manageable*
 
 ---
 
 ### Failing CI on Critical Findings
 
 ```bash
-# Exit code 1 if any CRITICAL CVE is found — use this in CI to block the pipeline
+# Exit code 1 if any CRITICAL CVE is found: use this in CI to block the pipeline
 trivy image --severity CRITICAL --exit-code 1 myapp:latest
 ```
 
@@ -99,7 +97,7 @@ If the scan finds a Critical CVE, the command exits with code 1, failing the pip
 trivy image --platform linux/amd64 myapp:latest
 ```
 
-Important when building multi-arch images on an ARM Mac — scan the architecture that will actually run in production.
+Important when building multi-arch images on an ARM Mac - scan the architecture that will actually run in production.
 
 ---
 
@@ -116,7 +114,6 @@ trivy image --format sarif --output results.sarif nginx:latest
 trivy image --format table nginx:latest
 ```
 
-> `[SCREENSHOT]` — *Terminal showing trivy image --format json output piped through jq showing the structured vulnerability data*
 
 ---
 
@@ -131,7 +128,6 @@ trivy fs .
 # This picks up: package-lock.json, requirements.txt, Gemfile.lock, go.sum, etc.
 ```
 
-> `[SCREENSHOT]` — *Terminal showing trivy fs . output scanning a Node.js project directory and finding CVEs in node_modules packages*
 
 ### Scan a Git Repository
 
@@ -143,7 +139,6 @@ trivy repo https://github.com/yourusername/yourrepo
 trivy repo --scanners vuln,secret https://github.com/yourusername/yourrepo
 ```
 
-> `[SCREENSHOT]` — *Terminal showing trivy repo scanning a GitHub repo URL and listing found vulnerabilities from the dependency files*
 
 ---
 
@@ -162,14 +157,12 @@ trivy config ./terraform/
 trivy config k8s-deployment.yaml
 ```
 
-> `[SCREENSHOT]` — *Terminal showing trivy config Dockerfile output listing misconfigurations like "Specify at least 1 USER command" and "Do not use sudo" with their severity levels*
 
 ```bash
 # Scan your MindCraft Terraform code
 trivy config ./terraform/ --severity MEDIUM,HIGH,CRITICAL
 ```
 
-> `[SCREENSHOT]` — *Terminal showing trivy config scanning the Terraform directory and finding misconfigurations like open security group rules or unencrypted S3 buckets*
 
 ---
 
@@ -181,7 +174,6 @@ Trivy can scan for hardcoded secrets (API keys, passwords, tokens) in your codeb
 trivy fs --scanners secret .
 ```
 
-> `[SCREENSHOT]` — *Terminal showing trivy fs --scanners secret finding a hardcoded AWS access key in a config file, with the file path and line number shown*
 
 Trivy detects secrets like:
 - AWS access keys
@@ -218,7 +210,7 @@ Create a `.trivyignore` file in your project to suppress known false positives o
 ```
 # .trivyignore
 
-# Accepted risk — no fix available, low exploitability in our context
+# Accepted risk: no fix available, low exploitability in our context
 CVE-2023-12345
 
 # This CVE is in a test-only dependency, not in production
@@ -229,7 +221,6 @@ CVE-2023-67890
 trivy image --ignorefile .trivyignore myapp:latest
 ```
 
-> `[SCREENSHOT]` — *Terminal showing trivy image with --ignorefile applied, and the previously shown CVE now absent from the output with a note "1 vulnerability suppressed by .trivyignore"*
 
 ---
 
@@ -273,11 +264,9 @@ jobs:
           sarif_file: trivy-results.sarif
 ```
 
-> `[SCREENSHOT]` — *GitHub Actions run showing the Trivy scan step completing — either green (no critical CVEs) or red with the CVEs listed in the step output*
 
 The SARIF upload makes findings appear in the **GitHub Security tab → Code scanning alerts**.
 
-> `[SCREENSHOT]` — *GitHub repository → Security tab → Code scanning showing Trivy findings listed with severity badges and the affected file/package*
 
 ---
 
@@ -315,7 +304,7 @@ jobs:
 
 ---
 
-## Lab — Scan a Public Image and Fix It
+## Lab: Scan a Public Image and Fix It
 
 **Objective:** Scan an old image, understand the findings, update the base image, re-scan.
 
@@ -324,7 +313,6 @@ jobs:
 trivy image --severity CRITICAL,HIGH python:3.9
 ```
 
-> `[SCREENSHOT]` — *Terminal showing trivy image python:3.9 output with multiple CRITICAL and HIGH CVEs listed*
 
 2. Count the Critical findings:
 ```bash
@@ -336,19 +324,18 @@ trivy image --severity CRITICAL --format json python:3.9 | jq '.Results[].Vulner
 trivy image --severity CRITICAL,HIGH python:3.12-slim
 ```
 
-> `[SCREENSHOT]` — *Terminal showing trivy image python:3.12-slim with significantly fewer or zero CRITICAL findings — demonstrating the impact of keeping the base image updated*
 
 4. Update your Dockerfile `FROM` line and rebuild
-5. Re-scan your built image — verify CVE count dropped
+5. Re-scan your built image - verify CVE count dropped
 
 ---
 
 ## Key Takeaways
 
-- Trivy is a single binary that scans images, filesystems, repos, IaC, and secrets — use it everywhere
+- Trivy is a single binary that scans images, filesystems, repos, IaC, and secrets - use it everywhere
 - Add `--exit-code 1 --severity CRITICAL` to your CI pipeline to block on critical CVEs
 - Upload SARIF results to GitHub Security tab for persistent tracking
-- Keep base images updated — most CVEs are in outdated OS packages
+- Keep base images updated - most CVEs are in outdated OS packages
 - Use `.trivyignore` for accepted risks, not as a way to silence everything
 - Scan both the image AND the IaC in the same pipeline
 
@@ -370,7 +357,6 @@ trivy image --severity CRITICAL,HIGH python:3.12-slim
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

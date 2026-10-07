@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS CloudFront — CDN, Distributions, Cache Policies, and Security
+title: AWS CloudFront - CDN, Distributions, Cache Policies, and Security
 date: 2026-05-13T10:00:00
 categories:
   - AWS Learning Path
@@ -12,7 +12,7 @@ tags:
   - networking
   - cloud-security
 author: muhammed
-description: A full walkthrough of AWS CloudFront — distributions, origins, cache behaviours, cache policies, signed URLs, WAF integration, and real-world patterns
+description: A full walkthrough of AWS CloudFront - distributions, origins, cache behaviours, cache policies, signed URLs, WAF integration, and real-world patterns
 toc: true
 pin: false
 math: false
@@ -27,11 +27,11 @@ img:
 
 **CloudFront** is AWS's Content Delivery Network (CDN).
 A CDN is a globally distributed network of servers that caches copies of your content close to end users.
-Instead of every user fetching content from your origin server (an S3 bucket or EC2 instance in one region), they receive it from the nearest CloudFront **edge location** — one of 400+ points of presence worldwide.
+Instead of every user fetching content from your origin server (an S3 bucket or EC2 instance in one region), they receive it from the nearest CloudFront **edge location** - one of 400+ points of presence worldwide.
 
 The result: lower latency, higher throughput, reduced load on your origin, and built-in DDoS protection.
 
-CloudFront is a **global service** — it has no region.
+CloudFront is a **global service** - it has no region.
 You configure it once and it operates globally across all edge locations automatically.
 
 
@@ -43,12 +43,12 @@ You configure it once and it operates globally across all edge locations automat
 
 | Term | Meaning |
 |---|---|
-| **Distribution** | A CloudFront deployment — the main configuration object |
+| **Distribution** | A CloudFront deployment - the main configuration object |
 | **Origin** | Where CloudFront fetches content from (S3, ALB, EC2, API Gateway) |
 | **Edge location** | A CloudFront server close to the user that serves cached content |
 | **Cache behaviour** | Rules for how CloudFront handles requests matching a specific path pattern |
-| **Cache hit** | Content served from CloudFront cache — no origin request made |
-| **Cache miss** | Content not in cache — CloudFront fetches from origin and caches the response |
+| **Cache hit** | Content served from CloudFront cache - no origin request made |
+| **Cache miss** | Content not in cache - CloudFront fetches from origin and caches the response |
 | **TTL** | How long content stays cached before CloudFront checks the origin again |
 | **Invalidation** | Manually removing content from the cache before TTL expires |
 
@@ -64,13 +64,13 @@ You configure it once and it operates globally across all edge locations automat
 Go to **CloudFront → Distributions → Create Distribution**.
 
 Key settings to configure:
-- **Origin domain** — your S3 bucket, ALB DNS name, or custom origin
-- **Origin access** — for S3 origins, use Origin Access Control (OAC) to keep the bucket private
-- **Default cache behaviour** — path pattern `*`, viewer protocol, allowed HTTP methods
-- **WAF** — optionally attach an AWS WAF Web ACL
-- **Price class** — which edge locations to use (all / only US+EU / only US+EU+Asia)
-- **Alternate domain names (CNAMEs)** — your custom domain (e.g. `cdn.myapp.com`)
-- **SSL certificate** — must be in `us-east-1` for CloudFront (ACM global certificate)
+- **Origin domain** - your S3 bucket, ALB DNS name, or custom origin
+- **Origin access** - for S3 origins, use Origin Access Control (OAC) to keep the bucket private
+- **Default cache behaviour** - path pattern `*`, viewer protocol, allowed HTTP methods
+- **WAF** - optionally attach an AWS WAF Web ACL
+- **Price class** - which edge locations to use (all / only US+EU / only US+EU+Asia)
+- **Alternate domain names (CNAMEs)** - your custom domain (e.g. `cdn.myapp.com`)
+- **SSL certificate** - must be in `us-east-1` for CloudFront (ACM global certificate)
 
 ### With the CLI
 
@@ -116,7 +116,7 @@ You can have multiple origins in a single distribution.
 ### S3 Origin
 
 Used for static websites, assets, media files.
-Always use **Origin Access Control (OAC)** — it keeps the S3 bucket completely private.
+Always use **Origin Access Control (OAC)** - it keeps the S3 bucket completely private.
 Only CloudFront can access the bucket; direct S3 URL access is blocked.
 
 > 📸 **SCREENSHOT:** CloudFront distribution → Origins tab → Edit origin.
@@ -142,7 +142,7 @@ Only CloudFront can access the bucket; direct S3 URL access is blocked.
 
 ### Custom Origin (ALB, EC2, API Gateway)
 
-Used for dynamic content — your backend API, web application, or any HTTP server.
+Used for dynamic content - your backend API, web application, or any HTTP server.
 
 ```
 CloudFront → ALB → EC2 instances
@@ -151,7 +151,7 @@ CloudFront → EC2 (custom origin)
 ```
 
 For custom origins, CloudFront communicates with your origin over HTTPS.
-You can restrict your ALB to only accept traffic from CloudFront IP ranges — preventing users from bypassing CloudFront and hitting your ALB directly.
+You can restrict your ALB to only accept traffic from CloudFront IP ranges - preventing users from bypassing CloudFront and hitting your ALB directly.
 
 ### Origin Groups (Failover)
 
@@ -166,13 +166,13 @@ If the primary returns a 5xx error, CloudFront automatically retries the request
 ## Cache Behaviours
 
 A **cache behaviour** maps a URL path pattern to an origin and a set of caching rules.
-Behaviours are evaluated in order — the most specific pattern wins.
+Behaviours are evaluated in order - the most specific pattern wins.
 
 ```
 /api/*         → ALB origin     (no caching, forward all headers)
 /images/*      → S3 origin      (cache for 24 hours)
 /static/*      → S3 origin      (cache for 7 days)
-*              → ALB origin     (default — cache for 1 hour)
+*              → ALB origin     (default - cache for 1 hour)
 ```
 
 > 📸 **SCREENSHOT:** CloudFront distribution → Behaviours tab.
@@ -190,9 +190,9 @@ Always use **Redirect HTTP to HTTPS** or **HTTPS Only** in production.
 
 ### Allowed HTTP Methods
 
-- `GET, HEAD` — read-only (static assets, images)
-- `GET, HEAD, OPTIONS` — CORS pre-flight
-- `GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE` — full API (dynamic content)
+- `GET, HEAD` - read-only (static assets, images)
+- `GET, HEAD, OPTIONS` - CORS pre-flight
+- `GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE` - full API (dynamic content)
 
 ---
 
@@ -268,7 +268,7 @@ Wildcard `/*` counts as one path regardless of how many files it matches.
 CloudFront serves HTTPS by default using a `*.cloudfront.net` certificate.
 For a custom domain (e.g. `cdn.myapp.com`), you need to:
 
-1. Request a certificate in **ACM (us-east-1)** — CloudFront requires certificates in us-east-1, even if your stack is in another region.
+1. Request a certificate in **ACM (us-east-1)** - CloudFront requires certificates in us-east-1, even if your stack is in another region.
 2. Attach the certificate to your distribution.
 3. Add a CNAME or Alias record in Route 53 pointing your custom domain to the CloudFront distribution domain.
 
@@ -287,7 +287,7 @@ myapp.com → Alias → d1234567890abc.cloudfront.net (for root domains)
 
 ### AWS WAF Integration
 
-Attach a **WAF Web ACL** to your distribution to filter malicious requests at the edge — before they reach your origin.
+Attach a **WAF Web ACL** to your distribution to filter malicious requests at the edge - before they reach your origin.
 WAF rules can block by IP, rate-limit, detect SQL injection, XSS, and more.
 
 > 📸 **SCREENSHOT:** CloudFront distribution → General tab → Settings section.
@@ -314,10 +314,10 @@ aws cloudfront update-distribution \
 
 ### Signed URLs and Signed Cookies
 
-Used to restrict access to private content — only users with a valid signed URL or cookie can access the content.
+Used to restrict access to private content - only users with a valid signed URL or cookie can access the content.
 
-**Signed URL** — protects a single file.
-**Signed Cookie** — protects multiple files with a single cookie.
+**Signed URL** - protects a single file.
+**Signed Cookie** - protects multiple files with a single cookie.
 
 ```
 Use signed URLs for:   individual downloads, one-off content
@@ -340,7 +340,7 @@ You can run code at CloudFront edge locations to modify requests and responses.
 | Cost | Very cheap | More expensive |
 | Use case | URL rewrites, header manipulation, redirects | Complex auth, A/B testing, dynamic personalisation |
 
-**Example CloudFront Function — redirect trailing slash:**
+**Example CloudFront Function - redirect trailing slash:**
 
 ```javascript
 function handler(event) {
@@ -357,7 +357,7 @@ function handler(event) {
 
 ## Real-World Patterns
 
-### Pattern 1 — Static website with S3 + CloudFront
+### Pattern 1: Static website with S3 + CloudFront
 
 ```
 User → CloudFront (edge cache) → S3 bucket (private, OAC)
@@ -365,11 +365,11 @@ User → CloudFront (edge cache) → S3 bucket (private, OAC)
                               Route 53 Alias record
 ```
 
-S3 bucket is completely private — no public access.
+S3 bucket is completely private - no public access.
 CloudFront is the only way to reach the content.
 HTTPS enforced. WAF attached. Custom domain via Route 53.
 
-### Pattern 2 — API + Static frontend
+### Pattern 2: API + Static frontend
 
 ```
 User → CloudFront
@@ -377,9 +377,9 @@ User → CloudFront
          └── /*      → S3 (cache 24h)
 ```
 
-One CloudFront distribution handles both the frontend (cached, S3) and the API (not cached, ALB) — no CORS issues because they share the same domain.
+One CloudFront distribution handles both the frontend (cached, S3) and the API (not cached, ALB) - no CORS issues because they share the same domain.
 
-### Pattern 3 — Multi-region failover
+### Pattern 3: Multi-region failover
 
 ```
 User → CloudFront → Origin Group
@@ -421,33 +421,10 @@ aws cloudfront delete-distribution --id EDFDVBD6EXAMPLE --if-match ETAG
 
 
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **GitHub:** [Mhdomer](https://github.comMhdomer)  
-- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

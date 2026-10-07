@@ -20,6 +20,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
+permalink: /posts/DevSecOps-Mothers-Secret/
 image: https://cdn-images.tryhackme.com/room-icons/2e9eabce2b052b3da2df535ff2636225.png
 ---
 

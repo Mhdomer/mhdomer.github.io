@@ -26,7 +26,7 @@ image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fpersol-server
 
 ## Objective
 
-Start with credentials for an over-privileged "SRE on-call" IAM role — the kind of standing access ops teams grant themselves "for incident response."
+Start with credentials for an over-privileged "SRE on-call" IAM role - the kind of standing access ops teams grant themselves "for incident response."
 Use it to disable the exact controls that would otherwise catch everything else the attacker does: CloudTrail, GuardDuty, and CloudWatch log groups holding VPC Flow Logs.
 Then show what stops this from working: organization trails, delegated GuardDuty administration, S3 Object Lock, and service control policies that survive compromise of the member account itself.
 
@@ -57,11 +57,11 @@ CloudTrail trails + GuardDuty detectors + CloudWatch log groups discovered
     │  Step 3: Suspend or delete the GuardDuty detector
     │  Step 4: Delete the CloudWatch log group holding VPC Flow Logs
     ▼
-Defender blind spot — everything from this point on is unlogged
+Defender blind spot - everything from this point on is unlogged
     │
     │  Step 5 (defender): out-of-band controls catch the tampering itself
     ▼
-Detection despite the blinding attempt — but only if those controls existed beforehand
+Detection despite the blinding attempt - but only if those controls existed beforehand
 ```
 
 ---
@@ -82,7 +82,7 @@ IAM Role: sre-oncall-role
 CloudTrail: management-trail
     Single-account trail, standard S3 bucket, no Object Lock (initial state)
 
-GuardDuty: detector in this account only — not a delegated-admin member,
+GuardDuty: detector in this account only - not a delegated-admin member,
     no organization-wide protection (initial state)
 
 CloudWatch Log Group: /aws/vpc/flow-logs
@@ -91,9 +91,9 @@ CloudWatch Log Group: /aws/vpc/flow-logs
 
 ---
 
-## Phase 0 — Setup
+## Phase 0: Setup
 
-### Step 0.1 — Create the CloudTrail Trail
+### Step 0.1: Create the CloudTrail Trail
 
 ```bash
 aws s3 mb s3://security-lab-cloudtrail-logs
@@ -131,14 +131,14 @@ aws cloudtrail create-trail \
 aws cloudtrail start-logging --name management-trail
 ```
 
-### Step 0.2 — Enable GuardDuty
+### Step 0.2: Enable GuardDuty
 
 ```bash
 aws guardduty create-detector --enable
 DETECTOR_ID=$(aws guardduty list-detectors --query 'DetectorIds[0]' --output text)
 ```
 
-### Step 0.3 — Enable VPC Flow Logs to CloudWatch
+### Step 0.3: Enable VPC Flow Logs to CloudWatch
 
 ```bash
 VPC_ID=$(aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query 'Vpcs[0].VpcId' --output text)
@@ -154,7 +154,7 @@ aws ec2 create-flow-logs \
   --deliver-logs-permission-arn arn:aws:iam::123456789012:role/flow-logs-role
 ```
 
-### Step 0.4 — Create the Over-Privileged "On-Call" Role
+### Step 0.4: Create the Over-Privileged "On-Call" Role
 
 This is the real-world misconfiguration the lab is built around: an operational role given broad logging/security permissions so it can "respond to incidents," which doubles as the ability to destroy incident response evidence.
 
@@ -191,7 +191,7 @@ Assume the role to simulate the attacker who has obtained these credentials  thr
 
 ---
 
-## Phase 1 — Enumerate Active Security Controls
+## Phase 1: Enumerate Active Security Controls
 
 Before touching anything, the attacker checks what's actually watching.
 
@@ -210,7 +210,7 @@ This reconnaissance is itself logged as `LookupEvents` / read-only management ev
 
 ---
 
-## Phase 2 — Stop and Delete CloudTrail
+## Phase 2: Stop and Delete CloudTrail
 
 ```bash
 # Suspends logging but leaves the trail resource in place
@@ -233,10 +233,10 @@ Both `StopLogging` and `DeleteTrail` are themselves CloudTrail management events
 
 ---
 
-## Phase 3 — Suspend or Delete GuardDuty
+## Phase 3: Suspend or Delete GuardDuty
 
 ```bash
-# Soft disable — keeps the detector but stops analysis
+# Soft disable: keeps the detector but stops analysis
 aws guardduty update-detector --detector-id $DETECTOR_ID --enable false
 
 # Or remove it entirely, losing configuration and finding history
@@ -265,7 +265,7 @@ This finding type exists specifically for this scenario  GuardDuty watching for 
 
 ---
 
-## Phase 4 — Delete CloudWatch Log Groups and VPC Flow Logs
+## Phase 4: Delete CloudWatch Log Groups and VPC Flow Logs
 
 With the account-level trail and detector down, the attacker cleans up the remaining record of network activity.
 
@@ -280,11 +280,11 @@ From here, the attacker can create a backdoor IAM user with `AdministratorAccess
 
 ---
 
-## Phase 5 — Detection Despite the Evasion Attempt
+## Phase 5: Detection Despite the Evasion Attempt
 
 This is where the lab flips from attacker to defender. None of Phases 2–4 should have been possible without tripping an alarm  if the account had been set up correctly beforehand.
 
-### Fix 1 — Organization CloudTrail Trail
+### Fix 1: Organization CloudTrail Trail
 
 An organization trail is created once, from the AWS Organizations management account (or a delegated administrator), and applies to every member account. Member-account principals including admins  cannot stop, modify, or delete it.
 
@@ -301,7 +301,7 @@ aws cloudtrail start-logging --name org-management-trail
 
 `sre-oncall-role` in the member account has no API surface that can touch `org-management-trail` at all  it isn't visible via `describe-trails` run from inside the member account in the way that would let it be altered. This alone converts the attack in Phases 2–3 from "logging destroyed" to "local trail destroyed, org trail intact."
 
-### Fix 2 — Delegated GuardDuty Administrator
+### Fix 2: Delegated GuardDuty Administrator
 
 ```bash
 # From the Organizations management account
@@ -315,9 +315,9 @@ aws guardduty update-organization-configuration \
 
 With a delegated administrator, member-account users can disable *their local view* of GuardDuty, but findings are still generated and retained centrally in the delegated admin account, which the compromised member account has no access to.
 
-### Fix 3 — S3 Object Lock and Log File Validation on the Archive Bucket
+### Fix 3: S3 Object Lock and Log File Validation on the Archive Bucket
 
-Store the org trail's logs in a bucket in a separate log-archive account, with Object Lock in compliance mode — not even that account's root user can delete objects before the retention period expires.
+Store the org trail's logs in a bucket in a separate log-archive account, with Object Lock in compliance mode - not even that account's root user can delete objects before the retention period expires.
 
 ```bash
 aws s3api create-bucket --bucket org-cloudtrail-logs-central --object-lock-enabled-for-bucket
@@ -334,7 +334,7 @@ aws cloudtrail update-trail --name org-management-trail --enable-log-file-valida
 
 Log file validation lets you cryptographically prove after the fact whether any delivered log file was altered or deleted  turning "did the attacker touch the logs" from a guess into a verifiable check.
 
-### Fix 4 — Service Control Policy Denying Destructive Logging Actions
+### Fix 4: Service Control Policy Denying Destructive Logging Actions
 
 The single most important fix: an SCP applied at the OU level, so it binds every account in scope regardless of what IAM policies exist inside them  including accounts an attacker fully compromises.
 
@@ -379,7 +379,7 @@ aws organizations attach-policy \
 
 This is the control that actually matters here: an SCP is enforced at the Organizations level and evaluated before any IAM policy in the account. Even a fully compromised account admin or the root user  cannot perform a denied action unless they're the single named break-glass role, which should itself require a separate approval workflow to assume.
 
-### Fix 5 — Real-Time Alerting on the Tampering Itself
+### Fix 5: Real-Time Alerting on the Tampering Itself
 
 ```bash
 cat > eventbridge-pattern.json << 'EOF'
@@ -408,7 +408,7 @@ aws events put-targets \
 
 Wiring this to page the security team directly  not just log a finding closes the race condition from Phase 3: even if GuardDuty itself gets disabled a moment later, the EventBridge rule has already fired from the initial CloudTrail management event, because EventBridge processes the org trail independent of any single account's detector state.
 
-### Fix 6 — Continuous Compliance Checks
+### Fix 6: Continuous Compliance Checks
 
 ```bash
 aws configservice put-config-rule --config-rule '{
@@ -424,7 +424,7 @@ aws configservice put-config-rule --config-rule '{
 
 AWS Config continuously re-checks these conditions independent of any single event stream, catching drift even if an EventBridge rule was somehow missed or misconfigured.
 
-### Fix 7 — Stop Granting Standing "Just in Case" Logging Permissions
+### Fix 7: Stop Granting Standing "Just in Case" Logging Permissions
 
 The root cause in this lab wasn't a technical exploit  it was `sre-oncall-role` having `cloudtrail:DeleteTrail` and `guardduty:DeleteDetector` as standing permissions for a role used daily. Move break-glass logging/security administration to IAM Identity Center permission sets with short session durations and a separate approval step, rather than baking it into an always-on operational role.
 

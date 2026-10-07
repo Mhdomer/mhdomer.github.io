@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS Organizations and Control Tower — Multi-Account Governance
+title: AWS Organizations and Control Tower - Multi-Account Governance
 date: 2026-07-03T10:00:00
 categories:
   - SCS-C03 Cloud Security Speciality
@@ -15,7 +15,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 6 — AWS Organizations OU structure, SCPs, RCPs, delegated administrators, Control Tower landing zone, Account Factory, guardrails, and root user management
+description: SCS-C03 Domain 6 - AWS Organizations OU structure, SCPs, RCPs, delegated administrators, Control Tower landing zone, Account Factory, guardrails, and root user management
 toc: true
 pin: false
 math: false
@@ -35,12 +35,12 @@ Instead of managing each account independently, you create a hierarchy of **Orga
 
 | Term | Meaning |
 |---|---|
-| **Management account** | The root account that owns the organization — cannot be restricted by SCPs |
+| **Management account** | The root account that owns the organization - cannot be restricted by SCPs |
 | **Member account** | Any other account in the org |
-| **OU (Organizational Unit)** | A container for accounts — policies applied to an OU apply to all accounts in it |
-| **Root** | The top of the organization hierarchy — policies here apply to all accounts |
-| **SCP** | Service Control Policy — restricts what member accounts can do |
-| **RCP** | Resource Control Policy — restricts what resources in member accounts can accept |
+| **OU (Organizational Unit)** | A container for accounts - policies applied to an OU apply to all accounts in it |
+| **Root** | The top of the organization hierarchy - policies here apply to all accounts |
+| **SCP** | Service Control Policy - restricts what member accounts can do |
+| **RCP** | Resource Control Policy - restricts what resources in member accounts can accept |
 | **Delegated administrator** | A member account granted admin rights for a specific AWS service |
 
 ---
@@ -72,7 +72,7 @@ Root
 ## Service Control Policies (SCPs)
 
 **SCPs** define the maximum permissions available to accounts and users within an OU.
-SCPs do not grant permissions — they restrict what the account's IAM policies can allow.
+SCPs do not grant permissions - they restrict what the account's IAM policies can allow.
 They apply to all principals in the member account (IAM users, roles, root user) **except the management account**.
 
 ```json
@@ -152,7 +152,7 @@ aws organizations list-policies-for-target \
 **RCPs** are a newer policy type that restrict what **resources** in member accounts can accept, regardless of the identity making the request.
 Where SCPs restrict what identities can do, RCPs restrict what resources can accept.
 
-Common RCP use case — prevent S3 buckets from accepting requests from outside the organization:
+Common RCP use case - prevent S3 buckets from accepting requests from outside the organization:
 
 ```json
 {
@@ -212,7 +212,7 @@ Best practice: one dedicated **security-tooling account** is the delegated admin
 
 ## Centralized Root User Management
 
-Since 2024, Organizations supports **centralized root access management** — you can disable root user credentials in all member accounts from the management account.
+Since 2024, Organizations supports **centralized root access management** - you can disable root user credentials in all member accounts from the management account.
 
 ```bash
 # Enable centralized root access management
@@ -245,13 +245,13 @@ It orchestrates Organizations, IAM Identity Center, Config, CloudTrail, and Secu
 
 ### Guardrails
 
-Guardrails are pre-packaged governance rules — either **preventive** (SCPs) or **detective** (Config rules).
+Guardrails are pre-packaged governance rules - either **preventive** (SCPs) or **detective** (Config rules).
 
 | Type | Mechanism | Examples |
 |---|---|---|
-| **Mandatory** | Always enforced — cannot disable | Disallow changes to CloudTrail, require log encryption |
+| **Mandatory** | Always enforced - cannot disable | Disallow changes to CloudTrail, require log encryption |
 | **Strongly recommended** | Optional but recommended | Enable MFA for root, enable EBS encryption |
-| **Elective** | Optional — opt-in for specific OUs | Disallow public S3 buckets, restrict EC2 instance types |
+| **Elective** | Optional - opt-in for specific OUs | Disallow public S3 buckets, restrict EC2 instance types |
 
 ```bash
 # List guardrails
@@ -271,7 +271,7 @@ aws controltower get-control-operation \
 
 ## Account Factory
 
-**Account Factory** is Control Tower's account vending machine — provision new AWS accounts with pre-configured baselines from a self-service portal or API.
+**Account Factory** is Control Tower's account vending machine - provision new AWS accounts with pre-configured baselines from a self-service portal or API.
 Accounts are automatically enrolled in the landing zone, have SSO configured, and inherit guardrails from their OU.
 
 ```bash
@@ -325,11 +325,11 @@ aws organizations attach-policy \
 
 ## Exam Key Points
 
-- **SCPs restrict, do not grant**: even `Allow *` in an SCP does not grant permissions — it just does not restrict; IAM policies still determine what is allowed
-- **Management account**: SCPs never apply to the management account — it is unrestricted
+- **SCPs restrict, do not grant**: even `Allow *` in an SCP does not grant permissions - it just does not restrict; IAM policies still determine what is allowed
+- **Management account**: SCPs never apply to the management account - it is unrestricted
 - **RCPs restrict resources**: any external principal calling an S3 API on a bucket in your org can be blocked via RCP regardless of the bucket's own bucket policy
 - **Delegated administrator**: security services (GuardDuty, Security Hub, Inspector) should be managed from a dedicated security account, not the management account
-- **Control Tower guardrails**: mandatory (always on), strongly recommended (opt-out), elective (opt-in) — preventive via SCP, detective via Config
+- **Control Tower guardrails**: mandatory (always on), strongly recommended (opt-out), elective (opt-in) - preventive via SCP, detective via Config
 - **Account Factory**: automated account provisioning with OU assignment, SSO, and baseline compliance
 - **Centralized root management**: disable root credentials in all member accounts from the management account
 
@@ -353,3 +353,13 @@ aws controltower list-landing-zones
 aws controltower list-controls --output table
 aws controltower get-landing-zone --landing-zone-identifier lz-abc123
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

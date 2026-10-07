@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS Firewall Manager and Resource Access Manager — Centralized Policy Enforcement
+title: AWS Firewall Manager and Resource Access Manager - Centralized Policy Enforcement
 date: 2026-07-05T10:00:00
 categories:
   - SCS-C03 Cloud Security Speciality
@@ -15,7 +15,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 6 — Firewall Manager policies for WAF, Shield Advanced, and Security Groups; AWS RAM for resource sharing; Service Catalog for secure deployment
+description: SCS-C03 Domain 6 - Firewall Manager policies for WAF, Shield Advanced, and Security Groups; AWS RAM for resource sharing; Service Catalog for secure deployment
 toc: true
 pin: false
 math: false
@@ -59,7 +59,7 @@ aws fms get-admin-account
 
 ---
 
-## WAF Policy — Deploy Across All Accounts
+## WAF Policy: Deploy Across All Accounts
 
 ```bash
 # Create a Firewall Manager WAF policy
@@ -154,14 +154,14 @@ aws fms put-notification-channel \
 
 ## AWS Resource Access Manager (RAM)
 
-**AWS RAM** allows you to share AWS resources across accounts within your organization — without creating copies.
+**AWS RAM** allows you to share AWS resources across accounts within your organization - without creating copies.
 Instead of duplicating resources, one account owns the resource and shares it to other accounts who use it as if they owned it.
 
 ### Resources That Can Be Shared with RAM
 
 | Resource | Common Use Case |
 |---|---|
-| **VPC subnets** | Share private subnets with workload accounts — all VMs in a central VPC |
+| **VPC subnets** | Share private subnets with workload accounts - all VMs in a central VPC |
 | **Transit Gateway** | Share TGW with spoke accounts for hub-and-spoke networking |
 | **Route 53 Resolver rules** | Share DNS forwarding rules centrally |
 | **License Manager configurations** | Track software licenses across accounts |
@@ -205,16 +205,16 @@ Benefits: centralized VPC management, shared Transit Gateway, no VPC peering nee
 
 **Service Catalog** allows organizations to create and manage portfolios of approved CloudFormation templates.
 End users (developers, teams) can self-provision pre-approved resources without needing IAM permissions to create them directly.
-This enforces compliance — teams can only deploy what the security team has pre-approved.
+This enforces compliance - teams can only deploy what the security team has pre-approved.
 
 ### Key Concepts
 
 | Term | Meaning |
 |---|---|
 | **Portfolio** | A collection of products shared with a set of users/groups |
-| **Product** | A CloudFormation template — defines what can be deployed |
+| **Product** | A CloudFormation template - defines what can be deployed |
 | **Provisioned product** | A deployed instance of a product (a live CloudFormation stack) |
-| **Launch constraint** | An IAM role used to deploy the product — users don't need direct IAM permissions |
+| **Launch constraint** | An IAM role used to deploy the product - users don't need direct IAM permissions |
 | **Tag options** | Required tags applied to all resources provisioned from a product |
 
 ```bash
@@ -250,7 +250,7 @@ aws servicecatalog associate-principal-with-portfolio \
 
 ### Service Catalog + Organizations
 
-Share portfolios across the entire organization — developers in any account can deploy from pre-approved templates.
+Share portfolios across the entire organization - developers in any account can deploy from pre-approved templates.
 
 ```bash
 # Share portfolio with the entire org
@@ -263,7 +263,7 @@ aws servicecatalog create-portfolio-share \
 
 ---
 
-## IaC Security — CloudFormation Guard and cfn-lint
+## IaC Security: CloudFormation Guard and cfn-lint
 
 For teams deploying CloudFormation directly (not via Service Catalog), enforce security policies at the template level.
 
@@ -285,7 +285,7 @@ cfn-guard validate \
   --data template.yaml \
   --rules s3-security-rules.guard
 
-# cfn-lint — lint for CloudFormation best practices
+# cfn-lint: lint for CloudFormation best practices
 pip install cfn-lint
 cfn-lint template.yaml
 ```
@@ -294,12 +294,12 @@ cfn-lint template.yaml
 
 ## Exam Key Points
 
-- **Firewall Manager**: one admin account manages WAF, Shield, security groups, Network Firewall across the entire org — requires AWS Config in all accounts
+- **Firewall Manager**: one admin account manages WAF, Shield, security groups, Network Firewall across the entire org - requires AWS Config in all accounts
 - **Firewall Manager remediation**: when enabled, automatically creates and attaches policies to non-compliant resources; when disabled, generates findings only
-- **RAM**: share resources without copying — subnets, TGW, resolver rules; resources in the sharing account, accessed from other accounts
-- **Shared VPC with RAM**: workload accounts launch into centrally managed subnets — reduces VPC count, simplifies networking
+- **RAM**: share resources without copying - subnets, TGW, resolver rules; resources in the sharing account, accessed from other accounts
+- **Shared VPC with RAM**: workload accounts launch into centrally managed subnets - reduces VPC count, simplifies networking
 - **Service Catalog**: developers self-provision from pre-approved templates; launch constraints provide the IAM role so developers don't need direct CloudFormation permissions
-- **CloudFormation Guard**: validates templates against security policies before deployment — shift-left security for IaC
+- **CloudFormation Guard**: validates templates against security policies before deployment - shift-left security for IaC
 
 ---
 
@@ -321,3 +321,13 @@ aws servicecatalog list-portfolios
 aws servicecatalog search-products --output table
 aws servicecatalog list-provisioned-products --output table
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

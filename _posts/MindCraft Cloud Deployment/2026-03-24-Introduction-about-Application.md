@@ -130,13 +130,13 @@ const idMap = new Map();
 
 function getOrCreateId(firebaseId) {
 
-  if (!idMap.has(firebaseId)) {
+  if (!idMap.has(firebaseId)) {
 
-    idMap.set(firebaseId, new mongoose.Types.ObjectId());
+    idMap.set(firebaseId, new mongoose.Types.ObjectId());
 
-  }
+  }
 
-  return idMap.get(firebaseId);
+  return idMap.get(firebaseId);
 
 }
 
@@ -172,7 +172,7 @@ One practice I picked up during this project: writing ADRs (Architecture Decisio
 
 to find it go through the ADR section under the MindCraft Deployment
   
-This turned out to be the most useful documentation I wrote — not just for the blog, but for interview prep. When an interviewer asks "why MongoDB over DynamoDB?", I have a three-paragraph answer ready.
+This turned out to be the most useful documentation I wrote - not just for the blog, but for interview prep. When an interviewer asks "why MongoDB over DynamoDB?", I have a three-paragraph answer ready.
 
   
 
@@ -204,11 +204,10 @@ This turned out to be the most useful documentation I wrote — not just for the
 
 ---
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer )
-- **GitHub:** [Mhdomer](https://github.comMhdomer)  
-- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

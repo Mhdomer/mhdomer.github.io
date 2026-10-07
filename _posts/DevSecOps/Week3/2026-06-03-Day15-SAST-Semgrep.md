@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 3 — Day 15: SAST with Semgrep"
+title: "Day 15: SAST with Semgrep - Finding Vulnerabilities in Source Code"
 date: 2026-06-03 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - CI/CD
   - AppSec
 author: muhammed
-description: A full walkthrough of Semgrep for static application security testing — running scans, writing custom rules, understanding findings, and integrating into GitHub Actions as a PR gate.
+description: A full walkthrough of Semgrep for static application security testing - running scans, writing custom rules, understanding findings, and integrating into GitHub Actions as a PR gate.
 toc: true
 pin: false
 math: false
@@ -22,9 +22,9 @@ image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsemgrep.dev%2
 
 ## What is SAST?
 
-Static Application Security Testing (SAST) analyzes source code **without executing it** to find security vulnerabilities — SQL injection, hardcoded secrets, insecure deserialization, path traversal, and more.
+Static Application Security Testing (SAST) analyzes source code **without executing it** to find security vulnerabilities - SQL injection, hardcoded secrets, insecure deserialization, path traversal, and more.
 
-It runs early in the pipeline — on every commit or PR — giving developers fast feedback before code reaches production.
+It runs early in the pipeline - on every commit or PR - giving developers fast feedback before code reaches production.
 
 **What SAST can catch:**
 - SQL injection patterns
@@ -48,7 +48,7 @@ Semgrep is a fast, open-source SAST tool that:
 - Has a massive community ruleset (2000+ rules)
 - Lets you write custom rules in a readable YAML syntax
 - Integrates natively with GitHub, GitLab, and CI/CD pipelines
-- Has no server required — runs as a CLI
+- Has no server required - runs as a CLI
 
 ---
 
@@ -80,7 +80,6 @@ semgrep scan --config "p/owasp-top-ten" .
 semgrep scan --config "p/security-audit" .
 ```
 
-> `[SCREENSHOT]` — *Terminal showing semgrep scan --config auto . running on a project, output showing findings with file path, line number, rule ID, severity, and the matched code snippet highlighted*
 
 ---
 
@@ -106,7 +105,6 @@ Each finding shows:
 | Message | What the vulnerability is and why it matters |
 | Fix | How to remediate |
 
-> `[SCREENSHOT]` — *Semgrep output showing 3-4 findings from a vulnerable Python app with the matched code lines highlighted in red*
 
 ---
 
@@ -116,7 +114,7 @@ Semgrep's community registry has pre-built rulesets for most use cases:
 
 | Ruleset | Command | Use for |
 |---------|---------|---------|
-| Auto (language-appropriate) | `--config auto` | Default — good starting point |
+| Auto (language-appropriate) | `--config auto` | Default - good starting point |
 | OWASP Top 10 | `--config p/owasp-top-ten` | Web app vulnerabilities |
 | Security audit | `--config p/security-audit` | Broad security checks |
 | Secrets | `--config p/secrets` | Hardcoded credentials |
@@ -134,7 +132,6 @@ semgrep scan \
   .
 ```
 
-> `[SCREENSHOT]` — *Terminal showing semgrep scan with multiple --config flags running and the summary at the end: "X findings across Y files"*
 
 ---
 
@@ -158,7 +155,7 @@ semgrep scan --config auto --exclude-dir node_modules --exclude-dir .venv .
 
 ## Writing Custom Rules
 
-This is Semgrep's killer feature — custom rules in readable YAML that match code patterns in your specific codebase.
+This is Semgrep's killer feature - custom rules in readable YAML that match code patterns in your specific codebase.
 
 ### Rule Structure
 
@@ -179,7 +176,7 @@ rules:
 
 ---
 
-### Example 1 — Detect SQL Injection in Python
+### Example 1: Detect SQL Injection in Python
 
 ```yaml
 rules:
@@ -193,7 +190,7 @@ rules:
       - pattern: |
           $DB.execute(f"...{$INPUT}...")
     message: >
-      SQL query built with string formatting — SQL injection risk.
+      SQL query built with string formatting - SQL injection risk.
       Use parameterized queries: cursor.execute("SELECT * FROM t WHERE id = %s", (user_id,))
     languages: [python]
     severity: ERROR
@@ -202,7 +199,7 @@ rules:
       owasp: "A03:2021 - Injection"
 ```
 
-### Example 2 — Detect Hardcoded AWS Keys
+### Example 2: Detect Hardcoded AWS Keys
 
 ```yaml
 rules:
@@ -219,7 +216,7 @@ rules:
       cwe: "CWE-798"
 ```
 
-### Example 3 — Detect Dangerous `eval()` in JavaScript
+### Example 3: Detect Dangerous `eval()` in JavaScript
 
 ```yaml
 rules:
@@ -228,13 +225,13 @@ rules:
       - pattern: eval($X)
       - pattern-not: eval("...")   # allow literal strings (low risk)
     message: >
-      eval() called with a non-literal argument — potential code injection.
+      eval() called with a non-literal argument - potential code injection.
       Avoid eval() entirely; use JSON.parse() for data or refactor the logic.
     languages: [javascript, typescript]
     severity: WARNING
 ```
 
-### Example 4 — Detect Insecure `subprocess` in Python
+### Example 4: Detect Insecure `subprocess` in Python
 
 ```yaml
 rules:
@@ -244,7 +241,7 @@ rules:
       - pattern: subprocess.call($CMD, ..., shell=True, ...)
       - pattern: subprocess.Popen($CMD, ..., shell=True, ...)
     message: >
-      subprocess called with shell=True and a variable command — command injection risk.
+      subprocess called with shell=True and a variable command - command injection risk.
       Use shell=False and pass a list of arguments instead.
     languages: [python]
     severity: ERROR
@@ -254,7 +251,7 @@ rules:
 
 ## Testing Custom Rules
 
-Semgrep has a built-in test mechanism — write test cases alongside your rules:
+Semgrep has a built-in test mechanism - write test cases alongside your rules:
 
 ```yaml
 rules:
@@ -275,7 +272,6 @@ db.execute("SELECT * FROM users WHERE id = %s", (user_id,))
 semgrep --test .
 ```
 
-> `[SCREENSHOT]` — *Terminal showing semgrep --test output: "1 passed, 0 failed" confirming the rule correctly catches the bad pattern and ignores the good one*
 
 ---
 
@@ -288,7 +284,7 @@ Suppress a specific finding inline:
 query = build_safe_query(user_id)   # this function sanitizes input
 ```
 
-Suppress across a file — add to `.semgrepignore`:
+Suppress across a file - add to `.semgrepignore`:
 
 ```
 # .semgrepignore
@@ -341,15 +337,13 @@ jobs:
           sarif_file: semgrep.sarif
 ```
 
-> `[SCREENSHOT]` — *GitHub Actions run showing the Semgrep step — green if no errors found, or red with the violation listed in the step output*
 
-> `[SCREENSHOT]` — *GitHub repository → Security tab → Code scanning alerts showing Semgrep findings with their severity, rule ID, and the file/line they were found in*
 
-**`--error` flag:** makes Semgrep exit with code 1 when any finding at the specified severity is found — this blocks the PR from merging.
+**`--error` flag:** makes Semgrep exit with code 1 when any finding at the specified severity is found - this blocks the PR from merging.
 
 ---
 
-## Lab — Scan a Vulnerable App
+## Lab: Scan a Vulnerable App
 
 **Objective:** Run Semgrep against an intentionally vulnerable application and review findings.
 
@@ -364,14 +358,12 @@ cd juice-shop
 semgrep scan --config p/owasp-top-ten --severity ERROR . 2>/dev/null
 ```
 
-> `[SCREENSHOT]` — *Semgrep scan output on Juice Shop showing multiple findings — SQL injection, XSS, hardcoded secrets — with file paths and line numbers*
 
 3. Run the secrets scan:
 ```bash
 semgrep scan --config p/secrets . 2>/dev/null
 ```
 
-> `[SCREENSHOT]` — *Semgrep secrets scan output showing any hardcoded credentials or API keys found in the codebase*
 
 4. Pick one finding → look at the code → understand why it's flagged → write the fix
 
@@ -385,12 +377,12 @@ semgrep scan --config my-rules.yaml .
 
 ## Key Takeaways
 
-- SAST runs on code — catch vulnerabilities at development time, not production
-- `--config auto` is your fastest start — Semgrep selects the right rules for your languages
-- Custom rules are Semgrep's superpower — model rules on patterns specific to your codebase
+- SAST runs on code - catch vulnerabilities at development time, not production
+- `--config auto` is your fastest start - Semgrep selects the right rules for your languages
+- Custom rules are Semgrep's superpower - model rules on patterns specific to your codebase
 - Use `--sarif` + GitHub upload to get persistent findings in the Security tab
-- `--error` flag in CI makes Semgrep a hard gate — PRs with critical findings can't merge
-- `nosemgrep` inline comments for accepted false positives — don't suppress whole files
+- `--error` flag in CI makes Semgrep a hard gate - PRs with critical findings can't merge
+- `nosemgrep` inline comments for accepted false positives - don't suppress whole files
 
 ---
 
@@ -411,7 +403,6 @@ semgrep scan --config my-rules.yaml .
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

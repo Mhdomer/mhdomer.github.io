@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 4 — Day 24: CIS Benchmarks & Compliance Basics"
+title: "Day 24: CIS Benchmarks & Compliance - Auditing Cloud Baselines"
 date: 2026-06-13 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - SecurityHub
   - CloudSecurity
 author: muhammed
-description: A full walkthrough of CIS AWS Foundations Benchmark — understanding the key controls, running automated checks via Security Hub, remediating failures, and mapping controls to broader compliance frameworks.
+description: A full walkthrough of CIS AWS Foundations Benchmark - understanding the key controls, running automated checks via Security Hub, remediating failures, and mapping controls to broader compliance frameworks.
 toc: true
 pin: false
 math: false
@@ -25,8 +25,8 @@ image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn.prod.webs
 Compliance frameworks define a baseline of security controls that have been validated by industry experts and regulators. They answer: *"What does a reasonably secure AWS environment look like?"*
 
 For a DevSecOps engineer, compliance serves two purposes:
-1. **Baseline** — a checklist of controls you should have regardless of regulatory requirements
-2. **Audit readiness** — evidence that controls are in place, continuously monitored
+1. **Baseline** - a checklist of controls you should have regardless of regulatory requirements
+2. **Audit readiness** - evidence that controls are in place, continuously monitored
 
 The most relevant framework for AWS is the **CIS AWS Foundations Benchmark**.
 
@@ -45,8 +45,8 @@ The Center for Internet Security (CIS) publishes hardening benchmarks for every 
 | Networking | Default VPC, security groups, NACLs |
 
 The benchmark has two levels:
-- **Level 1** — baseline, low operational impact, should be implemented by everyone
-- **Level 2** — more restrictive, may impact some legitimate use cases
+- **Level 1** - baseline, low operational impact, should be implemented by everyone
+- **Level 2** - more restrictive, may impact some legitimate use cases
 
 ---
 
@@ -57,20 +57,18 @@ Security Hub runs automated CIS checks continuously. Enable it once and it keeps
 **Enable the CIS standard:**
 1. Security Hub → Security standards → CIS AWS Foundations Benchmark → Enable
 
-> `[SCREENSHOT]` — *Security Hub → Security standards page showing the CIS AWS Foundations Benchmark standard enabled with an overall compliance score (e.g., 67%) and the number of passed/failed controls*
 
 **View all control results:**
 1. Security Hub → Security standards → CIS → view all controls
 
-> `[SCREENSHOT]` — *Security Hub → CIS controls list showing controls with their status: green PASSED, red FAILED, grey UNKNOWN — with control IDs like 1.1, 1.2, 2.1 etc.*
 
 ---
 
-## Key CIS Controls — Section by Section
+## Key CIS Controls: Section by Section
 
-### Section 1 — IAM
+### Section 1: IAM
 
-#### 1.1 — Root account MFA
+#### 1.1: Root account MFA
 The root account has unrestricted access to everything. MFA must be enabled.
 
 **Check:**
@@ -81,10 +79,9 @@ aws iam get-account-summary --query 'SummaryMap.AccountMFAEnabled'
 
 **Fix:** AWS Console → Account (top right) → Security credentials → MFA → Activate MFA
 
-> `[SCREENSHOT]` — *Security Hub showing CIS control 1.1 (root MFA) as PASSED with the green checkmark*
 
-#### 1.4 — No root access keys
-Root access keys should not exist — use IAM roles instead.
+#### 1.4: No root access keys
+Root access keys should not exist - use IAM roles instead.
 
 **Check:**
 ```bash
@@ -94,7 +91,7 @@ aws iam get-account-summary --query 'SummaryMap.AccountAccessKeysPresent'
 
 **Fix:** IAM → Security credentials for root → Delete all access keys
 
-#### 1.9 — IAM password policy configured
+#### 1.9: IAM password policy configured
 Enforce a strong password policy for all IAM users.
 
 **Fix:**
@@ -110,13 +107,12 @@ aws iam update-account-password-policy \
   --password-reuse-prevention 24
 ```
 
-> `[SCREENSHOT]` — *IAM → Account settings → Password policy showing the configured requirements (minimum length 14, require symbols, numbers, etc.)*
 
-#### 1.14 — Hardware MFA for root
+#### 1.14: Hardware MFA for root
 For maximum security, use a hardware MFA device (YubiKey, etc.) for root, not TOTP.
 
-#### 1.16 — IAM policies attached only to groups or roles
-No policies attached directly to users — use groups and roles.
+#### 1.16: IAM policies attached only to groups or roles
+No policies attached directly to users - use groups and roles.
 
 **Check:**
 ```bash
@@ -128,10 +124,10 @@ aws iam get-credential-report --query 'Content' --output text | \
 
 ---
 
-### Section 2 — Storage
+### Section 2: Storage
 
-#### 2.1.1 — S3 block public access (account level)
-Block public access at the account level — applies to all buckets.
+#### 2.1.1: S3 block public access (account level)
+Block public access at the account level - applies to all buckets.
 
 **Fix:**
 ```bash
@@ -141,41 +137,39 @@ aws s3control put-public-access-block \
     BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
 ```
 
-> `[SCREENSHOT]` — *S3 console → Block Public Access settings for this account page showing all four options enabled (green checkmarks)*
 
-#### 2.1.2 — S3 versioning enabled
+#### 2.1.2: S3 versioning enabled
 Versioning protects against accidental deletion and ransomware.
 
 **Check with Config:**
 - Config → Rules → `s3-bucket-versioning-enabled` → view non-compliant buckets
 
-#### 2.2.1 — EBS default encryption enabled
+#### 2.2.1: EBS default encryption enabled
 Enable EBS encryption by default at the account level:
 
 ```bash
 aws ec2 enable-ebs-encryption-by-default --region ap-southeast-1
 ```
 
-> `[SCREENSHOT]` — *EC2 → Account attributes → EBS encryption showing "Default encryption: Enabled" with the KMS key ARN*
 
 ---
 
-### Section 3 — Logging
+### Section 3: Logging
 
-#### 3.1 — CloudTrail enabled in all regions
+#### 3.1: CloudTrail enabled in all regions
 ```bash
 aws cloudtrail describe-trails --query 'trailList[?IsMultiRegionTrail]'
 # Should have at least one multi-region trail
 ```
 
-#### 3.2 — CloudTrail log file validation enabled
+#### 3.2: CloudTrail log file validation enabled
 ```bash
 aws cloudtrail describe-trails \
   --query 'trailList[*].{Name:Name,Validation:LogFileValidationEnabled}'
 # LogFileValidationEnabled should be true
 ```
 
-#### 3.4 — CloudTrail bucket not publicly accessible
+#### 3.4: CloudTrail bucket not publicly accessible
 
 ```bash
 # Check the bucket policy for the CloudTrail bucket
@@ -183,7 +177,7 @@ BUCKET=$(aws cloudtrail describe-trails --query 'trailList[0].S3BucketName' --ou
 aws s3api get-bucket-policy --bucket $BUCKET
 ```
 
-#### 3.7 — Ensure CloudTrail logs are encrypted at rest
+#### 3.7: Ensure CloudTrail logs are encrypted at rest
 
 ```bash
 aws cloudtrail describe-trails \
@@ -191,7 +185,7 @@ aws cloudtrail describe-trails \
 # KMSKeyId should not be null
 ```
 
-#### 3.10 — VPC flow logs enabled on all VPCs
+#### 3.10: VPC flow logs enabled on all VPCs
 
 ```bash
 aws ec2 describe-vpcs --query 'Vpcs[*].VpcId' --output text | \
@@ -200,11 +194,10 @@ aws ec2 describe-vpcs --query 'Vpcs[*].VpcId' --output text | \
     --query 'FlowLogs[0].FlowLogStatus'
 ```
 
-> `[SCREENSHOT]` — *VPC console showing a VPC's Flow Logs tab with an active flow log entry showing the destination (CloudWatch Logs group or S3 bucket) and traffic type*
 
 ---
 
-### Section 4 — Monitoring (CloudWatch Alarms)
+### Section 4: Monitoring (CloudWatch Alarms)
 
 The CIS benchmark requires CloudWatch metric filters and alarms for critical events. These alert you when dangerous things happen.
 
@@ -223,7 +216,7 @@ The CIS benchmark requires CloudWatch metric filters and alarms for critical eve
 | 4.12 | VPC changes |
 | 4.14 | Security group changes |
 
-**Example — alarm on root account usage:**
+**Example - alarm on root account usage:**
 
 ```bash
 # Create metric filter
@@ -249,13 +242,12 @@ aws cloudwatch put-metric-alarm \
   --treat-missing-data notBreaching
 ```
 
-> `[SCREENSHOT]` — *CloudWatch → Alarms page showing the CIS benchmark alarms listed with their states — OK (green) in normal operation, ALARM (red) if triggered*
 
 ---
 
-### Section 5 — Networking
+### Section 5: Networking
 
-#### 5.1 — No unrestricted security group on port 22
+#### 5.1: No unrestricted security group on port 22
 
 ```bash
 aws ec2 describe-security-groups \
@@ -265,11 +257,11 @@ aws ec2 describe-security-groups \
 
 **Fix:** Remove the `0.0.0.0/0` rule and replace with your specific IP or bastion host SG.
 
-#### 5.2 — No unrestricted security group on port 3389 (RDP)
+#### 5.2: No unrestricted security group on port 3389 (RDP)
 
-Same pattern as above — no `0.0.0.0/0` on 3389.
+Same pattern as above - no `0.0.0.0/0` on 3389.
 
-#### 5.3 — Default security group blocks all traffic
+#### 5.3: Default security group blocks all traffic
 
 ```bash
 # Find default security groups with rules
@@ -286,7 +278,6 @@ aws ec2 describe-security-groups \
 
 After enabling CIS in Security Hub, track your score over time:
 
-> `[SCREENSHOT]` — *Security Hub → Summary page showing the CIS benchmark compliance score as a percentage, with a trend graph showing improvement over the past 30 days as controls were remediated*
 
 **Target score:** 90%+ for Level 1 controls. 100% is the goal but some Level 2 controls may not apply to your environment.
 
@@ -294,7 +285,7 @@ After enabling CIS in Security Hub, track your score over time:
 
 ## Mapping CIS to Other Frameworks
 
-CIS controls map to broader frameworks — fixing CIS issues often satisfies multiple compliance requirements:
+CIS controls map to broader frameworks - fixing CIS issues often satisfies multiple compliance requirements:
 
 | CIS Control | SOC 2 | ISO 27001 | NIST CSF |
 |-------------|-------|-----------|---------|
@@ -308,7 +299,7 @@ This means improving your CIS score also improves your SOC 2 and ISO 27001 readi
 
 ---
 
-## Lab — Run CIS Check and Remediate Failures
+## Lab: Run CIS Check and Remediate Failures
 
 **Objective:** Enable Security Hub CIS standard, identify the top 5 failures, and fix them.
 
@@ -316,10 +307,9 @@ This means improving your CIS score also improves your SOC 2 and ISO 27001 readi
 2. Security Hub → Security standards → CIS → view all controls
 3. Sort by status → filter to FAILED
 
-> `[SCREENSHOT]` — *Security Hub → CIS controls page filtered to FAILED showing the failing controls with their IDs, descriptions, and severity levels*
 
 4. Pick the top 5 highest severity failures
-5. For each failure — click it → read the remediation guidance → apply the fix
+5. For each failure - click it → read the remediation guidance → apply the fix
 
 **Common quick wins:**
 - Enable S3 block public access at account level (2.1.1) → 2 CLI commands
@@ -327,21 +317,20 @@ This means improving your CIS score also improves your SOC 2 and ISO 27001 readi
 - Delete root access keys if they exist (1.4) → Console
 - Ensure CloudTrail log validation is on (3.2) → 1 CLI command
 
-6. After fixing — wait 24 hours for Security Hub to re-evaluate
+6. After fixing - wait 24 hours for Security Hub to re-evaluate
 7. Return to the CIS dashboard → verify score improved
 
-> `[SCREENSHOT]` — *Security Hub CIS score before remediation (e.g., 58%) vs after (e.g., 78%) — showing the improvement after the quick wins were applied*
 
 ---
 
 ## Key Takeaways
 
-- CIS AWS Foundations Benchmark Level 1 is your minimum baseline — implement all of it
-- Security Hub automates CIS checking continuously — not just point-in-time
-- Root account controls (MFA, no access keys) are the most critical — a root compromise is a full account compromise
+- CIS AWS Foundations Benchmark Level 1 is your minimum baseline - implement all of it
+- Security Hub automates CIS checking continuously - not just point-in-time
+- Root account controls (MFA, no access keys) are the most critical - a root compromise is a full account compromise
 - CloudWatch alarms for CIS monitoring events give you near-real-time detection of administrative changes
 - Fixing CIS controls satisfies requirements across multiple compliance frameworks simultaneously
-- Track your compliance score over time — every sprint should move it toward 90%+
+- Track your compliance score over time - every sprint should move it toward 90%+
 
 ---
 
@@ -351,7 +340,7 @@ This means improving your CIS score also improves your SOC 2 and ISO 27001 readi
 <ul>
   <li><a href="https://www.cisecurity.org/benchmark/amazon_web_services" target="_blank">CIS AWS Foundations Benchmark</a></li>
   <li><a href="https://docs.aws.amazon.com/securityhub/latest/userguide/cis-aws-foundations-benchmark.html" target="_blank">Security Hub CIS Standard</a></li>
-  <li><a href="https://github.com/prowler-cloud/prowler" target="_blank">Prowler — Open Source AWS Security Tool</a></li>
+  <li><a href="https://github.com/prowler-cloud/prowler" target="_blank">Prowler - Open Source AWS Security Tool</a></li>
 </ul>
 </div>
 
@@ -361,7 +350,6 @@ This means improving your CIS score also improves your SOC 2 and ISO 27001 readi
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

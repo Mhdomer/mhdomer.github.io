@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Amazon Cognito and Verified Permissions — App Identity and Fine-Grained Authorization
+title: Amazon Cognito and Verified Permissions - App Identity and Fine-Grained Authorization
 date: 2026-07-01T10:00:00
 categories:
   - SCS-C03 Cloud Security Speciality
@@ -15,7 +15,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 4 — Cognito user pools vs identity pools, JWT validation, federated identities, Cognito hosted UI, Amazon Verified Permissions for app-level authorization
+description: SCS-C03 Domain 4 - Cognito user pools vs identity pools, JWT validation, federated identities, Cognito hosted UI, Amazon Verified Permissions for app-level authorization
 toc: true
 pin: false
 math: false
@@ -28,16 +28,16 @@ img:
 
 ## Amazon Cognito Overview
 
-**Amazon Cognito** is the AWS service for application-level identity — managing user registration, authentication, and authorization for web and mobile apps.
+**Amazon Cognito** is the AWS service for application-level identity - managing user registration, authentication, and authorization for web and mobile apps.
 Cognito has two distinct components that solve different problems:
 
 | | User Pool | Identity Pool |
 |---|---|---|
-| **Purpose** | Authentication — manage users, issue tokens | Authorization — exchange tokens for AWS credentials |
+| **Purpose** | Authentication - manage users, issue tokens | Authorization - exchange tokens for AWS credentials |
 | **Output** | JWT tokens (ID, access, refresh) | Temporary AWS credentials (STS) |
 | **Use case** | Sign in to your application | Access AWS services directly from client |
 
-Most applications use both together — the user pool authenticates the user, then the identity pool exchanges the JWT for AWS credentials.
+Most applications use both together - the user pool authenticates the user, then the identity pool exchanges the JWT for AWS credentials.
 
 ---
 
@@ -45,7 +45,7 @@ Most applications use both together — the user pool authenticates the user, th
 
 A **user pool** is a fully managed user directory.
 It handles sign-up, sign-in, MFA, password policies, email/phone verification, and account recovery.
-It supports federation — users can log in with Google, Apple, Facebook, or any SAML/OIDC provider.
+It supports federation - users can log in with Google, Apple, Facebook, or any SAML/OIDC provider.
 
 ```bash
 # Create a user pool
@@ -81,8 +81,8 @@ After sign-in, Cognito issues three tokens:
 
 | Token | Contents | Lifetime |
 |---|---|---|
-| **ID token** | User claims — email, name, custom attributes, groups | 1 hour (default) |
-| **Access token** | OAuth 2.0 scopes — used to authorize API calls | 1 hour (default) |
+| **ID token** | User claims - email, name, custom attributes, groups | 1 hour (default) |
+| **Access token** | OAuth 2.0 scopes - used to authorize API calls | 1 hour (default) |
 | **Refresh token** | Used to get new ID + access tokens | 30 days (default) |
 
 Tokens are **JWTs signed with Cognito's RSA key**.
@@ -111,7 +111,7 @@ aws cognito-idp get-user \
 
 ## Cognito Hosted UI and Federation
 
-The **Hosted UI** is Cognito's built-in sign-in page — you don't need to build a custom login UI.
+The **Hosted UI** is Cognito's built-in sign-in page - you don't need to build a custom login UI.
 Enable it with a domain name (Cognito domain or custom domain) and configure social/SAML providers.
 
 ```bash
@@ -177,8 +177,8 @@ aws cognito-identity get-credentials-for-identity \
 ### Authenticated vs Unauthenticated Roles
 
 The identity pool has two IAM roles:
-- **Authenticated role**: assigned to users who have logged in — typically has more permissions
-- **Unauthenticated role**: assigned to guests — minimal permissions (e.g. read-only from specific S3 prefix)
+- **Authenticated role**: assigned to users who have logged in - typically has more permissions
+- **Unauthenticated role**: assigned to guests - minimal permissions (e.g. read-only from specific S3 prefix)
 
 ```json
 {
@@ -206,7 +206,7 @@ The identity pool has two IAM roles:
 ## Cognito User Pool Groups and RBAC
 
 **User pool groups** implement role-based access control at the Cognito level.
-Assign users to groups — each group is associated with an IAM role.
+Assign users to groups - each group is associated with an IAM role.
 The user's ID token includes a `cognito:groups` claim listing their group memberships.
 
 ```bash
@@ -232,7 +232,7 @@ aws cognito-idp admin-add-user-to-group \
 
 ## Cognito Lambda Triggers
 
-**Lambda triggers** customize the Cognito auth flow — validate sign-ups, modify tokens, migrate existing users, add custom auth challenges.
+**Lambda triggers** customize the Cognito auth flow - validate sign-ups, modify tokens, migrate existing users, add custom auth challenges.
 
 | Trigger | When it fires | Use for |
 |---|---|---|
@@ -254,7 +254,7 @@ aws cognito-idp update-user-pool \
 ## Amazon Verified Permissions
 
 **Amazon Verified Permissions** provides fine-grained, application-level authorization using the **Cedar** policy language.
-It is separate from IAM — it controls what your application's users can do (not what AWS resources they can access).
+It is separate from IAM - it controls what your application's users can do (not what AWS resources they can access).
 
 Use Verified Permissions when:
 - You need resource-level authorization (e.g. user A can only edit documents they own)
@@ -314,12 +314,12 @@ aws verifiedpermissions is-authorized \
 
 ## Exam Key Points
 
-- **User pool**: authentication — sign-up, sign-in, MFA, federation, issues JWTs
-- **Identity pool**: authorization — exchanges JWTs for temporary AWS credentials via STS
+- **User pool**: authentication - sign-up, sign-in, MFA, federation, issues JWTs
+- **Identity pool**: authorization - exchanges JWTs for temporary AWS credentials via STS
 - **JWT validation**: verify signature against Cognito's JWKS endpoint + check `exp`, `iss`, `aud` claims
-- **Groups in user pools**: RBAC — group name appears in `cognito:groups` claim in the ID token; your app reads this claim
+- **Groups in user pools**: RBAC - group name appears in `cognito:groups` claim in the ID token; your app reads this claim
 - **Pre-token generation trigger**: add custom claims to the token without changing the app client
-- **Verified Permissions**: application-level authorization using Cedar — for what users can do in your app, not in AWS
+- **Verified Permissions**: application-level authorization using Cedar - for what users can do in your app, not in AWS
 - **Cognito vs IAM Identity Center**: Cognito for your app users, Identity Center for AWS account access
 
 ---
@@ -342,3 +342,13 @@ aws cognito-idp admin-disable-user --user-pool-id eu-west-1_abc123 --username us
 # Sign out from all devices
 aws cognito-idp admin-user-global-sign-out --user-pool-id eu-west-1_abc123 --username user@example.com
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

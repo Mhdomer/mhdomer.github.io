@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 1 — Day 6: AWS WAF & Shield"
+title: "Day 6: AWS WAF & Shield - Application Filtering and DDoS Defense"
 date: 2026-03-06 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - DDoS
   - CloudSecurity
 author: muhammed
-description: A full walkthrough of AWS WAF for application-layer filtering and AWS Shield for DDoS protection — how they work, how to configure them, and how they fit into your defense stack.
+description: A practical walkthrough of AWS WAF for application-layer (L7) protection and AWS Shield for DDoS mitigation - how to safely deploy rules without breaking production.
 toc: true
 pin: false
 math: false
@@ -20,275 +20,252 @@ mermaid: false
 image: /assets/devsecops/WAF.png
 ---
 
-## The Perimeter Problem
-
-GuardDuty detects threats that already reached your infrastructure. Inspector finds vulnerabilities in your workloads. But what about blocking malicious traffic **before** it hits your application?
-
-That's what **WAF** and **Shield** do — they sit in front of your applications and filter or absorb attacks at the network and application layer.
-
-
----
-
-## AWS WAF
-
-### What WAF Does
-
-AWS WAF (Web Application Firewall) inspects HTTP/HTTPS requests and blocks or allows them based on rules you define. It operates at **Layer 7** (application layer).
-
-**WAF can block:**
-- SQL injection attempts
-- Cross-site scripting (XSS)
-- Known malicious IPs
-- Requests from specific countries
-- Bots and scrapers
-- Requests exceeding a rate limit
-- Requests matching specific patterns (user-agent, URI, headers, body)
-
-**WAF attaches to:**
-- Application Load Balancers (ALB)
-- Amazon CloudFront distributions
-- API Gateway
-- AWS AppSync
-- Amazon Cognito user pools
-
- — *WAF & Shield console → Web ACLs list showing existing ACLs with their associated resources (ALB or CloudFront) and request counts*
- 
-![f](/assets/devsecops/week1/Pasted%20image%2020260523211001.png)
-
----
-
-### Core Concepts
-
-#### Web ACL
-A Web ACL (Access Control List) is the container for your WAF rules. You create one Web ACL and associate it with a resource (ALB, CloudFront, etc.).
-
-#### Rules
-Rules evaluate requests. Each rule has:
-- **Conditions** — what to match (IP, header, URI, body, method, query string)
-- **Action** — Allow, Block, Count, or CAPTCHA
-
-Rules are evaluated in priority order (lowest number = evaluated first).
-
-#### Rule Groups
-A collection of rules packaged together. AWS provides **managed rule groups** — pre-built rules maintained by AWS or partners.
-
----
-
-### Managed Rule Groups
-
-AWS Managed Rules are free (for the rules themselves — you pay for WAF capacity units consumed).
-
-**Key managed rule groups:**
-
-| Rule Group | What it blocks |
-|-----------|---------------|
-| `AWSManagedRulesCommonRuleSet` | OWASP Top 10 — SQLi, XSS, LFI, RFI, etc. |
-| `AWSManagedRulesKnownBadInputsRuleSet` | Log4j, Spring4Shell, shellshock exploits |
-| `AWSManagedRulesAmazonIpReputationList` | AWS threat intelligence — known malicious IPs |
-| `AWSManagedRulesSQLiRuleSet` | SQL injection specifically |
-| `AWSManagedRulesLinuxRuleSet` | Linux-specific exploits (path traversal, etc.) |
-| `AWSManagedRulesBotControlRuleSet` | Bot detection and mitigation (extra cost) |
-
- — *WAF → Web ACL → Rules tab showing multiple managed rule groups added with their capacity units and actions (Block/Count)*
-
-![g](/assets/devsecops/week1/Pasted%20image%2020260523212557.png)
-
----
-
-### Creating a Web ACL
-
-1. WAF & Shield → Web ACLs → Create web ACL
-2. Resource type: Regional (for ALB) or CloudFront (global)
-3. Name: `prod-waf-acl`
-4. Add rules → Add managed rule groups:
-   - `AWSManagedRulesCommonRuleSet`
-   - `AWSManagedRulesAmazonIpReputationList`
-   - `AWSManagedRulesKnownBadInputsRuleSet`
-5. Set default action: **Allow** (everything not matching a rule is allowed)
-6. Create → Associate with your ALB or CloudFront distribution
-
-— *WAF → Create Web ACL wizard showing the Add rules step with three managed rule groups added and their actions set to Block*
-
----
-
-### Custom Rules
-
-Beyond managed rules, write custom rules for your specific application.
-
-#### Rate-based rule — limit requests per IP
-
-Blocks IPs sending more than 2000 requests in any 5-minute window:
-
-1. Web ACL → Add rules → Add my own rules → Rule builder
-2. Rule type: Rate-based rule
-3. Rate limit: 2000
-4. Scope: IP address
-5. Action: Block
-
-— *WAF → custom rate-based rule configuration showing the rate limit set to 2000, scope IP, and action Block*
-
-#### IP set rule — block specific IPs or CIDRs
-
-1. WAF → IP sets → Create IP set
-2. Paste the IPs/CIDRs you want to block
-3. Web ACL → Add rule → IP set match → reference your IP set → Action: Block
-
-#### Geo-match rule — block or allow by country
-
-1. Web ACL → Add rules → Rule builder
-2. Statement: Geo match → select countries to block
-3. Action: Block
-
- — *WAF → rule builder showing a geo-match statement with several countries selected and Block action*
-
----
-
-### Count Mode (Safe Testing)
-
-Before switching a rule to Block, test it in **Count** mode — the rule still evaluates requests and logs matches, but doesn't block anything.
-
-This lets you verify the rule doesn't catch legitimate traffic before enforcing it.
-
- — *WAF → Web ACL → Rules tab showing a managed rule group with its action overridden to "Count" for testing*
-
-**Workflow:**
-1. Add rule with Count action
-2. Monitor WAF logs for a few days
-3. Review what's being counted — are there false positives?
-4. Switch to Block once you're confident
-
----
-
-### WAF Logging
-
-Enable logging to see every request WAF evaluates:
-
-1. Web ACL → Logging and metrics → Enable logging
-2. Destination: CloudWatch Logs, S3, or Kinesis Firehose
-3. Filter: log only blocked requests, or all requests
-
-— *WAF → Logging configuration showing Kinesis Firehose destination selected and the log filter set to "All requests"*
-
-**Sample log entry fields:**
-- `httpRequest.clientIp` — requester IP
-- `httpRequest.uri` — request path
-- `terminatingRuleId` — which rule blocked it
-- `action` — ALLOW or BLOCK
-- `httpRequest.headers` — full headers including User-Agent
-
----
-
-### Attaching WAF to an ALB
-
-1. EC2 → Load Balancers → select your ALB
-2. Integrations → AWS WAF → Associate → select your Web ACL
-
-Or from WAF:
-1. WAF → Web ACLs → select your ACL → Associated AWS resources → Add
-2. Select the ALB
-
- — *WAF → Web ACL → Associated AWS resources tab showing an ALB ARN listed as an associated resource*
-
----
-
-## AWS Shield
-
-### Shield Standard
-
-**Shield Standard** is free and automatically enabled for all AWS customers. It protects against common Layer 3 and Layer 4 DDoS attacks:
-
-- SYN/UDP floods
-- Reflection attacks
-- Other infrastructure-layer attacks
-
-For most applications behind CloudFront or ALB, Standard is sufficient for volumetric attacks.
-
----
-
-### Shield Advanced
-
-**Shield Advanced** is a paid service (~$3,000/month per organization) that adds:
-
-- Protection for EC2, ELB, CloudFront, Global Accelerator, Route 53
-- Real-time attack visibility and diagnostics
-- 24/7 access to the **AWS DDoS Response Team (DRT)** during an attack
-- Cost protection — AWS credits you for scaling costs incurred due to a DDoS attack
-- Advanced detection with application-layer (Layer 7) DDoS protection
-- Automatic application layer DDoS mitigation (auto-creates WAF rules)
-
- — *Shield Advanced → Overview page showing active protections for CloudFront, ALB, and Route 53 with their current threat status*
-
----
-
-### Enabling Shield Advanced
-
-1. WAF & Shield → AWS Shield → Subscribe to Shield Advanced
-2. Add resources to protect: CloudFront distributions, ALBs, Elastic IPs, Route 53 hosted zones
-3. Enable proactive engagement (DRT contacts you during attacks)
-
- — *Shield Advanced → Protected resources tab showing the list of resources with protection enabled and their resource types*
-
----
-
-### DDoS Attack Detection
-
-Shield Advanced shows attack events with details:
-
- — *Shield Advanced → Events tab showing a past attack event with the attack vector, bits/sec, packets/sec, and duration*
-
-During an active attack, Shield Advanced can automatically create WAF rate-based rules to mitigate the attack without manual intervention.
-
----
-
-## WAF vs Shield
-
-| | WAF | Shield Standard | Shield Advanced |
-|--|-----|-----------------|-----------------|
-| Layer | 7 (Application) | 3/4 (Network) | 3/4/7 |
-| Cost | Pay per rule/request | Free | ~$3k/month |
-| Protects against | SQLi, XSS, bots, bad IPs | Volumetric DDoS | Advanced DDoS + L7 |
-| Manual config | Yes | No | Partial |
-| DRT access | No | No | Yes |
-
----
-
-## Lab — Attach a WAF to an ALB
-
-**Objective:** Create a Web ACL with OWASP managed rules and attach it to an ALB.
-
-1. WAF & Shield → Web ACLs → Create web ACL
-2. Region: match your ALB's region
-3. Name: `lab-waf-acl`
-4. Add managed rule groups:
-   - `AWSManagedRulesCommonRuleSet` → action: **Count** (test mode first)
-   - `AWSManagedRulesAmazonIpReputationList` → action: **Block**
-5. Default action: Allow → Next → Create
-
- — *WAF → Web ACL just created showing the two rule groups — CommonRuleSet in Count mode and IpReputationList in Block mode*
-
-6. Associated AWS resources → Add → select your ALB
-7. Send a test request with a SQL injection payload:
-
-```bash
-curl "https://your-alb-dns.com/search?q=1'+OR+'1'='1"
+## Stopping Attacks at the Edge: WAF vs Shield
+
+Over the last few days, we covered detective controls: GuardDuty catches malicious activity inside your account, and Inspector finds unpatched vulnerabilities on your servers.
+
+But what about stopping an attacker **before** their payload ever reaches your EC2 instances, containers, or databases?
+
+This is where the perimeter defense duo comes in:
+
+- **AWS Shield:** Absorbs volumetric Layer 3 and Layer 4 Distributed Denial of Service (DDoS) floods (SYN floods, UDP reflection) so your network pipes do not get choked.
+- **AWS WAF (Web Application Firewall):** Inspects incoming HTTP/HTTPS traffic at Layer 7, filtering out malicious web attacks like SQL Injection (SQLi), Cross-Site Scripting (XSS), path traversal, and aggressive scraping bots.
+
+```
++-------------------------------------------------------------+
+|                     Incoming Public Traffic                 |
++-------------------------------------------------------------+
+                              |
+                              v
+       [ AWS Shield: Absorbs L3/L4 Network DDoS Floods ]
+                              |
+                              v
+     [ AWS WAF: Inspects L7 HTTP/HTTPS Payloads & Headers ]
+             |                                    |
+          Malicious                             Clean
+             |                                    |
+             v                                    v
+       [ 403 Forbidden ]                 [ ALB / CloudFront ]
+                                                  |
+                                                  v
+                                         [ App Servers / DB ]
 ```
 
-8. WAF → Web ACL → Sampled requests — you should see this request was evaluated and matched the SQLi rule
+### The Highway vs Baggage Inspection Analogy
 
- — *WAF → Sampled requests tab showing the SQLi test request with the matching rule (SQLi_BODY or similar) and action Count*
+To keep their roles crystal clear:
 
-9. Once satisfied there are no false positives, change `AWSManagedRulesCommonRuleSet` from Count to **Block**
+- **Security Groups & Shield (Layer 3/4):** The highway traffic police. They verify license plates, source IPs, and ports. If a million fake cars try to clog the highway entrance at once, Shield absorbs the traffic jam. But the traffic cops never open your trunk to see what you are carrying.
+- **AWS WAF (Layer 7):** The airport customs and baggage scanner. WAF opens the HTTP packet, reads the request URI, inspects the headers (User-Agent, cookies), parses the JSON POST body, and searches for malicious payloads like `' OR 1=1 --` or `<script>alert(1)</script>`.
+
+---
+
+## AWS WAF Core Concepts
+
+AWS WAF attaches directly to your public-facing entry points:
+- Application Load Balancers (ALB)
+- Amazon CloudFront distributions
+- Amazon API Gateway
+- AWS AppSync (GraphQL APIs)
+- Amazon Cognito user pools
+
+![Web ACLs console overview](/assets/devsecops/week1/Pasted%20image%2020260523211001.png)
+
+### 1. Web ACL (Access Control List)
+
+A Web ACL is the container that holds your security rules. You associate a Web ACL with an ALB or a CloudFront CDN distribution.
+
+### 2. Rules and Actions
+
+Each rule inside a Web ACL inspects a specific part of the incoming HTTP request. When a rule matches, WAF can execute one of four actions:
+- **Allow:** Passes the request forward to your application.
+- **Block:** Drops the connection immediately and returns an HTTP 403 Forbidden error.
+- **Count:** Logs that a match occurred, increments metrics, but lets the request pass through untouched (essential for safe testing!).
+- **CAPTCHA / Challenge:** Forces the client browser to solve an interactive puzzle or JavaScript silent challenge to weed out automated bots.
+
+---
+
+## AWS Managed Rule Groups: Instant OWASP Protection
+
+Writing comprehensive regex rules from scratch to catch every flavor of SQL injection or remote code execution is difficult and error-prone.
+
+AWS solves this with **AWS Managed Rules (AMR)**: pre-configured, battle-tested rule sets maintained directly by the AWS Threat Research Team.
+
+![WAF managed rule groups overview](/assets/devsecops/week1/Pasted%20image%2020260523212557.png)
+
+### Essential Managed Rule Groups
+
+| Managed Rule Group Name | What It Defends Against |
+| :--- | :--- |
+| `AWSManagedRulesCommonRuleSet` | The core baseline covering the OWASP Top 10 (XSS, path traversal, command injection) |
+| `AWSManagedRulesKnownBadInputsRuleSet` | Exploits with predictable signatures (Log4j / Log4Shell, Spring4Shell, Shellshock) |
+| `AWSManagedRulesAmazonIpReputationList` | Known malicious IPs identified by AWS threat intelligence feeds |
+| `AWSManagedRulesSQLiRuleSet` | Deep inspection of request parameters and bodies for database injection syntax |
+| `AWSManagedRulesLinuxRuleSet` | Linux-specific attacks (e.g. attempting to read `/etc/passwd` or `/proc/self/environ`) |
+| `AWSManagedRulesBotControlRuleSet` | Identifies and throttles automated web scrapers and crawlers |
+
+---
+
+## Writing High-Impact Custom WAF Rules
+
+In addition to managed rules, you can create custom rules tailored to your application's unique threat model.
+
+### 1. Rate-Based Rules (Anti-Brute Force)
+
+A common junior mistake is leaving login or password-reset endpoints open to unlimited password guessing.
+
+A rate-based rule tracks request frequency per client IP over a sliding 5-minute window. If any single IP sends more than 100 requests to `/api/v1/auth/login` within 5 minutes, WAF temporarily blocks that IP address:
+
+```json
+{
+  "Name": "RateLimitLoginAPI",
+  "Priority": 10,
+  "Action": {
+    "Block": {}
+  },
+  "Statement": {
+    "RateBasedStatement": {
+      "Limit": 100,
+      "AggregateKeyType": "IP",
+      "ScopeDownStatement": {
+        "ByteMatchStatement": {
+          "SearchString": "/api/v1/auth/login",
+          "FieldToMatch": {
+            "UriPath": {}
+          },
+          "TextTransformations": [
+            {
+              "Priority": 0,
+              "Type": "LOWERCASE"
+            }
+          ],
+          "PositionalConstraint": "EXACTLY"
+        }
+      }
+    }
+  },
+  "VisibilityConfig": {
+    "SampledRequestsEnabled": true,
+    "CloudWatchMetricsEnabled": true,
+    "MetricName": "RateLimitLoginAPI"
+  }
+}
+```
+
+### 2. Geo-Blocking Rules
+
+If your SaaS application is strictly targeted at users in Singapore and Malaysia, and you have zero legitimate business elsewhere, you can block or challenge incoming traffic originating from geographical regions known for high volumes of malicious scanning.
+
+---
+
+## The Golden Rule: Always Use "Count" Mode First
+
+One of the most dangerous mistakes a junior engineer can make is deploying new WAF rules directly in **Block** mode in a production environment:
+
+> *"I turned on the Common Rule Set in Block mode, and suddenly 15% of our legitimate customers started calling customer support because their checkout requests were getting blocked with HTTP 403 Forbidden!"*
+
+Legitimate client requests (such as rich text inputs, markdown editors, or custom headers) frequently resemble attack payloads.
+
+### The Safe Production Deployment Workflow
+
+1. **Step 1:** Add the managed rule group to your Web ACL, but override the action to **Count**.
+2. **Step 2:** Let the rule run in Count mode for 3 to 7 days during regular peak business hours.
+3. **Step 3:** Review Amazon CloudWatch metrics and sample logs. Check which URI paths are triggering matches: are they real malicious scanners or your own mobile application?
+4. **Step 4:** Add rule exclusions or scope-down statements for legitimate endpoints if needed.
+5. **Step 5:** Once you have verified zero false positives, flip the rule action from Count to **Block**.
+
+---
+
+## AWS Shield Standard vs Shield Advanced
+
+A common point of fear for beginners navigating the AWS console:
+
+> *"Is AWS Shield going to charge me thousands of dollars?"*
+
+Let's clear this up completely:
+
+### AWS Shield Standard (Free & Automatic)
+
+- **Cost:** $0.00 (Completely free, enabled automatically for every AWS customer).
+- **Protection:** Defends against standard Layer 3 and Layer 4 volumetric attacks (SYN floods, UDP reflection, ICMP floods).
+- **Where it runs:** Operates automatically at the edge on CloudFront, Route 53, and Elastic Load Balancing.
+- **For 95% of businesses:** Shield Standard combined with AWS WAF is more than enough to handle common DDoS attacks.
+
+### AWS Shield Advanced (Enterprise Tier)
+
+- **Cost:** ~$3,000 / month per organization (with a 1-year commitment).
+- **Key Features:**
+  - 24/7 direct access to the specialized **AWS DDoS Response Team (DRT)** who can write custom mitigation rules on your behalf during an active attack.
+  - **Financial Cost Protection:** If an attack causes your EC2 auto-scaling groups to scale up to 100 instances to handle massive traffic, AWS provides billing credits to reimburse the spike!
+  - Automated application-layer DDoS mitigation and detailed real-time metrics.
+
+---
+
+## Hands-on Lab: Protecting an ALB with WAF
+
+Let's walk through creating a Web ACL with the SQL Injection rule set and testing it safely:
+
+### Step 1: Create the Web ACL
+
+1. In the console, search for **WAF & Shield -> Web ACLs**.
+2. Select your target region and click **Create web ACL**.
+3. Name: `demo-app-waf`.
+4. Click **Add rules -> Add managed rule groups**.
+5. Locate `AWSManagedRulesSQLiRuleSet`, toggle it on, and set its action to **Count** for testing.
+6. Set the Default Web ACL Action to **Allow**.
+7. In the association step, attach the Web ACL to your test Application Load Balancer.
+
+### Step 2: Test with a Simulated SQL Injection Payload
+
+Send a curl request containing a classic SQL injection query parameter:
+
+```bash
+curl -i "http://your-test-alb-dns.amazonaws.com/products?search=1'+OR+'1'='1"
+```
+
+Because our rule is running in **Count** mode, the request returns HTTP 200 OK from your application.
+
+### Step 3: Inspect Sampled Requests
+
+1. In the AWS WAF console, click your Web ACL and open the **Sampled requests** tab.
+2. Filter by the last 15 minutes.
+3. You will see your curl request logged with the matching rule: `SQLi_QUERYARGUMENTS` marked with action `COUNT`.
+4. Once verified, edit the rule group, change the override from Count to **Block**, and re-run the curl command:
+
+```
+HTTP/1.1 403 Forbidden
+Server: awselb/2.0
+Content-Type: text/html
+Content-Length: 134
+
+<html>
+<head><title>403 Forbidden</title></head>
+<body>
+<center><h1>403 Forbidden</h1></center>
+</body>
+</html>
+```
+
+The request was intercepted and killed at the edge before ever touching your backend code!
+
+---
+
+## Junior Pitfalls to Avoid
+
+1. **Deploying Directly in Block Mode:** Always test rules in Count mode first. WAF false positives break user experience faster than code bugs.
+2. **Forgetting Rate-Limiting on Sensitive Routes:** Attackers can brute force authentication endpoints without using malicious SQL payloads. Always protect `/login`, `/register`, and `/forgot-password` with rate-based rules.
+3. **Subscribing to Shield Advanced by Accident:** Shield Standard is free. Do not click "Subscribe to Shield Advanced" unless your enterprise specifically approves the $3,000/month cost!
+4. **Ignoring WAF Logging Costs:** Storing full WAF request bodies in Amazon CloudWatch Logs or S3 at scale can become expensive. Configure logging filters to only record dropped (blocked) requests in high-traffic environments.
 
 ---
 
 ## Key Takeaways
 
-- WAF operates at Layer 7 — it understands HTTP and can block specific request patterns
-- Start all new rules in Count mode — verify no false positives before blocking
-- AWS Managed Rule Groups give you OWASP coverage immediately with no custom rule writing
-- Rate-based rules are essential for protecting login endpoints and APIs from brute force
-- Shield Standard is free and sufficient for most — Advanced is for high-value targets that need DRT support
-- WAF + GuardDuty + Shield together cover Layer 7 application attacks, network DDoS, and cloud-level threats
+- Shield handles network Layer 3/4 floods; WAF inspects application Layer 7 HTTP payloads.
+- Shield Standard is completely free and automatically protects every AWS account.
+- AWS Managed Rule Groups provide instant protection against OWASP Top 10 vulnerabilities, known exploits, and bad bot traffic.
+- Never deploy new rules directly to Block mode in production: run in Count mode first to inspect real-world traffic patterns.
+- Rate-based rules are the simplest and most effective defense against credential stuffing and brute force attacks.
 
 ---
 
@@ -297,8 +274,9 @@ curl "https://your-alb-dns.com/search?q=1'+OR+'1'='1"
 <div class="references">
 <ul>
   <li><a href="https://docs.aws.amazon.com/waf/latest/developerguide/what-is-aws-waf.html" target="_blank">AWS WAF Developer Guide</a></li>
-  <li><a href="https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-list.html" target="_blank">AWS Managed Rule Groups</a></li>
-  <li><a href="https://docs.aws.amazon.com/waf/latest/developerguide/ddos-overview.html" target="_blank">AWS Shield Documentation</a></li>
+  <li><a href="https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-list.html" target="_blank">AWS Managed Rule Groups Reference</a></li>
+  <li><a href="https://docs.aws.amazon.com/waf/latest/developerguide/ddos-overview.html" target="_blank">AWS Shield DDoS Mitigation Whitepaper</a></li>
+  <li><a href="https://aws.amazon.com/blogs/security/how-to-deploy-aws-waf-with-terraform/" target="_blank">AWS Blog: Deploying WAF via Terraform</a></li>
 </ul>
 </div>
 
@@ -307,7 +285,6 @@ curl "https://your-alb-dns.com/search?q=1'+OR+'1'='1"
 ## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
-
 
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)

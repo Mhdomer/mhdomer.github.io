@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS Secrets Manager and ACM — Credential Rotation and TLS Certificates
+title: AWS Secrets Manager and ACM - Credential Rotation and TLS Certificates
 date: 2026-06-23T10:00:00
 categories:
   - SCS-C03 Cloud Security Speciality
@@ -15,7 +15,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 5 — Secrets Manager rotation, cross-account secrets, VPC endpoints, ACM certificate lifecycle, AWS Private CA hierarchy, and data-in-transit controls
+description: SCS-C03 Domain 5 - Secrets Manager rotation, cross-account secrets, VPC endpoints, ACM certificate lifecycle, AWS Private CA hierarchy, and data-in-transit controls
 toc: true
 pin: false
 math: false
@@ -28,7 +28,7 @@ img:
 
 ## AWS Secrets Manager
 
-**AWS Secrets Manager** stores, rotates, and manages access to secrets — database credentials, API keys, OAuth tokens, and any sensitive string.
+**AWS Secrets Manager** stores, rotates, and manages access to secrets - database credentials, API keys, OAuth tokens, and any sensitive string.
 Unlike SSM Parameter Store (which is a general-purpose key-value store), Secrets Manager is purpose-built for secrets with native rotation support and cross-account access.
 
 ---
@@ -40,7 +40,7 @@ Unlike SSM Parameter Store (which is a general-purpose key-value store), Secrets
 | **Purpose** | Secrets with automatic rotation | General config + secrets |
 | **Rotation** | Native, scheduled, Lambda-backed | Manual only |
 | **Cost** | $0.40/secret/month | Free (Standard tier) |
-| **Cross-account** | Yes — resource policy | Yes — with RAM or policy |
+| **Cross-account** | Yes - resource policy | Yes - with RAM or policy |
 | **Encryption** | Always encrypted with KMS | SecureString = KMS, String = plaintext |
 | **Versioning** | Yes (AWSCURRENT, AWSPREVIOUS, AWSPENDING) | Yes (versions, labels) |
 
@@ -67,7 +67,7 @@ aws secretsmanager get-secret-value \
 # List secrets
 aws secretsmanager list-secrets --output table
 
-# Update (rotate manually — creates AWSPENDING version)
+# Update (rotate manually: creates AWSPENDING version)
 aws secretsmanager put-secret-value \
   --secret-id prod/rds/db-password \
   --secret-string '{"username":"admin","password":"newP@ss2026!"}'
@@ -84,10 +84,10 @@ For custom secrets, you write your own Lambda with the rotation lifecycle.
 ### Rotation Lifecycle (4 Steps)
 
 ```
-1. createSecret  — generate new secret value, store as AWSPENDING
-2. setSecret     — set the new value on the service (e.g. RDS password change)
-3. testSecret    — verify the new credentials work
-4. finishSecret  — promote AWSPENDING to AWSCURRENT, demote old to AWSPREVIOUS
+1. createSecret  - generate new secret value, store as AWSPENDING
+2. setSecret     - set the new value on the service (e.g. RDS password change)
+3. testSecret    - verify the new credentials work
+4. finishSecret  - promote AWSPENDING to AWSCURRENT, demote old to AWSPREVIOUS
 ```
 
 ```bash
@@ -169,7 +169,7 @@ aws ec2 create-vpc-endpoint \
 
 **ACM** provisions, manages, and auto-renews TLS/SSL certificates for AWS services.
 Certificates are free when used with integrated services.
-ACM handles the renewal process automatically — no manual certificate management.
+ACM handles the renewal process automatically - no manual certificate management.
 
 ### ACM Supported Services
 
@@ -180,7 +180,7 @@ ACM handles the renewal process automatically — no manual certificate manageme
 - AppSync
 - CloudFormation (for the above)
 
-**ACM certificates cannot be exported** — you cannot download the private key.
+**ACM certificates cannot be exported** - you cannot download the private key.
 To use a certificate on an EC2 instance directly, use ACM Private CA to issue a cert and export it, or upload a third-party certificate.
 
 ```bash
@@ -210,18 +210,18 @@ aws acm import-certificate \
 
 | Method | How it works | Use when |
 |---|---|---|
-| **DNS validation** | Add a CNAME record to your domain's DNS | Preferred — ACM auto-renews as long as CNAME exists |
+| **DNS validation** | Add a CNAME record to your domain's DNS | Preferred - ACM auto-renews as long as CNAME exists |
 | **Email validation** | AWS sends an email to domain contacts | Cannot modify DNS (registrar-controlled domain) |
 
 DNS validation is always preferred.
-Once the CNAME record exists, ACM renews automatically — DNS validation certificates never expire as long as the record stays in place.
+Once the CNAME record exists, ACM renews automatically - DNS validation certificates never expire as long as the record stays in place.
 
 ---
 
 ## AWS Private Certificate Authority (Private CA)
 
-**ACM Private CA** issues private TLS certificates for internal resources — microservices, internal APIs, EC2 instances, IoT devices.
-Private CA uses your own root or subordinate CA hierarchy — certificates are trusted only by your organization.
+**ACM Private CA** issues private TLS certificates for internal resources - microservices, internal APIs, EC2 instances, IoT devices.
+Private CA uses your own root or subordinate CA hierarchy - certificates are trusted only by your organization.
 
 ### CA Hierarchy
 
@@ -303,7 +303,7 @@ aws elbv2 create-listener \
   }]'
 ```
 
-**TLS security policies — exam reference:**
+**TLS security policies - exam reference:**
 
 | Policy | TLS versions | Use when |
 |---|---|---|
@@ -311,7 +311,7 @@ aws elbv2 create-listener \
 | `ELBSecurityPolicy-TLS13-1-3-2021-06` | TLS 1.3 only | Highest security requirement |
 | `ELBSecurityPolicy-FS` | TLS 1.2, forward secrecy only | Compliance requiring PFS |
 
-### S3 Bucket Policy — Require HTTPS
+### S3 Bucket Policy: Require HTTPS
 
 ```json
 {
@@ -335,7 +335,7 @@ aws elbv2 create-listener \
 
 ---
 
-## CloudWatch Logs — Data Protection Policies
+## CloudWatch Logs: Data Protection Policies
 
 **CloudWatch Logs data protection policies** detect and mask sensitive data (PII, credentials, health data) in log groups.
 Matches are replaced with `***PROTECTED***` in the log stream.
@@ -381,9 +381,9 @@ aws logs put-data-protection-policy \
 ## Exam Key Points
 
 - **Secrets Manager vs Parameter Store**: Secrets Manager for automatic rotation; Parameter Store for config + secrets without rotation
-- **Rotation failure**: most common cause is the Lambda function cannot reach Secrets Manager — add a VPC endpoint or NAT Gateway
+- **Rotation failure**: most common cause is the Lambda function cannot reach Secrets Manager - add a VPC endpoint or NAT Gateway
 - **Cross-account secrets**: resource policy on the secret + IAM policy in the external account + KMS key policy (if CMK is used)
-- **ACM certificates**: free, auto-renew, cannot be exported — only work with AWS-integrated services
+- **ACM certificates**: free, auto-renew, cannot be exported - only work with AWS-integrated services
 - **Private CA**: issues private certs that CAN be exported; use for internal services, mTLS, IoT
 - **TLS on ALB**: use `ELBSecurityPolicy-TLS13-1-2-2021-06` for TLS 1.2+1.3; redirect HTTP 80 to HTTPS 443
 - **S3 HTTPS enforcement**: bucket policy with `"aws:SecureTransport": "false"` → Deny
@@ -409,3 +409,13 @@ aws acm-pca list-certificate-authorities
 aws acm-pca describe-certificate-authority --certificate-authority-arn ARN
 aws acm-pca get-certificate-authority-csr --certificate-authority-arn ARN
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

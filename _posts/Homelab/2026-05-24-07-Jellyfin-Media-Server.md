@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Homelab Part 7 — Jellyfin Self-Hosted Media Server"
+title: "Homelab Part 7: Jellyfin Self-Hosted Media Server"
 date: 2026-05-24 16:00:00 +0800
 categories:
   - Homelab
@@ -11,7 +11,7 @@ tags:
   - Media
   - Selfhosted
 author: muhammed
-description: Deploying Jellyfin on Kubernetes — mounting my local movie library, setting up the media server, configuring HTTPS access at jellyfin.home.lab, and streaming to every device on my network.
+description: Deploying Jellyfin on Kubernetes - mounting my local movie library, setting up the media server, configuring HTTPS access at jellyfin.home.lab, and streaming to every device on my network.
 toc: true
 pin: false
 math: false
@@ -20,11 +20,11 @@ mermaid: false
 
 ## What Jellyfin Is
 
-Jellyfin is a free, open-source media server. I point it at a folder of movies and TV shows, it scans the files, downloads metadata and cover art from the internet, and presents a Netflix-like interface I can access from any device on my home network — phone, iPad, laptop, TV.
+Jellyfin is a free, open-source media server. I point it at a folder of movies and TV shows, it scans the files, downloads metadata and cover art from the internet, and presents a Netflix-like interface I can access from any device on my home network - phone, iPad, laptop, TV.
 
 No subscriptions. No sending data to a third party. My movies, my server, my data.
 
-The alternative most people know is Plex. Plex requires a cloud account and sometimes a Plex Pass subscription for certain features. Jellyfin is completely self-contained — it runs offline if it needs to.
+The alternative most people know is Plex. Plex requires a cloud account and sometimes a Plex Pass subscription for certain features. Jellyfin is completely self-contained - it runs offline if it needs to.
 
 ---
 
@@ -32,9 +32,9 @@ The alternative most people know is Plex. Plex requires a cloud account and some
 
 Jellyfin needs two kinds of storage:
 
-1. **Config volume** (Longhorn) — user accounts, library database, watch history, transcoding cache. Small (5GB), but important. Needs to survive pod restarts.
+1. **Config volume** (Longhorn) - user accounts, library database, watch history, transcoding cache. Small (5GB), but important. Needs to survive pod restarts.
 
-2. **Media directory** (hostPath) — the actual `.mkv`, `.mp4`, `.avi` files. These live in `/media/movies` on the VM's filesystem. I don't put them in Longhorn because video files are huge and Longhorn is better suited for structured data. A `hostPath` mount gives the pod direct access to the VM's disk.
+2. **Media directory** (hostPath) - the actual `.mkv`, `.mp4`, `.avi` files. These live in `/media/movies` on the VM's filesystem. I don't put them in Longhorn because video files are huge and Longhorn is better suited for structured data. A `hostPath` mount gives the pod direct access to the VM's disk.
 
 ---
 
@@ -62,7 +62,6 @@ ls -lh /media/movies/
 # Should show your movie files
 ```
 
-> `[SCREENSHOT]` — *Terminal showing movie files listed in /media/movies with their sizes*
 
 ---
 
@@ -178,8 +177,8 @@ spec:
 ```
 
 Two things to note about the Ingress annotations:
-- `proxy-body-size: "0"` removes the upload size limit — needed if you ever upload media through the UI
-- `proxy-read-timeout: "600"` and `proxy-send-timeout: "600"` give 10-minute timeouts — important for video streaming
+- `proxy-body-size: "0"` removes the upload size limit - needed if you ever upload media through the UI
+- `proxy-read-timeout: "600"` and `proxy-send-timeout: "600"` give 10-minute timeouts - important for video streaming
 
 ```bash
 kubectl apply -f jellyfin.yaml
@@ -193,7 +192,6 @@ kubectl get pods -n media -w
 # jellyfin-xxx    1/1   Running             ...
 ```
 
-> `[SCREENSHOT]` — *`kubectl get pods -n media` showing jellyfin pod Running*
 
 ---
 
@@ -212,7 +210,6 @@ kubectl get pods -n storage
 kubectl describe pvc jellyfin-config -n media
 ```
 
-> `[SCREENSHOT]` — *`kubectl get pvc -n media` showing jellyfin-config as Bound*
 
 ---
 
@@ -226,7 +223,6 @@ The setup wizard runs:
 
 Set a username and strong password. This is your admin account for managing the server.
 
-> `[SCREENSHOT]` — *Jellyfin initial setup — create admin user screen*
 
 ### 2. Set Up Media Libraries
 
@@ -244,7 +240,6 @@ Click **Add Media Library**:
 - Display name: Shows
 - Folder: `/media/shows`
 
-> `[SCREENSHOT]` — *Jellyfin Add Library screen with /media/movies folder selected*
 
 ### 3. Metadata Language
 
@@ -264,9 +259,8 @@ After setup, Jellyfin scans the library. For a few hundred movies, this takes 2�
 - Synopsis, ratings, genres
 - Trailers (if enabled)
 
-Once done, the dashboard shows your library with full artwork — exactly like Netflix or Apple TV.
+Once done, the dashboard shows your library with full artwork - exactly like Netflix or Apple TV.
 
-> `[SCREENSHOT]` — *Jellyfin dashboard showing movie library with poster art*
 
 ---
 
@@ -283,15 +277,14 @@ Jellyfin has clients for everything:
 | Smart TV | Jellyfin app (some Samsung/LG TVs) |
 | Windows | Jellyfin Media Player app |
 
-For iPhone/iPad — since I'm using a self-signed certificate (the homelab CA), I need the CA cert installed first. I did that in Part 5. Without it, the app will refuse the HTTPS connection.
+For iPhone/iPad - since I'm using a self-signed certificate (the homelab CA), I need the CA cert installed first. I did that in Part 5. Without it, the app will refuse the HTTPS connection.
 
-> `[SCREENSHOT]` — *Jellyfin app on iPhone showing the movie library and a movie detail page*
 
 ---
 
 ## Transcoding
 
-Jellyfin can transcode video on-the-fly — converting from a format your device can't play (like some `.mkv` H.265 files) to something it can. This is CPU-intensive.
+Jellyfin can transcode video on-the-fly - converting from a format your device can't play (like some `.mkv` H.265 files) to something it can. This is CPU-intensive.
 
 With 8 cores allocated to the K3s VM, software transcoding works fine. If you have issues with high CPU during playback, check the Jellyfin admin panel:
 
@@ -309,7 +302,7 @@ For most modern devices (iPhone, iPad, Chromebook), H.264/AAC in an MP4 containe
 # Check Jellyfin logs for errors
 kubectl logs -n media deployment/jellyfin
 
-# Restart Jellyfin (preserves config — it's in Longhorn)
+# Restart Jellyfin (preserves config: it's in Longhorn)
 kubectl rollout restart deployment/jellyfin -n media
 
 # Scale down (stop Jellyfin temporarily)
@@ -337,7 +330,7 @@ At the end of Part 7 I have:
 - ✅ Media library scanning and streaming working
 - ✅ iPhone/iPad app connected and streaming
 
-Next: Nextcloud — my personal cloud storage, so I can sync and access files from anywhere on the network.
+Next: Nextcloud - my personal cloud storage, so I can sync and access files from anywhere on the network.
 
 ---
 
@@ -345,7 +338,6 @@ Next: Nextcloud — my personal cloud storage, so I can sync and access files fr
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

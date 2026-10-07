@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 4 — Day 23: Threat Modeling with STRIDE"
+title: "Day 23: Threat Modeling with STRIDE - Finding Architectural Flaws Early"
 date: 2026-06-12 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - CloudSecurity
   - DevSecOps
 author: muhammed
-description: A full walkthrough of threat modeling using STRIDE — drawing data flow diagrams, identifying threats, rating risk, and applying the methodology to a real cloud-native application.
+description: A full walkthrough of threat modeling using STRIDE - drawing data flow diagrams, identifying threats, rating risk, and applying the methodology to a real cloud-native application.
 toc: true
 pin: false
 math: false
@@ -22,7 +22,7 @@ image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fprodsens.live
 
 ## What is Threat Modeling?
 
-Threat modeling is structured thinking about what can go wrong in a system — done **before** you build, not after a breach.
+Threat modeling is structured thinking about what can go wrong in a system - done **before** you build, not after a breach.
 
 Instead of waiting for a pentest or a real attack to discover vulnerabilities, you proactively ask:
 - What are we building?
@@ -51,7 +51,7 @@ STRIDE is a threat classification model developed by Microsoft. Each letter maps
 
 ---
 
-## Step 1 — Draw a Data Flow Diagram (DFD)
+## Step 1: Draw a Data Flow Diagram (DFD)
 
 A DFD maps how data moves through your system. It uses four elements:
 
@@ -63,7 +63,7 @@ A DFD maps how data moves through your system. It uses four elements:
 | Arrow | Data flow (HTTP request, DB query, message) |
 | Dashed box | Trust boundary (crossing this boundary = higher scrutiny) |
 
-**Example — MindCraft application DFD:**
+**Example - MindCraft application DFD:**
 
 ```
 [User Browser]
@@ -92,10 +92,9 @@ A DFD maps how data moves through your system. It uses four elements:
      |
      ▼
 [CloudTrail / CloudWatch]
-  (Data Store — audit logs)
+  (Data Store - audit logs)
 ```
 
-> `[SCREENSHOT]` — *A hand-drawn or tool-drawn DFD on paper or in draw.io/Miro showing the MindCraft application components, data flows, and trust boundaries clearly labeled*
 
 **Tools for drawing DFDs:**
 - Draw.io (free, web-based)
@@ -105,9 +104,9 @@ A DFD maps how data moves through your system. It uses four elements:
 
 ---
 
-## Step 2 — Apply STRIDE to Each Element
+## Step 2: Apply STRIDE to Each Element
 
-For every data flow, process, and data store — ask which STRIDE threats apply.
+For every data flow, process, and data store - ask which STRIDE threats apply.
 
 ### Applying STRIDE to the MindCraft App
 
@@ -115,10 +114,10 @@ For every data flow, process, and data store — ask which STRIDE threats apply.
 
 | Threat | Question | Finding |
 |--------|----------|---------|
-| **S** Spoofing | Can a user forge another user's identity? | JWT tokens — are they validated server-side? |
+| **S** Spoofing | Can a user forge another user's identity? | JWT tokens - are they validated server-side? |
 | **T** Tampering | Can a request be modified in transit? | HTTPS enforced? HTTP redirected? |
 | **R** Repudiation | Can users deny their actions? | Are user actions logged with identity? |
-| **I** Info Disclosure | Does the response leak sensitive data? | API error messages — do they expose stack traces? |
+| **I** Info Disclosure | Does the response leak sensitive data? | API error messages - do they expose stack traces? |
 | **D** DoS | Can this flow be flooded? | WAF rate limiting in place? |
 | **E** Elevation | Can a user access resources they shouldn't? | Authorization checks on every API endpoint? |
 
@@ -126,7 +125,7 @@ For every data flow, process, and data store — ask which STRIDE threats apply.
 
 | Threat | Finding | Control |
 |--------|---------|---------|
-| **S** Spoofing | Service calls other internal services — are they authenticated? | mTLS or IAM auth between services |
+| **S** Spoofing | Service calls other internal services - are they authenticated? | mTLS or IAM auth between services |
 | **T** Tampering | Can environment variables or config be modified by an attacker? | Read-only filesystem, no SSRF to metadata service |
 | **R** Repudiation | Are all business operations logged with user ID and timestamp? | Structured logging with user context |
 | **I** Info Disclosure | Does the service log sensitive data (passwords, PII)? | Log scrubbing for PII |
@@ -146,7 +145,7 @@ For every data flow, process, and data store — ask which STRIDE threats apply.
 
 ---
 
-## Step 3 — Rate Each Threat (DREAD)
+## Step 3: Rate Each Threat (DREAD)
 
 After identifying threats, prioritize them using DREAD scoring:
 
@@ -158,7 +157,7 @@ After identifying threats, prioritize them using DREAD scoring:
 | **A** Affected users | 3 = All users affected |
 | **D** Discoverability | 3 = Publicly known, easy to find |
 
-**Example rating — JWT token not validated server-side:**
+**Example rating - JWT token not validated server-side:**
 
 | Factor | Score | Reason |
 |--------|-------|--------|
@@ -169,7 +168,7 @@ After identifying threats, prioritize them using DREAD scoring:
 | Discoverability | 2 | Requires probing |
 | **Total** | **13/15** | **Critical** |
 
-**Example rating — verbose error messages in API:**
+**Example rating - verbose error messages in API:**
 
 | Factor | Score | Reason |
 |--------|-------|--------|
@@ -182,7 +181,7 @@ After identifying threats, prioritize them using DREAD scoring:
 
 ---
 
-## Step 4 — Define Mitigations
+## Step 4: Define Mitigations
 
 For each identified threat, define a specific control:
 
@@ -193,11 +192,11 @@ For each identified threat, define a specific control:
 | No audit logging for payments | Repudiation | 10 | Log all payment events with user ID, timestamp, amount |
 | Stack trace in API errors | Info Disclosure | 9 | Generic error messages in prod, structured errors in logs only |
 | No rate limiting on login | DoS / Brute force | 11 | Rate-based WAF rule + account lockout after N failures |
-| User can set own role in JWT | Elevation | 14 | Never trust client-provided role claims — look up role from DB |
+| User can set own role in JWT | Elevation | 14 | Never trust client-provided role claims - look up role from DB |
 
 ---
 
-## Step 5 — Threat Model for the MindCraft App
+## Step 5: Threat Model for the MindCraft App
 
 Let's apply this to MindCraft specifically.
 
@@ -213,13 +212,12 @@ Let's apply this to MindCraft specifically.
 
 | # | Threat | Category | Priority | Mitigation |
 |---|--------|----------|----------|-----------|
-| 1 | IDOR — user accesses another user's resources by guessing IDs | Elevation | Critical | Enforce ownership check on every resource lookup |
-| 2 | Insecure file upload — user uploads malicious file to S3 | Tampering | High | Validate file type + size, scan with Lambda post-upload, serve via CloudFront not S3 direct |
+| 1 | IDOR - user accesses another user's resources by guessing IDs | Elevation | Critical | Enforce ownership check on every resource lookup |
+| 2 | Insecure file upload - user uploads malicious file to S3 | Tampering | High | Validate file type + size, scan with Lambda post-upload, serve via CloudFront not S3 direct |
 | 3 | Secrets in environment variables | Info Disclosure | High | Move all secrets to Secrets Manager, use ECS secrets injection |
 | 4 | ECS task with overly broad IAM role | Elevation | High | Least privilege IAM role scoped to specific S3 bucket and secret ARN only |
 | 5 | No rate limiting on password reset endpoint | DoS / Enumeration | Medium | WAF rate rule + CAPTCHA on password reset |
 
-> `[SCREENSHOT]` — *A completed threat model table in a spreadsheet or Notion showing the threat name, STRIDE category, DREAD score, and mitigation for the MindCraft application — at least 8-10 rows*
 
 ---
 
@@ -233,7 +231,6 @@ docker run -it -p 3000:3000 owasp/threat-dragon
 # Open http://localhost:3000
 ```
 
-> `[SCREENSHOT]` — *OWASP Threat Dragon UI in browser showing a DFD diagram being built with the threat list panel on the right showing identified STRIDE threats for a selected component*
 
 ### Microsoft Threat Modeling Tool
 
@@ -244,7 +241,7 @@ Free Windows tool with automatic STRIDE threat generation from DFDs:
 
 ---
 
-## Lab — Threat Model Your Blog Infrastructure
+## Lab: Threat Model Your Blog Infrastructure
 
 **Objective:** Apply STRIDE to the mhdomer.github.io Jekyll blog + GitHub Actions pipeline.
 
@@ -263,24 +260,23 @@ Free Windows tool with automatic STRIDE threat generation from DFDs:
 
 | Component | Threat | Finding |
 |-----------|--------|---------|
-| GitHub repo | S | Can someone push to main without review? — branch protection enabled? |
-| GitHub repo | T | Can pipeline files be modified to exfiltrate secrets? — workflow permissions scoped? |
-| GitHub Actions | I | Are secrets printed in logs? — use masked secrets only |
-| GitHub Actions | E | Can a PR modify a workflow and run it with elevated permissions? — require approval for fork PRs |
-| GitHub Pages | D | Can someone take down the site? — GitHub Pages uptime dependent on GitHub |
-| GitHub Pages | I | Is any sensitive info in the published posts? — review before publishing |
+| GitHub repo | S | Can someone push to main without review? - branch protection enabled? |
+| GitHub repo | T | Can pipeline files be modified to exfiltrate secrets? - workflow permissions scoped? |
+| GitHub Actions | I | Are secrets printed in logs? - use masked secrets only |
+| GitHub Actions | E | Can a PR modify a workflow and run it with elevated permissions? - require approval for fork PRs |
+| GitHub Pages | D | Can someone take down the site? - GitHub Pages uptime dependent on GitHub |
+| GitHub Pages | I | Is any sensitive info in the published posts? - review before publishing |
 
-> `[SCREENSHOT]` — *A simple DFD drawn for the blog pipeline showing the four components with data flow arrows and trust boundaries, annotated with at least 3 STRIDE threats*
 
 ---
 
 ## Key Takeaways
 
-- Threat modeling is the only proactive security activity — everything else is reactive
-- STRIDE gives you a systematic way to not miss threat categories — work through each letter for each component
-- The DFD is the foundation — if the diagram is wrong, the threat model is wrong
-- Prioritize with DREAD — not all threats are equal; fix Critical ones first
-- A threat model is a living document — update it when the architecture changes
+- Threat modeling is the only proactive security activity - everything else is reactive
+- STRIDE gives you a systematic way to not miss threat categories - work through each letter for each component
+- The DFD is the foundation - if the diagram is wrong, the threat model is wrong
+- Prioritize with DREAD - not all threats are equal; fix Critical ones first
+- A threat model is a living document - update it when the architecture changes
 - Even a simple threat model (30 minutes on a whiteboard) catches more than no threat model
 
 ---
@@ -292,7 +288,7 @@ Free Windows tool with automatic STRIDE threat generation from DFDs:
   <li><a href="https://owasp.org/www-community/Threat_Modeling" target="_blank">OWASP Threat Modeling</a></li>
   <li><a href="https://github.com/OWASP/threat-dragon" target="_blank">OWASP Threat Dragon</a></li>
   <li><a href="https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool" target="_blank">Microsoft Threat Modeling Tool</a></li>
-  <li><a href="https://shostack.org/books/threat-modeling-book" target="_blank">Threat Modeling — Designing for Security (Adam Shostack)</a></li>
+  <li><a href="https://shostack.org/books/threat-modeling-book" target="_blank">Threat Modeling - Designing for Security (Adam Shostack)</a></li>
 </ul>
 </div>
 
@@ -302,7 +298,6 @@ Free Windows tool with automatic STRIDE threat generation from DFDs:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

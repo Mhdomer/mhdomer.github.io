@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS WAF, Shield, and Amazon Inspector — Edge Protection and Vulnerability Scanning
+title: AWS WAF, Shield, and Amazon Inspector - Edge Protection and Vulnerability Scanning
 date: 2026-06-19T10:00:00
 categories:
   - SCS-C03 Cloud Security Speciality
@@ -13,7 +13,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 3 — WAF rule groups, managed rules, rate-based rules, Shield Advanced, and Inspector EC2/ECR/Lambda vulnerability scanning
+description: SCS-C03 Domain 3 - WAF rule groups, managed rules, rate-based rules, Shield Advanced, and Inspector EC2/ECR/Lambda vulnerability scanning
 toc: true
 pin: false
 math: false
@@ -24,7 +24,7 @@ Link1:
 img:
 ---
 
-## AWS WAF — Web Application Firewall
+## AWS WAF: Web Application Firewall
 
 **AWS WAF** filters HTTP/HTTPS traffic at Layer 7 before it reaches your application.
 It can be attached to **CloudFront**, **Application Load Balancer**, **API Gateway**, or **AppSync**.
@@ -36,11 +36,11 @@ WAF evaluates every request against a set of rules and either allows, blocks, or
 
 | Component | Description |
 |---|---|
-| **Web ACL** | The top-level container — a set of rules applied to a resource |
+| **Web ACL** | The top-level container - a set of rules applied to a resource |
 | **Rule** | A condition + action (allow / block / count / CAPTCHA) |
 | **Rule group** | A reusable collection of rules |
 | **Statement** | The condition inside a rule (IP match, geo match, string match, regex, size) |
-| **Default action** | What happens to requests that match no rule — allow or block |
+| **Default action** | What happens to requests that match no rule - allow or block |
 
 ### Rule Actions
 
@@ -66,7 +66,7 @@ aws wafv2 create-ip-set \
   --ip-address-version IPV4 \
   --addresses "1.2.3.4/32" "5.6.7.8/32"
 
-# Create an IP set (allowlist — e.g. your office)
+# Create an IP set (allowlist: e.g. your office)
 aws wafv2 create-ip-set \
   --name office-allowlist \
   --scope CLOUDFRONT \
@@ -132,7 +132,7 @@ The most important ones for the exam:
 
 | Rule Group | What It Blocks |
 |---|---|
-| `AWSManagedRulesCommonRuleSet` | OWASP Top 10 — SQLi, XSS, command injection, path traversal |
+| `AWSManagedRulesCommonRuleSet` | OWASP Top 10 - SQLi, XSS, command injection, path traversal |
 | `AWSManagedRulesKnownBadInputsRuleSet` | Exploits, malformed requests, known attack signatures |
 | `AWSManagedRulesSQLiRuleSet` | SQL injection patterns specifically |
 | `AWSManagedRulesLinuxRuleSet` | Linux-specific attacks (path traversal, /etc/passwd, LFI) |
@@ -179,7 +179,7 @@ aws wafv2 associate-web-acl \
 ## WAF Logging
 
 Enable WAF logging to S3, CloudWatch Logs, or Kinesis Data Firehose.
-Log all requests — sampled logging only captures a subset.
+Log all requests - sampled logging only captures a subset.
 
 ```bash
 aws wafv2 put-logging-configuration \
@@ -273,7 +273,7 @@ Inspector uses a **combined score** based on CVSS base score and EPSS.
 | **Low** | 0.1–3.9 |
 
 **EPSS score** (0–1) indicates probability of exploitation within 30 days.
-Inspector sorts findings by risk — a medium CVSS score with a high EPSS score might need more urgent attention than a high CVSS with low EPSS.
+Inspector sorts findings by risk - a medium CVSS score with a high EPSS score might need more urgent attention than a high CVSS with low EPSS.
 
 ---
 
@@ -301,7 +301,7 @@ aws inspector2 list-coverage \
 ## Inspector + Security Hub + ECR Integration
 
 - Inspector findings flow automatically into **Security Hub**
-- ECR image scanning: Inspector scans every image on push and continuously re-evaluates against new CVEs — no manual trigger needed
+- ECR image scanning: Inspector scans every image on push and continuously re-evaluates against new CVEs - no manual trigger needed
 - Inspector findings trigger **EventBridge** events for automated response
 
 ```bash
@@ -317,12 +317,12 @@ aws inspector2 create-filter \
 
 ---
 
-## WAF vs Shield vs Inspector — Exam Distinction
+## WAF vs Shield vs Inspector: Exam Distinction
 
 | | WAF | Shield | Inspector |
 |---|---|---|---|
 | **Protects against** | Application-layer attacks (SQLi, XSS, bots) | DDoS (volumetric + application) | Software vulnerabilities (CVEs) |
-| **Layer** | L7 (HTTP) | L3/L4 + L7 (Advanced) | N/A — offline scanning |
+| **Layer** | L7 (HTTP) | L3/L4 + L7 (Advanced) | N/A - offline scanning |
 | **Sits in front of** | CloudFront, ALB, API GW | CloudFront, ALB, Route 53, EIP | EC2, ECR, Lambda |
 | **Requires agents** | No | No | No (agentless) |
 
@@ -346,3 +346,13 @@ aws inspector2 list-findings --filter-criteria '{"severity": [{"comparison": "EQ
 aws inspector2 get-findings-report-status
 aws inspector2 list-coverage
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

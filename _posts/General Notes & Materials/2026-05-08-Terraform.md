@@ -11,7 +11,7 @@ tags:
   - aws
   - infrastructure
 author: muhammed
-description: Full Terraform walkthrough — providers, resources, state, variables, modules, workspaces, and real-world AWS patterns from the ground up
+description: Full Terraform walkthrough - providers, resources, state, variables, modules, workspaces, and real-world AWS patterns from the ground up
 toc: true
 pin: false
 math: false
@@ -48,7 +48,7 @@ Write .tf files → terraform init → terraform plan → terraform apply → te
 ## Installation
 
 ```bash
-# Linux — via tfenv (version manager, recommended)
+# Linux: via tfenv (version manager, recommended)
 git clone https://github.com/tfutils/tfenv.git ~/.tfenv
 echo 'export PATH="$HOME/.tfenv/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
@@ -144,7 +144,7 @@ provider "aws" {
   profile = "myprofile"    # from ~/.aws/credentials
 }
 
-# Multiple regions — use alias
+# Multiple regions: use alias
 provider "aws" {
   alias  = "us"
   region = "us-east-1"
@@ -206,7 +206,7 @@ resource "aws_instance" "app" {
 }
 ```
 
-Terraform automatically infers the dependency order — it creates `aws_subnet.private` before `aws_instance.app`.
+Terraform automatically infers the dependency order - it creates `aws_subnet.private` before `aws_instance.app`.
 
 ---
 
@@ -291,7 +291,7 @@ resource "aws_instance" "web" {
 
 ## Outputs
 
-Outputs expose values after `apply` — useful for passing data between modules or displaying connection info.
+Outputs expose values after `apply` - useful for passing data between modules or displaying connection info.
 
 ```hcl
 # outputs.tf
@@ -321,7 +321,7 @@ terraform output -json              # JSON format (for scripting)
 
 ## Locals
 
-Locals are computed values within a module — like variables but derived from other values.
+Locals are computed values within a module - like variables but derived from other values.
 
 ```hcl
 locals {
@@ -393,14 +393,14 @@ output "account_id" {
 
 Terraform tracks what it has created in a **state file** (`terraform.tfstate`). This is the source of truth.
 
-### Local state (default — not for teams)
+### Local state (default: not for teams)
 
-State is stored in `terraform.tfstate` in your project directory. **Never commit this to Git** — it contains secrets.
+State is stored in `terraform.tfstate` in your project directory. **Never commit this to Git** - it contains secrets.
 
 ### Remote state (required for teams)
 
 ```hcl
-# versions.tf — store state in S3 with DynamoDB locking
+# versions.tf: store state in S3 with DynamoDB locking
 terraform {
   backend "s3" {
     bucket         = "mycompany-terraform-state"
@@ -412,7 +412,7 @@ terraform {
 }
 ```
 
-Create the S3 bucket and DynamoDB table first (chicken-and-egg — do it manually or with a bootstrap module).
+Create the S3 bucket and DynamoDB table first (chicken-and-egg - do it manually or with a bootstrap module).
 
 ### State commands
 
@@ -560,7 +560,7 @@ terraform init      # re-run after adding modules to download them
 
 ## Meta-Arguments
 
-### count — create N copies
+### count: create N copies
 
 ```hcl
 resource "aws_subnet" "private" {
@@ -575,7 +575,7 @@ resource "aws_subnet" "private" {
 # Reference: aws_subnet.private[0], aws_subnet.private[1], etc.
 ```
 
-### for_each — create one per map/set item
+### for_each: create one per map/set item
 
 ```hcl
 variable "buckets" {
@@ -596,9 +596,9 @@ resource "aws_s3_bucket" "buckets" {
 # Reference: aws_s3_bucket.buckets["logs"], etc.
 ```
 
-`for_each` is preferred over `count` for anything meaningful — items are addressed by key, not index, so removing one doesn't shift everything.
+`for_each` is preferred over `count` for anything meaningful - items are addressed by key, not index, so removing one doesn't shift everything.
 
-### depends_on — explicit dependency
+### depends_on: explicit dependency
 
 ```hcl
 resource "aws_instance" "app" {
@@ -606,7 +606,7 @@ resource "aws_instance" "app" {
 }
 ```
 
-### lifecycle — control create/destroy behavior
+### lifecycle: control create/destroy behavior
 
 ```hcl
 resource "aws_db_instance" "main" {
@@ -693,7 +693,7 @@ output "prod_instances" {
 
 ## Workspaces
 
-Workspaces let you manage multiple state files with the same config — one per environment.
+Workspaces let you manage multiple state files with the same config - one per environment.
 
 ```bash
 terraform workspace list               # list workspaces (default exists)
@@ -795,7 +795,7 @@ resource "aws_security_group" "web" {
 ## .gitignore for Terraform
 
 ```gitignore
-# State files — contain secrets
+# State files: contain secrets
 *.tfstate
 *.tfstate.backup
 .terraform.tfstate.lock.info
@@ -834,3 +834,13 @@ crash.log
 | `terraform workspace select` | Switch workspace |
 | `terraform taint` | Mark resource for recreation on next apply |
 | `terraform graph` | Generate dependency graph (dot format) |
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 3 — Day 16: SCA with Snyk & Dependabot"
+title: "Day 16: SCA with Snyk & Dependabot - Securing the Open Source Supply Chain"
 date: 2026-06-04 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - DevSecOps
   - SupplyChain
 author: muhammed
-description: A full walkthrough of Software Composition Analysis using Snyk and GitHub Dependabot — tracking vulnerable dependencies, generating SBOMs, and automating dependency updates.
+description: A full walkthrough of Software Composition Analysis using Snyk and GitHub Dependabot - tracking vulnerable dependencies, generating SBOMs, and automating dependency updates.
 toc: true
 pin: false
 math: false
@@ -22,11 +22,11 @@ image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fgo.snyk.io%2F
 
 ## What is SCA?
 
-Software Composition Analysis (SCA) scans your **dependencies** — the third-party libraries and packages your application uses — for known vulnerabilities.
+Software Composition Analysis (SCA) scans your **dependencies** - the third-party libraries and packages your application uses - for known vulnerabilities.
 
 SAST looks at your code. SCA looks at everyone else's code you imported.
 
-**Why it matters:** The majority of modern application code is open-source dependencies. Log4Shell, Spring4Shell, and most major supply chain attacks exploited vulnerable libraries — not custom code.
+**Why it matters:** The majority of modern application code is open-source dependencies. Log4Shell, Spring4Shell, and most major supply chain attacks exploited vulnerable libraries - not custom code.
 
 **What SCA scans:**
 - `package.json` / `package-lock.json` (Node.js)
@@ -62,7 +62,6 @@ snyk auth
 snyk --version
 ```
 
-> `[SCREENSHOT]` — *Terminal showing snyk auth opening a browser for login, then returning "Your account has been authenticated" in the terminal*
 
 ---
 
@@ -85,7 +84,6 @@ snyk container test nginx:latest
 snyk iac test ./terraform/
 ```
 
-> `[SCREENSHOT]` — *Terminal showing snyk test output on a Node.js project — a table listing vulnerable packages with CVE IDs, severity, current version, and the fix version available*
 
 ---
 
@@ -103,12 +101,11 @@ snyk iac test ./terraform/
 ```
 
 Key fields:
-- **Introduced through** — which of YOUR direct dependencies pulled in the vulnerable one
-- **From** — the full dependency chain (transitive path)
-- **Fixed in** — the version that patches this CVE
-- **Remediation** — which direct dep to upgrade
+- **Introduced through** - which of YOUR direct dependencies pulled in the vulnerable one
+- **From** - the full dependency chain (transitive path)
+- **Fixed in** - the version that patches this CVE
+- **Remediation** - which direct dep to upgrade
 
-> `[SCREENSHOT]` — *Snyk test output showing the dependency chain clearly — a transitive vulnerability 3 levels deep, with the recommended direct dependency upgrade*
 
 ---
 
@@ -124,19 +121,17 @@ snyk fix --dry-run
 
 Snyk updates `package.json` / `requirements.txt` with the fixed versions and shows a diff.
 
-> `[SCREENSHOT]` — *Terminal showing snyk fix output listing the packages it's updating with old version → new version, and the number of vulnerabilities fixed*
 
 ---
 
 ### Snyk Monitor
 
-`snyk monitor` uploads a snapshot of your dependencies to the Snyk dashboard for continuous monitoring — even after the scan runs, Snyk alerts you when new CVEs are published for your dependencies.
+`snyk monitor` uploads a snapshot of your dependencies to the Snyk dashboard for continuous monitoring - even after the scan runs, Snyk alerts you when new CVEs are published for your dependencies.
 
 ```bash
 snyk monitor --project-name=myapp-production
 ```
 
-> `[SCREENSHOT]` — *Snyk web dashboard showing the monitored project with vulnerability counts by severity, and a timeline showing when new vulnerabilities were discovered*
 
 ---
 
@@ -172,7 +167,6 @@ jobs:
           sarif_file: snyk.sarif
 ```
 
-> `[SCREENSHOT]` — *GitHub Actions run showing the Snyk step completing — either passing with "No high severity vulnerabilities" or failing with the vulnerable packages listed*
 
 ---
 
@@ -188,7 +182,6 @@ Dependabot is GitHub's built-in dependency update tool. It:
 1. GitHub repo → Settings → Security → Dependabot alerts → Enable
 2. Also enable: Dependabot security updates (auto-PRs for security fixes)
 
-> `[SCREENSHOT]` — *GitHub repo → Security tab → Dependabot alerts showing a list of vulnerable dependencies with severity badges, CVE IDs, and "Review security update" buttons*
 
 ### Dependabot Configuration File
 
@@ -227,7 +220,6 @@ updates:
       interval: weekly
 ```
 
-> `[SCREENSHOT]` — *GitHub repo → Pull requests tab showing several Dependabot PRs open — each updating a specific package with the CVE it fixes listed in the PR description*
 
 ### Dependabot PR Structure
 
@@ -237,20 +229,19 @@ Each Dependabot PR includes:
 - Compatibility score (based on test results from similar repos)
 - CVEs fixed
 
-> `[SCREENSHOT]` — *A Dependabot PR open in GitHub showing the package version bump (e.g., lodash 4.17.15 → 4.17.21), the CVE description, and the compatibility score*
 
 **Workflow:** Review the PR → check the diff → merge if tests pass. Dependabot handles the boring part; you just approve.
 
 ---
 
-## SBOM — Software Bill of Materials
+## SBOM: Software Bill of Materials
 
 An SBOM is a complete inventory of all components in your application. Think of it as a manifest of every library, version, and license your software includes.
 
 **Why SBOMs matter:**
 - Quickly identify if you're affected when a new CVE drops (Log4Shell scenario)
 - Compliance requirements (US Executive Order on software security mandates SBOMs)
-- License auditing — ensure no GPL libraries in a proprietary product
+- License auditing - ensure no GPL libraries in a proprietary product
 
 ### Generating an SBOM with Snyk
 
@@ -262,7 +253,6 @@ snyk sbom --format cyclonedx1.4+json --file package.json > sbom.json
 snyk sbom --format spdx2.3+json --file package.json > sbom.spdx.json
 ```
 
-> `[SCREENSHOT]` — *Terminal showing snyk sbom command completing and the output JSON file containing the full component inventory with package names, versions, and license identifiers*
 
 ### Generating an SBOM with Syft
 
@@ -284,11 +274,10 @@ Then scan the SBOM for vulnerabilities with Grype:
 grype sbom:nginx-sbom.json
 ```
 
-> `[SCREENSHOT]` — *Terminal showing syft scanning a Docker image and outputting the SBOM, followed by grype scanning the SBOM and listing vulnerabilities found in the components*
 
 ---
 
-## SCA vs SAST — Side by Side
+## SCA vs SAST: Side by Side
 
 | | SAST (Semgrep) | SCA (Snyk/Dependabot) |
 |--|---------------|----------------------|
@@ -299,11 +288,11 @@ grype sbom:nginx-sbom.json
 | False positive rate | Medium | Low (CVE database is authoritative) |
 | Speed | Fast | Fast |
 
-Run both — they find completely different problems.
+Run both - they find completely different problems.
 
 ---
 
-## Lab — Run Snyk on a Node.js Project
+## Lab: Run Snyk on a Node.js Project
 
 **Objective:** Scan a vulnerable project, understand the dependency chain, and fix findings.
 
@@ -319,35 +308,32 @@ npm install
 snyk test
 ```
 
-> `[SCREENSHOT]` — *snyk test output showing vulnerabilities found in the project's dependencies with their CVE IDs and severity*
 
-3. Pick a High severity finding — read the description and dependency chain
+3. Pick a High severity finding - read the description and dependency chain
 4. Run fix:
 ```bash
 snyk fix --dry-run
 ```
 
-> `[SCREENSHOT]` — *snyk fix --dry-run output showing which packages would be upgraded and which vulnerabilities each upgrade fixes*
 
 5. Apply the fix and re-run `snyk test` to verify the count dropped
 
 6. Enable Dependabot on a GitHub repo:
    - Push the project to a GitHub repo
    - Add `.github/dependabot.yml` with the npm config
-   - Go to Security tab — check if Dependabot alerts are generated
+   - Go to Security tab - check if Dependabot alerts are generated
 
-> `[SCREENSHOT]` — *GitHub Security tab → Dependabot alerts showing the same vulnerabilities found by snyk, confirming both tools catch the same issues*
 
 ---
 
 ## Key Takeaways
 
-- Your dependencies are your attack surface too — most real-world breaches exploit known CVEs in libraries, not zero-days in custom code
+- Your dependencies are your attack surface too - most real-world breaches exploit known CVEs in libraries, not zero-days in custom code
 - Use Snyk for on-demand CLI scanning and CI/CD integration; Dependabot for continuous automated PRs
-- Transitive vulnerabilities (3+ levels deep) are just as dangerous — Snyk shows the full chain and which direct dep to upgrade
+- Transitive vulnerabilities (3+ levels deep) are just as dangerous - Snyk shows the full chain and which direct dep to upgrade
 - `snyk monitor` gives you continuous alerting even after the pipeline runs
-- SBOMs are becoming a compliance requirement — generate them and store them with your releases
-- SCA + SAST together cover both your code and your dependencies — run both in every pipeline
+- SBOMs are becoming a compliance requirement - generate them and store them with your releases
+- SCA + SAST together cover both your code and your dependencies - run both in every pipeline
 
 ---
 
@@ -368,7 +354,6 @@ snyk fix --dry-run
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

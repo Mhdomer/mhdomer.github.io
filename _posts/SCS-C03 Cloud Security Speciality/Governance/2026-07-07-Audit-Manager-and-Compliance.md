@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS Audit Manager, Artifact, and Compliance — Evidence and Assurance
+title: AWS Audit Manager, Artifact, and Compliance - Evidence and Assurance
 date: 2026-07-07T10:00:00
 categories:
   - SCS-C03 Cloud Security Speciality
@@ -15,7 +15,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 6 — Audit Manager automated evidence collection, AWS Artifact compliance reports, Config conformance packs, Security Hub CSPM, and Well-Architected Tool
+description: SCS-C03 Domain 6 - Audit Manager automated evidence collection, AWS Artifact compliance reports, Config conformance packs, Security Hub CSPM, and Well-Architected Tool
 toc: true
 pin: false
 math: false
@@ -32,9 +32,9 @@ The SCS-C03 exam distinguishes between three related compliance capabilities:
 
 | Service | Purpose |
 |---|---|
-| **AWS Config + conformance packs** | Continuous compliance checking — are resources configured correctly right now? |
-| **Security Hub** | Cloud Security Posture Management (CSPM) — aggregate findings, standards scoring, cross-account |
-| **AWS Audit Manager** | Audit evidence collection — continuously collect evidence mapped to compliance frameworks |
+| **AWS Config + conformance packs** | Continuous compliance checking - are resources configured correctly right now? |
+| **Security Hub** | Cloud Security Posture Management (CSPM) - aggregate findings, standards scoring, cross-account |
+| **AWS Audit Manager** | Audit evidence collection - continuously collect evidence mapped to compliance frameworks |
 | **AWS Artifact** | On-demand access to AWS compliance reports (SOC, PCI, ISO, etc.) |
 | **Well-Architected Tool** | Self-assessment against AWS best practices and security pillars |
 
@@ -52,7 +52,7 @@ Instead of manually gathering screenshots, logs, and config snapshots before an 
 | **Framework** | A set of controls mapped to a compliance standard (SOC 2, PCI DSS, HIPAA, GDPR, CIS) |
 | **Control** | A specific requirement (e.g. "MFA is enabled for all IAM users") |
 | **Assessment** | An active evaluation run against a framework for specific AWS accounts and services |
-| **Evidence** | The data collected to prove a control is met — Config snapshots, CloudTrail events, AWS API calls |
+| **Evidence** | The data collected to prove a control is met - Config snapshots, CloudTrail events, AWS API calls |
 | **Evidence folder** | Evidence organised by control within an assessment |
 
 ### Evidence Sources
@@ -61,8 +61,8 @@ Audit Manager collects evidence from three sources:
 
 | Source | What it collects |
 |---|---|
-| **AWS Config rules** | Configuration state — resource settings at a point in time |
-| **CloudTrail** | API call history — who did what |
+| **AWS Config rules** | Configuration state - resource settings at a point in time |
+| **CloudTrail** | API call history - who did what |
 | **AWS Security Hub** | Security findings from multiple services |
 | **Manual** | PDF/screenshots uploaded manually for controls that cannot be automated |
 
@@ -132,7 +132,7 @@ aws auditmanager create-control \
 
 ## AWS Artifact
 
-**AWS Artifact** provides on-demand access to AWS compliance documentation — audit reports, certifications, and agreements.
+**AWS Artifact** provides on-demand access to AWS compliance documentation - audit reports, certifications, and agreements.
 Use Artifact when:
 - You need to share AWS's SOC 2 or ISO 27001 reports with your auditors to demonstrate the underlying infrastructure is certified
 - You need to sign compliance agreements (HIPAA BAA, GDPR Data Processing Addendum)
@@ -157,12 +157,12 @@ aws artifact get-agreement-terms \
 # Done via console: Artifact → Agreements → Accept
 ```
 
-**Exam tip:** AWS Artifact does not evaluate your own environment — it provides AWS's compliance documentation.
+**Exam tip:** AWS Artifact does not evaluate your own environment - it provides AWS's compliance documentation.
 For evaluating your own environment, use Audit Manager or Config conformance packs.
 
 ---
 
-## AWS Config Conformance Packs — Compliance at Scale
+## AWS Config Conformance Packs: Compliance at Scale
 
 A **conformance pack** is a collection of Config rules and remediation actions packaged together.
 AWS provides pre-built conformance packs aligned to compliance frameworks.
@@ -188,7 +188,7 @@ aws configservice get-conformance-pack-compliance-details \
   --filters ComplianceType=NON_COMPLIANT
 ```
 
-### AWS Config Aggregator — Cross-Account Visibility
+### AWS Config Aggregator: Cross-Account Visibility
 
 An **aggregator** collects Config data from all accounts in your organization into a single view.
 
@@ -209,7 +209,7 @@ aws configservice select-aggregate-resource-config \
 
 ---
 
-## Security Hub — CSPM and Standards
+## Security Hub: CSPM and Standards
 
 **Security Hub** aggregates findings and scores your environment against security standards.
 The standards map to compliance frameworks and give an overall **security score** (0–100%) for each.
@@ -236,14 +236,14 @@ aws securityhub get-standards-control-associations \
 aws securityhub update-standards-control \
   --standards-control-arn arn:aws:securityhub:eu-west-1:123456789012:control/cis-aws-foundations-benchmark/v/1.2.0/1.20 \
   --control-status DISABLED \
-  --disabled-reason "CloudShell access is restricted via SCP — not applicable"
+  --disabled-reason "CloudShell access is restricted via SCP - not applicable"
 ```
 
 ---
 
 ## Well-Architected Tool
 
-The **Well-Architected Framework** tool guides you through a structured self-assessment of your workload against six pillars — operational excellence, security, reliability, performance efficiency, cost optimization, and sustainability.
+The **Well-Architected Framework** tool guides you through a structured self-assessment of your workload against six pillars - operational excellence, security, reliability, performance efficiency, cost optimization, and sustainability.
 
 For SCS-C03, the **Security Pillar** is most relevant.
 Security pillar focus areas:
@@ -286,19 +286,19 @@ aws wellarchitected get-lens-review \
 | "Aggregate security findings across 50 accounts" | Security Hub finding aggregator |
 | "Which Config rules are non-compliant across the entire org?" | Config aggregator |
 | "Sign the HIPAA BAA" | AWS Artifact → Agreements |
-| "Review our workload against security best practices" | Well-Architected Tool — Security Pillar |
+| "Review our workload against security best practices" | Well-Architected Tool - Security Pillar |
 | "Automatically collect evidence for the quarterly audit" | Audit Manager |
 
 ---
 
 ## Exam Key Points
 
-- **Audit Manager**: evidence collection for audits — continuous, automated, mapped to frameworks; generates reports for auditors
-- **AWS Artifact**: AWS's own compliance reports (SOC, PCI, ISO) — not your environment's compliance
+- **Audit Manager**: evidence collection for audits - continuous, automated, mapped to frameworks; generates reports for auditors
+- **AWS Artifact**: AWS's own compliance reports (SOC, PCI, ISO) - not your environment's compliance
 - **Config conformance packs**: batch deployment of Config rules aligned to a compliance standard; cross-account via org
-- **Security Hub standards**: FSBP is the default; CIS, PCI DSS, NIST available — disable controls that don't apply with a reason
+- **Security Hub standards**: FSBP is the default; CIS, PCI DSS, NIST available - disable controls that don't apply with a reason
 - **Config aggregator**: org-wide resource state query; use `select-aggregate-resource-config` for ad-hoc queries
-- **Well-Architected Tool**: structured self-assessment, not automated scanning — generates improvement plan
+- **Well-Architected Tool**: structured self-assessment, not automated scanning - generates improvement plan
 
 ---
 
@@ -324,3 +324,13 @@ aws securityhub get-insights
 aws wellarchitected list-workloads --output table
 aws wellarchitected list-lenses --output table
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

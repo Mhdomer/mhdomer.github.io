@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Cloud Incident Response and Amazon Detective — IR Playbooks and Investigation
+title: Cloud Incident Response and Amazon Detective - IR Playbooks and Investigation
 date: 2026-06-17T10:00:00
 categories:
   - SCS-C03 Cloud Security Speciality
@@ -13,7 +13,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 2 — Cloud IR phases, EC2 forensics and containment, automated response with SSM and Step Functions, and Amazon Detective graph-based investigation
+description: SCS-C03 Domain 2 - Cloud IR phases, EC2 forensics and containment, automated response with SSM and Step Functions, and Amazon Detective graph-based investigation
 toc: true
 pin: false
 math: false
@@ -32,11 +32,11 @@ Cloud IR follows the same phases as traditional IR but with cloud-specific tooli
 Prepare → Detect → Contain → Investigate → Eradicate → Recover → Post-Incident
 ```
 
-The key difference from on-premises IR: in AWS you can act programmatically at scale — isolate an instance, snapshot a disk, revoke credentials, and spin up a forensic environment all via API calls in seconds.
+The key difference from on-premises IR: in AWS you can act programmatically at scale - isolate an instance, snapshot a disk, revoke credentials, and spin up a forensic environment all via API calls in seconds.
 
 ---
 
-## Phase 1 — Prepare
+## Phase 1: Prepare
 
 Preparation happens before any incident occurs.
 
@@ -58,7 +58,7 @@ When an incident is triggered by GuardDuty → EventBridge, OpsCenter creates an
 
 ---
 
-## Phase 2 — Detect
+## Phase 2: Detect
 
 Detection sources in AWS:
 
@@ -66,26 +66,26 @@ Detection sources in AWS:
 |---|---|
 | **GuardDuty** | Malicious activity, credential misuse, C2 communication |
 | **Security Hub** | Policy violations, CSPM failures, aggregated findings |
-| **CloudTrail + CloudWatch alarms** | Specific API events — root login, SG changes, IAM changes |
+| **CloudTrail + CloudWatch alarms** | Specific API events - root login, SG changes, IAM changes |
 | **Config rules** | Resource configuration drift |
 | **Macie** | Sensitive data exposure in S3 |
 | **VPC Flow Logs** | Unusual traffic patterns |
 
 ---
 
-## Phase 3 — Contain (EC2 Compromise)
+## Phase 3: Contain (EC2 Compromise)
 
 When an EC2 instance is suspected compromised, the containment goal is to stop the spread without destroying evidence.
 
-### Step 1 — Isolate the Instance
+### Step 1: Isolate the Instance
 
-Move the instance to a **quarantine security group** — no inbound, no outbound except to your forensic tools.
+Move the instance to a **quarantine security group** - no inbound, no outbound except to your forensic tools.
 
 ```bash
 # Create quarantine security group (no inbound or outbound)
 aws ec2 create-security-group \
   --group-name quarantine-sg \
-  --description "Quarantine — no inbound or outbound traffic" \
+  --description "Quarantine - no inbound or outbound traffic" \
   --vpc-id vpc-abc123
 
 # Remove all outbound rules (default allows all outbound)
@@ -99,7 +99,7 @@ aws ec2 modify-instance-attribute \
   --groups sg-quarantine
 ```
 
-### Step 2 — Preserve Evidence
+### Step 2: Preserve Evidence
 
 Take a snapshot of every EBS volume before doing anything else.
 The snapshot is the forensic artifact.
@@ -120,7 +120,7 @@ for VOL in $VOLUMES; do
 done
 ```
 
-### Step 3 — Revoke IAM Credentials
+### Step 3: Revoke IAM Credentials
 
 If the instance had an IAM role, invalidate any active sessions immediately.
 
@@ -142,7 +142,7 @@ aws iam put-role-policy \
   }'
 ```
 
-### Step 4 — Disable IAM User Access Keys (if keys were compromised)
+### Step 4: Disable IAM User Access Keys (if keys were compromised)
 
 ```bash
 # Disable the key immediately
@@ -158,7 +158,7 @@ aws iam list-attached-user-policies --user-name compromised-user
 
 ---
 
-## Phase 4 — Investigate
+## Phase 4: Investigate
 
 ### Forensic EC2 Instance
 
@@ -233,7 +233,7 @@ Step Functions Workflow:
 
 ## Amazon Detective
 
-**Amazon Detective** automatically collects log data from your AWS accounts — CloudTrail, VPC Flow Logs, GuardDuty findings, EKS audit logs, Security Hub — and builds an interactive graph model of relationships and behaviours.
+**Amazon Detective** automatically collects log data from your AWS accounts - CloudTrail, VPC Flow Logs, GuardDuty findings, EKS audit logs, Security Hub - and builds an interactive graph model of relationships and behaviours.
 
 Where GuardDuty **detects** threats, Detective helps you **investigate** them.
 You start from a finding and Detective shows you the full context: which principal made the call, what else they did, what's normal for that entity, and how the activity relates to other entities.
@@ -259,10 +259,10 @@ aws detective accept-invitation \
 ### Detective Investigation Workflow
 
 1. Start from a **GuardDuty finding** or **Security Hub finding**
-2. Click "Investigate with Detective" — Detective opens with that entity in context
-3. View the **entity profile** — what is normal for this IP / user / role?
-4. Examine the **finding group** — other entities and findings connected to this incident
-5. Review the **activity timeline** — API calls, network connections, process activity over time
+2. Click "Investigate with Detective" - Detective opens with that entity in context
+3. View the **entity profile** - what is normal for this IP / user / role?
+4. Examine the **finding group** - other entities and findings connected to this incident
+5. Review the **activity timeline** - API calls, network connections, process activity over time
 
 ### Key Detective Concepts
 
@@ -278,9 +278,9 @@ aws detective accept-invitation \
 ## Exam Key Points
 
 - **Containment order for EC2 compromise:** isolate (quarantine SG) → snapshot (preserve evidence) → revoke credentials
-- **Never terminate** a compromised instance before snapshotting — you lose all forensic evidence
+- **Never terminate** a compromised instance before snapshotting - you lose all forensic evidence
 - **Forensic analysis** happens on a copy of the disk (snapshot → new volume) in an isolated forensic environment, never on the live instance
-- **STS credential revocation** — there is no direct "revoke" API. The pattern is: add a deny policy with `DateLessThan aws:TokenIssueTime` to invalidate all tokens issued before the policy was applied
+- **STS credential revocation** - there is no direct "revoke" API. The pattern is: add a deny policy with `DateLessThan aws:TokenIssueTime` to invalidate all tokens issued before the policy was applied
 - **Detective vs GuardDuty**: GuardDuty detects, Detective investigates. Detective needs GuardDuty to be enabled.
 - **Detective** retains data for **12 months** and the behaviour graph starts producing useful patterns after about 2 weeks of data ingestion
 - **SSM OpsCenter** is the right place to manage incident tracking, runbook execution, and remediation automation from within AWS
@@ -305,3 +305,13 @@ aws ssm create-ops-item \
 
 aws ssm describe-ops-items --ops-item-filters 'Key=Status,Values=Open,Operator=Equal'
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

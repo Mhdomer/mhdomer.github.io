@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Homelab Part 3 — Internal DNS with AdGuard Home"
+title: "Homelab Part 3: Internal DNS with AdGuard Home"
 date: 2026-05-24 12:00:00 +0800
 categories:
   - Homelab
@@ -10,7 +10,7 @@ tags:
   - AdGuard
   - Networking
 author: muhammed
-description: Installing AdGuard Home as the internal DNS server for the homelab — so every service gets a clean hostname instead of an IP address, plus network-wide ad blocking as a bonus.
+description: Installing AdGuard Home as the internal DNS server for the homelab - so every service gets a clean hostname instead of an IP address, plus network-wide ad blocking as a bonus.
 toc: true
 pin: false
 math: false
@@ -21,9 +21,9 @@ mermaid: false
 
 Right now, to access a service running on my K3s VM, I'd type something like `http://192.168.1.51:30080`. That's ugly, hard to remember, and breaks the moment I change the IP.
 
-What I want is: `http://jellyfin.home.lab` — from any device on my network.
+What I want is: `http://jellyfin.home.lab` - from any device on my network.
 
-To make that work, I need a DNS server that knows about my internal hostnames. My router's built-in DNS only knows about the internet — it has no idea what `jellyfin.home.lab` means. I need my own DNS server that I control.
+To make that work, I need a DNS server that knows about my internal hostnames. My router's built-in DNS only knows about the internet - it has no idea what `jellyfin.home.lab` means. I need my own DNS server that I control.
 
 AdGuard Home does this and blocks ads across the entire network as a side effect.
 
@@ -48,7 +48,6 @@ The installer:
 - Installs it as a systemd service
 - Starts it automatically
 
-> `[SCREENSHOT]` — *Terminal showing AdGuard Home installation completing with "AdGuard Home is now installed and running"*
 
 ---
 
@@ -69,7 +68,6 @@ The setup wizard runs:
 
 Click **Next → Next → Open Dashboard**.
 
-> `[SCREENSHOT]` — *AdGuard Home web dashboard showing query stats and DNS activity*
 
 ---
 
@@ -82,7 +80,7 @@ https://dns.cloudflare.com/dns-query
 https://dns.google/dns-query
 ```
 
-Using DNS-over-HTTPS (DoH) means my DNS queries are encrypted — my ISP can't see what I'm looking up.
+Using DNS-over-HTTPS (DoH) means my DNS queries are encrypted - my ISP can't see what I'm looking up.
 
 **Bootstrap DNS servers** (used to resolve the DoH hostnames themselves):
 
@@ -91,13 +89,12 @@ Using DNS-over-HTTPS (DoH) means my DNS queries are encrypted — my ISP can't s
 8.8.8.8
 ```
 
-> `[SCREENSHOT]` — *AdGuard DNS settings page showing upstream servers configured with DoH URLs*
 
 ---
 
 ## Adding Internal DNS Records
 
-This is the key step — telling AdGuard Home about my homelab hostnames.
+This is the key step - telling AdGuard Home about my homelab hostnames.
 
 Go to **Filters → DNS rewrites → Add DNS rewrite**:
 
@@ -108,9 +105,8 @@ Go to **Filters → DNS rewrites → Add DNS rewrite**:
 | `k3s.home.lab` | `192.168.1.51` |
 | `adguard.home.lab` | `192.168.1.50` |
 
-`192.168.1.200` is the IP MetalLB will assign to my Nginx Ingress — all services share one IP, with the hostname determining which service they reach. I'll configure MetalLB in Part 5.
+`192.168.1.200` is the IP MetalLB will assign to my Nginx Ingress - all services share one IP, with the hostname determining which service they reach. I'll configure MetalLB in Part 5.
 
-> `[SCREENSHOT]` — *AdGuard DNS rewrites page showing all four entries added*
 
 ---
 
@@ -118,9 +114,9 @@ Go to **Filters → DNS rewrites → Add DNS rewrite**:
 
 Now I need my devices to use AdGuard Home (`192.168.1.50`) as their DNS server instead of the router's built-in DNS.
 
-### Option A — Router Level (Recommended)
+### Option A: Router Level (Recommended)
 
-Best option — every device on the network automatically uses AdGuard without any per-device config.
+Best option - every device on the network automatically uses AdGuard without any per-device config.
 
 In my router admin panel:
 - Find the DHCP settings
@@ -128,9 +124,8 @@ In my router admin panel:
 
 After saving, any device that reconnects to WiFi or renews its DHCP lease will use AdGuard.
 
-> `[SCREENSHOT]` — *Router admin panel showing DHCP DNS field changed to 192.168.1.50*
 
-### Option B — Per Device (Fallback)
+### Option B: Per Device (Fallback)
 
 If I can't change the router (ISP-locked), I set DNS manually per device:
 
@@ -166,11 +161,10 @@ nslookup doubleclick.net 192.168.1.50
 # Should return 0.0.0.0 (blocked)
 ```
 
-> `[SCREENSHOT]` — *PowerShell showing nslookup results — internal hostname resolving to 192.168.1.200, external resolving correctly*
 
 ---
 
-## AdGuard Home — Useful Settings to Enable
+## AdGuard Home: Useful Settings to Enable
 
 ### Blocklists
 
@@ -181,19 +175,17 @@ I add these:
 - EasyList
 - Steven Black's Unified Hosts
 
-> `[SCREENSHOT]` — *AdGuard blocklists page showing enabled filter lists and total blocked domains count*
 
 ### Safe Browsing and Parental Controls
 
 **Settings → General settings:**
-- Enable Safe Browsing — blocks malicious domains
+- Enable Safe Browsing - blocks malicious domains
 - Leave parental controls off (my network, my rules)
 
 ### Query Log
 
-**Query Log** in the top menu shows every DNS query from every device in real time. Useful for debugging and also eye-opening — you see exactly how many tracking requests every device makes.
+**Query Log** in the top menu shows every DNS query from every device in real time. Useful for debugging and also eye-opening - you see exactly how many tracking requests every device makes.
 
-> `[SCREENSHOT]` — *AdGuard query log showing device IPs, queried domains, and blocked/allowed status*
 
 ---
 
@@ -209,7 +201,6 @@ sudo systemctl enable AdGuardHome    # should already be enabled
 The VM itself auto-starts in VMware if I set it:
 **VMware → VM → Settings → Options → Advanced → Power on this virtual machine after the host powers on**
 
-> `[SCREENSHOT]` — *systemctl status AdGuardHome showing active (running)*
 
 ---
 
@@ -231,7 +222,6 @@ The DNS is ready. Next: set up the K3s Kubernetes cluster on the main VM.
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

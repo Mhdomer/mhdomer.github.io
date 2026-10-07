@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Homelab Part 4 — K3s Single Node Kubernetes Setup"
+title: "Homelab Part 4: K3s Single Node Kubernetes Setup"
 date: 2026-05-24 13:00:00 +0800
 categories:
   - Homelab
@@ -11,7 +11,7 @@ tags:
   - kubectl
   - Helm
 author: muhammed
-description: Installing K3s on a single Ubuntu VM, configuring kubectl access from Windows, and installing Helm — the foundation everything else in the homelab is built on.
+description: Installing K3s on a single Ubuntu VM, configuring kubectl access from Windows, and installing Helm - the foundation everything else in the homelab is built on.
 toc: true
 pin: false
 math: false
@@ -22,7 +22,7 @@ mermaid: false
 
 Fair question. You could run Jellyfin and Nextcloud with a single `docker-compose.yml`. Simpler, faster, done in 20 minutes.
 
-But the point of this homelab is to understand how modern infrastructure works — not just to get Jellyfin running. Kubernetes teaches you:
+But the point of this homelab is to understand how modern infrastructure works - not just to get Jellyfin running. Kubernetes teaches you:
 
 - How container orchestration actually works at the scheduler level
 - How networking between services is handled (services, endpoints, DNS)
@@ -30,7 +30,7 @@ But the point of this homelab is to understand how modern infrastructure works �
 - How to deploy and update services without downtime
 - Everything that maps directly to AWS EKS, Azure AKS, or GKE in a real job
 
-K3s is the right choice here — it's full Kubernetes, just without the cloud-provider extras. It runs comfortably on a single VM and uses far less resources than a full kubeadm cluster.
+K3s is the right choice here - it's full Kubernetes, just without the cloud-provider extras. It runs comfortably on a single VM and uses far less resources than a full kubeadm cluster.
 
 ---
 
@@ -64,7 +64,6 @@ free -gh     # RAM in GB
 df -h /      # Disk space
 ```
 
-> `[SCREENSHOT]` — *Terminal showing nproc, free -gh, and df -h output before installation*
 
 ---
 
@@ -95,7 +94,6 @@ NAME          STATUS   ROLES                  AGE   VERSION
 homelab-k3s   Ready    control-plane,master   1m    v1.28.x+k3s1
 ```
 
-> `[SCREENSHOT]` — *Terminal showing `k3s kubectl get nodes` with STATUS: Ready*
 
 ---
 
@@ -122,7 +120,6 @@ curl -sfL https://get.k3s.io | sh -s - \
   --disable servicelb
 ```
 
-> `[SCREENSHOT]` — *K3s reinstall output with --disable flags, ending with service started successfully*
 
 ---
 
@@ -146,7 +143,6 @@ kubectl get nodes
 kubectl get pods -A           # all pods across all namespaces
 ```
 
-> `[SCREENSHOT]` — *`kubectl get pods -A` showing CoreDNS, local-path-provisioner, and metrics-server pods running*
 
 ---
 
@@ -154,7 +150,7 @@ kubectl get pods -A           # all pods across all namespaces
 
 I want to run `kubectl` commands from my Windows machine without SSHing into the VM every time.
 
-### Step 1 — Install kubectl on Windows
+### Step 1: Install kubectl on Windows
 
 ```powershell
 # Using winget
@@ -163,10 +159,10 @@ winget install Kubernetes.kubectl
 # Or download manually from kubernetes.io/releases
 ```
 
-### Step 2 — Copy the kubeconfig from the VM
+### Step 2: Copy the kubeconfig from the VM
 
 ```bash
-# On the VM — show the kubeconfig content
+# On the VM: show the kubeconfig content
 sudo cat /etc/rancher/k3s/k3s.yaml
 ```
 
@@ -175,22 +171,21 @@ Copy this content to your Windows machine at:
 C:\Users\YourName\.kube\config
 ```
 
-### Step 3 — Fix the server address
+### Step 3: Fix the server address
 
-The kubeconfig file has `server: https://127.0.0.1:6443` — that's the loopback address, only valid inside the VM. Change it to the VM's actual IP:
+The kubeconfig file has `server: https://127.0.0.1:6443` - that's the loopback address, only valid inside the VM. Change it to the VM's actual IP:
 
 ```yaml
 server: https://192.168.1.51:6443
 ```
 
-### Step 4 — Test from Windows
+### Step 4: Test from Windows
 
 ```powershell
 kubectl get nodes
 kubectl get pods -A
 ```
 
-> `[SCREENSHOT]` — *Windows Terminal running kubectl get nodes against the homelab K3s cluster*
 
 ---
 
@@ -206,7 +201,6 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm version
 ```
 
-> `[SCREENSHOT]` — *`helm version` output showing version 3.x*
 
 Add the common chart repositories I'll use:
 
@@ -247,7 +241,6 @@ kubectl create namespace cloud
 kubectl get namespaces
 ```
 
-> `[SCREENSHOT]` — *`kubectl get namespaces` showing all namespaces including the newly created ones*
 
 ---
 
@@ -291,7 +284,7 @@ At the end of Part 4 I have:
 - ✅ Namespaces created for networking, storage, media, cloud
 - ✅ Basic cluster navigation working
 
-Next: MetalLB and Nginx Ingress — giving the cluster a real IP and routing traffic to the right services.
+Next: MetalLB and Nginx Ingress - giving the cluster a real IP and routing traffic to the right services.
 
 ---
 
@@ -299,7 +292,6 @@ Next: MetalLB and Nginx Ingress — giving the cluster a real IP and routing tra
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

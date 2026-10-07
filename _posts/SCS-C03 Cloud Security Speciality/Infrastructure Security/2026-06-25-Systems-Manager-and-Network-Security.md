@@ -15,7 +15,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 3 — SSM Session Manager, Patch Manager, Network Firewall, VPC endpoints, Verified Access, security group and NACL controls, and Network Access Analyzer
+description: SCS-C03 Domain 3 - SSM Session Manager, Patch Manager, Network Firewall, VPC endpoints, Verified Access, security group and NACL controls, and Network Access Analyzer
 toc: true
 pin: false
 math: false
@@ -26,14 +26,14 @@ Link1:
 img:
 ---
 
-## AWS Systems Manager — Security Overview
+## AWS Systems Manager: Security Overview
 
 **AWS Systems Manager** is the operations platform for managing EC2 instances and on-premises servers.
 For the SCS-C03 exam, the most important SSM capabilities are:
-- **Session Manager** — secure remote access without SSH keys or bastion hosts
-- **Patch Manager** — automated OS patching with compliance reporting
-- **Run Command** — execute scripts across fleets without SSH
-- **OpsCenter** — centralized operational issues tracking (used in IR)
+- **Session Manager** - secure remote access without SSH keys or bastion hosts
+- **Patch Manager** - automated OS patching with compliance reporting
+- **Run Command** - execute scripts across fleets without SSH
+- **OpsCenter** - centralized operational issues tracking (used in IR)
 
 All SSM capabilities require the **SSM Agent** running on the instance and an **IAM instance profile** with SSM permissions.
 
@@ -42,7 +42,7 @@ All SSM capabilities require the **SSM Agent** running on the instance and an **
 ## SSM Session Manager
 
 **Session Manager** provides browser-based and CLI shell access to EC2 instances.
-No inbound ports (22/SSH, 3389/RDP) need to be open — all traffic flows through the SSM service.
+No inbound ports (22/SSH, 3389/RDP) need to be open - all traffic flows through the SSM service.
 All session activity is logged to S3 and/or CloudWatch Logs.
 
 ### Why Session Manager Over Bastion Hosts
@@ -142,7 +142,7 @@ It uses **patch baselines** to define which patches are approved, and **maintena
 
 ### Patch Baseline
 
-A patch baseline defines the rules for auto-approving patches — by severity, classification, and days-after-release.
+A patch baseline defines the rules for auto-approving patches - by severity, classification, and days-after-release.
 
 ```bash
 # Create a custom patch baseline for Amazon Linux 2023
@@ -185,7 +185,7 @@ aws ssm describe-instance-patch-states-for-patch-group \
   --filters Key=State,Values=Failed,Missing
 ```
 
-Amazon Inspector integrates with Patch Manager — Inspector findings for OS vulnerabilities can trigger patch remediation via SSM.
+Amazon Inspector integrates with Patch Manager - Inspector findings for OS vulnerabilities can trigger patch remediation via SSM.
 
 ---
 
@@ -221,16 +221,16 @@ aws ssm send-command \
 | | Security Groups | Network ACLs |
 |---|---|---|
 | **Level** | Instance level | Subnet level |
-| **State** | Stateful — return traffic allowed automatically | Stateless — inbound + outbound rules both required |
+| **State** | Stateful - return traffic allowed automatically | Stateless - inbound + outbound rules both required |
 | **Rules** | Allow only (no explicit deny) | Allow AND deny |
 | **Evaluation** | All rules evaluated | Rules evaluated in order (lowest number wins) |
 | **Applies to** | ENI (elastic network interface) | All traffic entering/leaving subnet |
 
 ```bash
-# Create a restrictive security group (web tier — inbound HTTPS only)
+# Create a restrictive security group (web tier: inbound HTTPS only)
 aws ec2 create-security-group \
   --group-name prod-web-sg \
-  --description "Web tier — HTTPS only" \
+  --description "Web tier - HTTPS only" \
   --vpc-id vpc-abc123
 
 aws ec2 authorize-security-group-ingress \
@@ -254,7 +254,7 @@ aws ec2 create-network-acl-entry \
 ## AWS Network Firewall
 
 **AWS Network Firewall** is a managed stateful firewall for your VPC.
-Unlike security groups and NACLs, Network Firewall understands Layer 7 traffic — it can inspect HTTP headers, TLS SNI, DNS queries, and apply Suricata-compatible rules.
+Unlike security groups and NACLs, Network Firewall understands Layer 7 traffic - it can inspect HTTP headers, TLS SNI, DNS queries, and apply Suricata-compatible rules.
 
 Deploy Network Firewall in a dedicated **firewall subnet** in each AZ.
 Route traffic through the firewall before it reaches your application subnets.
@@ -275,7 +275,7 @@ aws network-firewall create-firewall \
   --vpc-id vpc-abc123 \
   --subnet-mappings SubnetId=subnet-fw1 SubnetId=subnet-fw2
 
-# Create a stateless rule group (Layer 4 — IP/port)
+# Create a stateless rule group (Layer 4: IP/port)
 aws network-firewall create-rule-group \
   --rule-group-name block-known-bad-ips \
   --type STATELESS \
@@ -311,14 +311,14 @@ drop tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"Block non-HTTPS"; sid:1002; r
 
 ---
 
-## VPC Endpoints — Private Access to AWS Services
+## VPC Endpoints: Private Access to AWS Services
 
 **VPC endpoints** allow your private subnets to access AWS services without traversing the internet.
 
 | Type | Services | Access |
 |---|---|---|
-| **Gateway endpoint** | S3, DynamoDB | Free — route table entry |
-| **Interface endpoint** | Most AWS services (SSM, KMS, Secrets Manager, etc.) | $0.01/hr + data — ENI in subnet |
+| **Gateway endpoint** | S3, DynamoDB | Free - route table entry |
+| **Interface endpoint** | Most AWS services (SSM, KMS, Secrets Manager, etc.) | $0.01/hr + data - ENI in subnet |
 
 ```bash
 # Create gateway endpoint for S3
@@ -351,7 +351,7 @@ aws ec2 create-vpc-endpoint \
 
 **Verified Access** provides zero-trust network access to internal applications without a VPN.
 It integrates with IAM Identity Center, Okta, or other identity providers.
-Access decisions are based on identity, device posture, and trust policies — evaluated on every request.
+Access decisions are based on identity, device posture, and trust policies - evaluated on every request.
 
 ```bash
 # Create a Verified Access instance
@@ -378,7 +378,7 @@ aws ec2 create-verified-access-endpoint \
 
 **Network Access Analyzer** identifies unintended network access paths to your resources.
 It finds paths where EC2 instances, RDS databases, or load balancers are reachable from the internet or across accounts when they should not be.
-It is different from Inspector network reachability — Network Access Analyzer models the entire network topology.
+It is different from Inspector network reachability - Network Access Analyzer models the entire network topology.
 
 ```bash
 # Create a network access scope (find internet-accessible resources)
@@ -398,13 +398,13 @@ aws ec2 start-network-insights-access-scope-analysis \
 
 ## Exam Key Points
 
-- **Session Manager**: no SSH, no bastion, no open ports — all access via IAM + SSM Agent
+- **Session Manager**: no SSH, no bastion, no open ports - all access via IAM + SSM Agent
 - **Patch Manager**: patch baselines define approval rules; Inspector findings can trigger patching
 - **Security Groups vs NACLs**: SGs are stateful (allow only), NACLs are stateless (allow + deny, numbered rules)
-- **Network Firewall**: Layer 7 stateful inspection, Suricata rules, inspect HTTP/TLS/DNS — not possible with SGs or NACLs
+- **Network Firewall**: Layer 7 stateful inspection, Suricata rules, inspect HTTP/TLS/DNS - not possible with SGs or NACLs
 - **Interface endpoints**: required for private subnets to reach SSM, KMS, Secrets Manager, ECR without NAT
-- **Gateway endpoints**: free for S3 and DynamoDB — always prefer over NAT for those services
-- **Verified Access**: zero-trust access to internal apps via identity provider — no VPN needed
+- **Gateway endpoints**: free for S3 and DynamoDB - always prefer over NAT for those services
+- **Verified Access**: zero-trust access to internal apps via identity provider - no VPN needed
 
 ---
 
@@ -427,3 +427,13 @@ aws ec2 describe-vpc-endpoints --filters Name=vpc-id,Values=vpc-abc123
 aws network-firewall list-firewalls
 aws network-firewall describe-firewall --firewall-name prod-vpc-firewall
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

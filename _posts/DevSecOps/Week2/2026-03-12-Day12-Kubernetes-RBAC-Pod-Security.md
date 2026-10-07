@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 2 — Day 12: Kubernetes RBAC & Pod Security"
+title: "Day 12: Kubernetes RBAC & Pod Security - Hardening Cluster Workloads"
 date: 2026-03-12 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - ContainerSecurity
   - DevSecOps
 author: muhammed
-description: A full walkthrough of Kubernetes RBAC, Pod Security Standards, Network Policies, and service account hardening — securing your cluster beyond just the application layer.
+description: A practical walkthrough of Kubernetes RBAC, Pod Security Standards, Network Policies, and service account hardening - securing cluster workloads beyond the container boundary.
 toc: true
 pin: false
 math: false
@@ -20,201 +20,173 @@ mermaid: false
 image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmiro.medium.com%2Fv2%2Fresize%3Afit%3A1200%2F0*mHAuMdmOQwOa70Zf.jpg&f=1&nofb=1&ipt=f33090c83b448680b1963ab65855c8f88b346ecceb45c99b72b0a576524ae8d8
 ---
 
-## Why Kubernetes Security Is Different
+## Why Kubernetes Security Overwhelms Beginners
 
-In Kubernetes, the attack surface isn't just your application — it's the entire cluster orchestration layer. Misconfigured RBAC, overly permissive pods, or unrestricted network traffic between pods can let an attacker move laterally across your entire infrastructure.
+When you transition from running single Docker containers to managing a Kubernetes cluster, security suddenly becomes multi-layered.
 
-This day covers the three main layers of Kubernetes security: **identity (RBAC)**, **workload (Pod Security)**, and **network (Network Policies)**.
+You are no longer just securing an operating system or a Dockerfile. You are now securing an entire distributed orchestration platform:
 
----
+- Who is allowed to talk to the Kubernetes API server?
+- What happens if an attacker exploits a vulnerable web app running inside a pod? Can they query the internal cluster API to compromise other microservices?
+- Can a compromised pod in the `staging` namespace freely send HTTP requests to the `production` database?
 
-## Kubernetes RBAC
+By default, Kubernetes is designed for developer convenience, not defense. Pods can communicate with all other pods across all namespaces, and every pod automatically receives an authentication token to communicate with the cluster API.
 
-### Core Concepts
-
-RBAC controls who can do what in a Kubernetes cluster.
-
-| Object | Description |
-|--------|-------------|
-| `Role` | Permissions within a single namespace |
-| `ClusterRole` | Permissions cluster-wide (or reusable across namespaces) |
-| `RoleBinding` | Binds a Role to a user/group/service account within a namespace |
-| `ClusterRoleBinding` | Binds a ClusterRole to a subject cluster-wide |
-
-**Subjects (who):**
-- `User` — human users (authenticated externally, e.g., via OIDC)
-- `Group` — a set of users
-- `ServiceAccount` — identity for a pod
+Today, we are demystifying Kubernetes security into three clear layers: **Identity (RBAC)**, **Workload Guardrails (Pod Security Standards)**, and **Network Isolation (Network Policies)**.
 
 ---
 
-### Roles and ClusterRoles
+## Layer 1: Kubernetes RBAC (Role-Based Access Control)
+
+Kubernetes Role-Based Access Control answers three simple questions for every request sent to the cluster API:
+
+1. **Who? (The Subject):** A human user, an external group, or an automated `ServiceAccount` running inside a pod.
+2. **What? (The Rules):** Which API operations (verbs: `get`, `list`, `create`, `delete`) on which resources (`pods`, `services`, `secrets`, `configmaps`).
+3. **Where? (The Scope):** Inside a single namespace, or across the entire cluster?
+
+```
++-------------------------------------------------------------+
+|                     Kubernetes RBAC Model                   |
++-------------------------------------------------------------+
+   [ Subject ]  ----->  [ RoleBinding ]  ----->  [ Role ]
+ (User / ServiceAccount)    (The Glue)         (Verbs + Resources)
+```
+
+### Namespace-Scoped vs Cluster-Scoped
+
+| Scope | Role Definition | Binding Mechanism | Use Case |
+| :--- | :--- | :--- | :--- |
+| **Namespace-Scoped** | `Role` | `RoleBinding` | Scoped to a single namespace (e.g. read pods in `staging`) |
+| **Cluster-Scoped** | `ClusterRole` | `ClusterRoleBinding` | Applies cluster-wide (e.g. manage nodes, read secrets across all namespaces) |
+
+---
+
+## Writing Clean, Least-Privilege RBAC Manifests
+
+### 1. The Role: Defining Permissions
+
+Here is a clean `Role` that allows reading pods in the `production` namespace only:
 
 ```yaml
-# Role — namespace-scoped
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   namespace: production
-  name: pod-reader
+  name: pod-reader-role
 rules:
-  - apiGroups: [""]
-    resources: ["pods"]
+  - apiGroups: [""] # Core API group
+    resources: ["pods", "pods/log"]
     verbs: ["get", "list", "watch"]
 ```
 
-```yaml
-# ClusterRole — cluster-wide or reusable
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: secret-reader
-rules:
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list"]
-```
+### 2. The RoleBinding: Connecting the Subject to the Role
 
-**Verbs map to API operations:**
-
-| Verb | HTTP | Operation |
-|------|------|-----------|
-| `get` | GET | Read a specific resource |
-| `list` | GET | List resources |
-| `watch` | GET | Stream changes |
-| `create` | POST | Create |
-| `update` | PUT | Replace |
-| `patch` | PATCH | Partial update |
-| `delete` | DELETE | Delete |
-
----
-
-### RoleBindings
+A `RoleBinding` acts as the glue connecting an identity to a `Role`:
 
 ```yaml
-# Bind pod-reader Role to a user in production namespace
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: read-pods
   namespace: production
+  name: read-pods-binding
 subjects:
   - kind: User
     name: alice
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
-  name: pod-reader
+  name: pod-reader-role
   apiGroup: rbac.authorization.k8s.io
 ```
 
-```yaml
-# Bind to a ServiceAccount
-subjects:
-  - kind: ServiceAccount
-    name: my-service-account
-    namespace: production
-```
+### Verifying Permissions with `kubectl auth can-i`
 
-> `[SCREENSHOT]` — *kubectl get rolebindings -n production -o wide showing the bindings with their roles and subjects listed*
+Never guess whether permissions work. Kubernetes provides a built-in authorization testing command:
+
+```bash
+# Test if user Alice can list pods in production
+kubectl auth can-i list pods --namespace production --as alice
+# Output: yes
+
+# Test if Alice can delete deployments
+kubectl auth can-i delete deployments --namespace production --as alice
+# Output: no
+```
 
 ---
 
-### Service Account Hardening
+## The ServiceAccount Silent Danger: Token Automounting
 
-Every pod gets a service account. By default it uses the `default` service account in its namespace — which often has more permissions than needed. Always create dedicated service accounts.
+This is one of the most critical security traps in Kubernetes:
+
+Whenever you create a Pod without specifying a service account, Kubernetes assigns it the `default` service account of that namespace.
+
+By default, Kubernetes **automatically mounts a JWT bearer token** into every single container at:
+
+```
+/var/run/secrets/kubernetes.io/serviceaccount/token
+```
+
+### Why This Is Dangerous
+
+If your container runs an application with a Local File Inclusion (LFI) or Server-Side Request Forgery (SSRF) vulnerability:
+
+1. The attacker reads `/var/run/secrets/kubernetes.io/serviceaccount/token`.
+2. The attacker uses that bearer token to query `https://kubernetes.default.svc`.
+3. If an administrator lazily bound permissions to the `default` service account, the attacker can now enumerate pods, dump secrets, or create privileged pods to compromise the entire cluster!
+
+### The Hardening Fix
+
+If your application does not explicitly need to talk to the Kubernetes API (like Prometheus or an operator does), **disable token auto-mounting**:
 
 ```yaml
-# Dedicated service account for a deployment
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: api-service-account
+  name: web-app-sa
   namespace: production
-automountServiceAccountToken: false   # don't auto-mount if not needed
+automountServiceAccountToken: false
 ```
 
+And in your Deployment spec:
+
 ```yaml
-# Reference it in the deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+  namespace: production
 spec:
-  serviceAccountName: api-service-account
-  automountServiceAccountToken: false
+  template:
+    spec:
+      serviceAccountName: web-app-sa
+      automountServiceAccountToken: false
+      containers:
+        - name: web
+          image: myapp:v1.0
 ```
 
-> `[SCREENSHOT]` — *kubectl describe pod showing serviceAccount: api-service-account and the token mount either absent (if automount disabled) or present*
-
-**Why disable token auto-mount?** By default, Kubernetes mounts a service account token at `/var/run/secrets/kubernetes.io/serviceaccount/token` in every pod. If your app doesn't call the Kubernetes API, this token is unnecessary attack surface — an attacker who gets into the pod can use it to query or modify cluster resources.
+With this single flag set to `false`, the token directory is not mounted, closing an entire attack vector.
 
 ---
 
-### Checking Permissions
+## Layer 2: Pod Security Standards (PSS)
+
+In older versions of Kubernetes, teams used `PodSecurityPolicy` (PSP). PSP was complex and deprecated. Modern Kubernetes uses **Pod Security Standards (PSS)**, built directly into the Kubernetes API.
+
+PSS defines three baseline security profiles:
+
+| Profile | Purpose | Enforcement Rules |
+| :--- | :--- | :--- |
+| **Privileged** | Unrestricted | For system daemons, CNI networking plugins, and storage drivers |
+| **Baseline** | Default safety | Prevents known privilege escalations; blocks host namespaces and host ports |
+| **Restricted** | Hardened production | Strictly enforces non-root execution, drops all capabilities, and requires read-only root filesystems |
+
+### Enforcing Standards via Namespace Labels
+
+You enforce Pod Security Standards simply by applying labels to a namespace:
 
 ```bash
-# Can alice list pods in production?
-kubectl auth can-i list pods --namespace production --as alice
-
-# Can the default service account create deployments?
-kubectl auth can-i create deployments \
-  --namespace production \
-  --as system:serviceaccount:production:default
-
-# List what a service account can do
-kubectl auth can-i --list \
-  --namespace production \
-  --as system:serviceaccount:production:api-service-account
-```
-
-> `[SCREENSHOT]` — *Terminal showing kubectl auth can-i --list output for a service account, listing all allowed verbs and resources*
-
----
-
-### Common RBAC Mistakes
-
-**Wildcard permissions:**
-```yaml
-# NEVER do this
-rules:
-  - apiGroups: ["*"]
-    resources: ["*"]
-    verbs: ["*"]
-```
-
-**Cluster-admin binding for a namespace-scoped user:**
-```yaml
-# Avoid — gives full cluster control
-roleRef:
-  kind: ClusterRole
-  name: cluster-admin
-```
-
-**Secrets access for pods that don't need it:**
-```yaml
-# Only add if your app actually reads Kubernetes secrets
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get"]
-```
-
----
-
-## Pod Security Standards
-
-Kubernetes Pod Security Standards (PSS) replace the deprecated PodSecurityPolicy. They define three policy levels:
-
-| Level | Description |
-|-------|-------------|
-| `privileged` | No restrictions — for trusted system workloads |
-| `baseline` | Prevents known privilege escalations |
-| `restricted` | Hardened — enforces security best practices |
-
-Applied via labels on namespaces.
-
----
-
-### Enforcing Pod Security Standards
-
-```bash
-# Label a namespace to enforce the restricted profile
 kubectl label namespace production \
   pod-security.kubernetes.io/enforce=restricted \
   pod-security.kubernetes.io/enforce-version=latest \
@@ -222,42 +194,20 @@ kubectl label namespace production \
   pod-security.kubernetes.io/audit=restricted
 ```
 
-- `enforce` — rejects non-compliant pods
-- `warn` — allows but prints a warning
-- `audit` — logs to the audit log
-
-> `[SCREENSHOT]` — *kubectl get namespace production --show-labels showing the pod-security labels applied*
-
-### What "Restricted" Enforces
-
-```yaml
-# A pod compliant with "restricted" profile
-spec:
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    seccompProfile:
-      type: RuntimeDefault
-  containers:
-    - name: app
-      securityContext:
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: true
-        capabilities:
-          drop: ["ALL"]
-```
-
-Trying to deploy a pod with `privileged: true` or `runAsUser: 0` in a restricted namespace will be rejected.
-
-> `[SCREENSHOT]` — *Terminal showing kubectl apply failing with "Error from server: pods ... is forbidden: violates PodSecurity restricted" when trying to deploy a privileged container in a restricted namespace*
+If a developer attempts to deploy a pod running as root (`runAsUser: 0`) or requesting `privileged: true` into the `production` namespace, the Kubernetes admission controller rejects the deployment immediately!
 
 ---
 
-## Network Policies
+## Layer 3: Kubernetes Network Policies
 
-By default, all pods in a Kubernetes cluster can communicate with all other pods — across namespaces. Network Policies restrict this.
+By default in Kubernetes, the internal network is completely flat. **Any pod in any namespace can communicate with any other pod.**
 
-**Default deny all ingress for a namespace:**
+If an attacker compromises a frontend blog pod in the `staging` namespace, they can directly port-scan and query the production database pod in the `production` namespace over internal cluster IPs!
+
+### The Solution: Default Deny All Ingress
+
+The foundational rule of Kubernetes network security is applying a **Default Deny** policy:
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -265,143 +215,118 @@ metadata:
   name: default-deny-ingress
   namespace: production
 spec:
-  podSelector: {}      # applies to all pods in the namespace
+  podSelector: {} # Matches ALL pods in this namespace
   policyTypes:
     - Ingress
 ```
 
-After applying this, no pod in `production` can receive traffic unless explicitly allowed.
+Once applied, all incoming traffic to pods in `production` is blocked unless an explicit allow rule exists.
 
----
+### Allowing Specific Microservice Traffic
 
-### Allow Specific Traffic
+Now, explicitly permit only the frontend microservice to communicate with the backend API:
 
 ```yaml
-# Allow only the frontend pods to talk to the API pods
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-frontend-to-api
+  name: allow-frontend-to-backend
   namespace: production
 spec:
   podSelector:
     matchLabels:
-      app: api
+      app: backend-api
   policyTypes:
     - Ingress
   ingress:
     - from:
         - podSelector:
             matchLabels:
-              app: frontend
+              app: frontend-web
       ports:
         - protocol: TCP
           port: 8080
 ```
 
-> `[SCREENSHOT]` — *kubectl get networkpolicy -n production showing the two policies (default-deny-ingress and allow-frontend-to-api) listed*
-
-**Allow egress to DNS only (lock down outbound):**
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-egress
-  namespace: production
-spec:
-  podSelector: {}
-  policyTypes:
-    - Egress
-  egress:
-    - ports:
-        - protocol: UDP
-          port: 53    # Allow DNS resolution
-```
+Now, even if a threat actor compromises another pod in the same namespace, network packets destined for `backend-api` on port 8080 are dropped at the CNI layer.
 
 ---
 
-## Lab — Restrict a Deployment with RBAC + Network Policy
+## Hands-on Lab: Hardening a Production Namespace
 
-**Objective:** Create a dedicated service account for a deployment and apply a network policy isolating it from other pods.
+Let's test this end-to-end:
 
-1. Create the namespace and service account:
+### Step 1: Create Namespace with Restricted PSS
+
 ```bash
-kubectl create namespace lab
-kubectl create serviceaccount api-sa -n lab
+kubectl create namespace secure-lab
+
+kubectl label namespace secure-lab \
+  pod-security.kubernetes.io/enforce=restricted \
+  pod-security.kubernetes.io/enforce-version=latest
 ```
 
-2. Create a Role for the service account:
+### Step 2: Test Non-Compliant Pod Rejection
+
+Attempt to launch an insecure pod running as root:
+
+```bash
+kubectl run insecure-pod --image=nginx -n secure-lab
+```
+
+The Kubernetes API server immediately rejects the request:
+
+```
+Error from server (Forbidden): pods "insecure-pod" is forbidden: violates PodSecurity "restricted:latest": 
+allowPrivilegeEscalation != false, unrestricted capabilities, runAsNonRoot != true, runAsUser=0
+```
+
+### Step 3: Deploy a Hardened Compliant Pod
+
+Deploy a pod that complies with the restricted profile:
+
 ```yaml
-# api-role.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+apiVersion: v1
+kind: Pod
 metadata:
-  namespace: lab
-  name: api-role
-rules:
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "list"]
-```
-```bash
-kubectl apply -f api-role.yaml
-kubectl create rolebinding api-binding \
-  --role=api-role \
-  --serviceaccount=lab:api-sa \
-  -n lab
-```
-
-3. Deploy a pod using the service account:
-```yaml
-# api-deployment.yaml
+  name: hardened-pod
+  namespace: secure-lab
 spec:
-  serviceAccountName: api-sa
-  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
   containers:
-    - name: api
-      image: nginx:alpine
+    - name: web
+      image: nginxinc/nginx-unprivileged:alpine
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 101
-        readOnlyRootFilesystem: true
         allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
         capabilities:
           drop: ["ALL"]
 ```
 
-> `[SCREENSHOT]` — *kubectl describe pod showing serviceAccountName: api-sa and the security context fields as configured*
+The pod deploys cleanly and passes all admission checks!
 
-4. Apply default deny network policy:
-```bash
-kubectl apply -f - <<EOF
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny
-  namespace: lab
-spec:
-  podSelector: {}
-  policyTypes: [Ingress, Egress]
-EOF
-```
+---
 
-5. Verify isolation — from another pod, try to curl the API pod — it should time out:
-```bash
-kubectl run test --image=busybox -n lab --rm -it -- wget -T 3 api-pod-ip
-```
+## Junior Pitfalls to Avoid
 
-> `[SCREENSHOT]` — *Terminal showing wget timing out when trying to reach the isolated pod — confirming the network policy is working*
+1. **The `cluster-admin` Laziness Trap:** Binding `cluster-admin` to a developer or service account to bypass an RBAC error is the most common cause of cluster compromise. Scope permissions to namespaces using `Role` and `RoleBinding`.
+2. **Leaving Token Automount Enabled:** Always set `automountServiceAccountToken: false` on pods that do not interact with the Kubernetes API.
+3. **Assuming Network Policies Work Without a Supporting CNI:** Kubernetes Network Policies require a network plugin that supports them (e.g. Calico, Cilium, or AWS VPC CNI with network policy support enabled). In standard default Minikube or basic cloud clusters without a policy controller, Network Policy manifests apply without errors but traffic is NOT blocked!
+4. **Granting Wildcard Verbs:** Never write `verbs: ["*"]` or `resources: ["*"]` in production RBAC rules. Always specify explicit actions.
 
 ---
 
 ## Key Takeaways
 
-- Always use dedicated service accounts — never the `default` one
-- Disable `automountServiceAccountToken` for pods that don't call the Kubernetes API
-- Use `kubectl auth can-i --list` to audit what permissions a service account has
-- Apply Pod Security Standards at the `restricted` level for production namespaces
-- Network Policies default-deny is the only way to achieve true pod isolation — without it, all pods talk to all pods
-- Restrict both Ingress AND Egress — egress restrictions prevent data exfiltration from a compromised pod
+- Kubernetes RBAC controls who can interact with the cluster API server; always scope to namespaces using `Role` rather than `ClusterRole`.
+- Disable `automountServiceAccountToken` on workloads to prevent token theft during container escapes or SSRF attacks.
+- Enforce Pod Security Standards at the `restricted` level on production namespaces.
+- Apply Default Deny Network Policies to isolate pods and stop lateral movement across namespaces.
+- Use `kubectl auth can-i` to audit and verify effective permissions.
 
 ---
 
@@ -409,9 +334,10 @@ kubectl run test --image=busybox -n lab --rm -it -- wget -T 3 api-pod-ip
 
 <div class="references">
 <ul>
-  <li><a href="https://kubernetes.io/docs/reference/access-authn-authz/rbac/" target="_blank">Kubernetes RBAC Documentation</a></li>
-  <li><a href="https://kubernetes.io/docs/concepts/security/pod-security-standards/" target="_blank">Pod Security Standards</a></li>
-  <li><a href="https://kubernetes.io/docs/concepts/services-networking/network-policies/" target="_blank">Kubernetes Network Policies</a></li>
+  <li><a href="https://kubernetes.io/docs/reference/access-authn-authz/rbac/" target="_blank">Kubernetes RBAC Reference Documentation</a></li>
+  <li><a href="https://kubernetes.io/docs/concepts/security/pod-security-standards/" target="_blank">Kubernetes Pod Security Standards (PSS)</a></li>
+  <li><a href="https://kubernetes.io/docs/concepts/services-networking/network-policies/" target="_blank">Kubernetes Network Policies Guide</a></li>
+  <li><a href="https://github.com/cyberark/kubernetes-rbac-audit" target="_blank">Kubernetes RBAC Audit Toolkit</a></li>
 </ul>
 </div>
 
@@ -421,7 +347,6 @@ kubectl run test --image=busybox -n lab --rm -it -- wget -T 3 api-pod-ip
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

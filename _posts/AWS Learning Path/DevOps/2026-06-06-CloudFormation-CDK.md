@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS CloudFormation and CDK — Infrastructure as Code
+title: AWS CloudFormation and CDK - Infrastructure as Code
 date: 2026-06-06T10:00:00
 categories:
   - AWS Learning Path
@@ -13,7 +13,7 @@ tags:
   - devops
   - cloud
 author: muhammed
-description: A full walkthrough of AWS CloudFormation and CDK — template structure, parameters, outputs, intrinsic functions, change sets, nested stacks, and CDK constructs
+description: A full walkthrough of AWS CloudFormation and CDK - template structure, parameters, outputs, intrinsic functions, change sets, nested stacks, and CDK constructs
 toc: true
 pin: false
 math: false
@@ -26,15 +26,15 @@ img:
 
 ## What is Infrastructure as Code?
 
-**Infrastructure as Code (IaC)** means defining your cloud infrastructure in code files — version-controlled, repeatable, auditable.
+**Infrastructure as Code (IaC)** means defining your cloud infrastructure in code files - version-controlled, repeatable, auditable.
 Instead of clicking through the console, you write a template or program that describes the desired state, and the tool provisions it for you.
 
 AWS has two IaC tools:
 
 | Tool | Approach | Language |
 |---|---|---|
-| **CloudFormation** | Declarative — describe WHAT you want | YAML or JSON |
-| **CDK** | Imperative — write code that generates CloudFormation | TypeScript, Python, Java, Go, .NET |
+| **CloudFormation** | Declarative - describe WHAT you want | YAML or JSON |
+| **CDK** | Imperative - write code that generates CloudFormation | TypeScript, Python, Java, Go, .NET |
 
 Both ultimately create and manage **CloudFormation stacks**.
 CDK is a layer on top of CloudFormation, not a separate system.
@@ -46,7 +46,7 @@ CDK is a layer on top of CloudFormation, not a separate system.
 ### Template Structure
 
 A CloudFormation template is a YAML (or JSON) file with up to 10 sections.
-Only `Resources` is required — everything else is optional.
+Only `Resources` is required - everything else is optional.
 
 ```yaml
 AWSTemplateFormatVersion: "2010-09-09"   # always this value if used
@@ -62,7 +62,7 @@ Conditions:
   # Boolean expressions (IsProd: !Equals [!Ref Env, prod])
 
 Resources:
-  # AWS resources to create — required section
+  # AWS resources to create - required section
 
 Outputs:
   # Values to export for other stacks or display after deployment
@@ -72,7 +72,7 @@ Outputs:
 
 ## Parameters
 
-Parameters make templates reusable — callers pass values at deploy time instead of hardcoding them.
+Parameters make templates reusable - callers pass values at deploy time instead of hardcoding them.
 
 ```yaml
 Parameters:
@@ -80,7 +80,7 @@ Parameters:
     Type: String
     Default: dev
     AllowedValues: [dev, staging, prod]
-    Description: "Environment name — controls instance size and Multi-AZ"
+    Description: "Environment name - controls instance size and Multi-AZ"
 
   InstanceType:
     Type: String
@@ -111,7 +111,7 @@ aws cloudformation deploy \
 
 ## Resources
 
-Resources are the core of every template — they define the AWS infrastructure to create.
+Resources are the core of every template - they define the AWS infrastructure to create.
 
 ```yaml
 Resources:
@@ -166,7 +166,7 @@ Controls what happens to a resource when its stack is deleted:
 
 | Value | Behaviour |
 |---|---|
-| `Delete` | Default — resource is deleted with the stack |
+| `Delete` | Default - resource is deleted with the stack |
 | `Retain` | Resource is kept but disassociated from the stack |
 | `Snapshot` | Take a snapshot then delete (supported by RDS, EBS, ElastiCache) |
 
@@ -179,13 +179,13 @@ Always set `DeletionPolicy: Retain` or `Snapshot` on stateful resources (databas
 CloudFormation provides built-in functions to reference values, transform strings, and build dynamic configurations.
 
 ```yaml
-# !Ref — reference a parameter, resource, or pseudo-parameter
+# !Ref: reference a parameter, resource, or pseudo-parameter
 VpcId: !Ref AppVPC                          # returns the VPC ID
 
-# !GetAtt — get a specific attribute of a resource
+# !GetAtt: get a specific attribute of a resource
 ALBDnsName: !GetAtt ApplicationLoadBalancer.DNSName
 
-# !Sub — string substitution (${Variable} syntax)
+# !Sub: string substitution (${Variable} syntax)
 Name: !Sub "${EnvironmentName}-${AWS::Region}-alb"
 # also supports inline mappings:
 Name: !Sub
@@ -193,22 +193,22 @@ Name: !Sub
   - Env: !Ref EnvironmentName
     Region: !Ref AWS::Region
 
-# !Join — join a list of values with a delimiter
+# !Join: join a list of values with a delimiter
 AllowedCidrs: !Join [",", ["10.0.0.0/8", "172.16.0.0/12"]]
 
-# !Select — select an item from a list by index
+# !Select: select an item from a list by index
 FirstSubnet: !Select [0, !Ref SubnetIds]
 
-# !Split — split a string into a list
+# !Split: split a string into a list
 SubnetList: !Split [",", !Ref SubnetIdsParam]
 
-# !FindInMap — look up a value in a Mappings section
+# !FindInMap: look up a value in a Mappings section
 InstanceType: !FindInMap [InstanceSizes, !Ref EnvironmentName, Web]
 
-# !If — conditional value
+# !If: conditional value
 MultiAZ: !If [IsProd, true, false]
 
-# !Equals, !And, !Or, !Not — condition functions
+# !Equals, !And, !Or, !Not: condition functions
 Conditions:
   IsProd: !Equals [!Ref EnvironmentName, prod]
   IsNotDev: !Not [!Equals [!Ref EnvironmentName, dev]]
@@ -224,7 +224,7 @@ Conditions:
 
 ## Mappings
 
-Mappings are static lookup tables — useful for region-to-AMI mappings or environment-to-size mappings.
+Mappings are static lookup tables - useful for region-to-AMI mappings or environment-to-size mappings.
 
 ```yaml
 Mappings:
@@ -254,7 +254,7 @@ ImageId: !FindInMap [RegionAMIs, !Ref AWS::Region, AL2023]
 
 ## Outputs and Cross-Stack References
 
-**Outputs** expose values from a stack — display them after deployment or share them with other stacks.
+**Outputs** expose values from a stack - display them after deployment or share them with other stacks.
 
 ```yaml
 Outputs:
@@ -281,14 +281,14 @@ Resources:
       SubnetId: !ImportValue prod-PrivateSubnet1a
 ```
 
-> Cross-stack references create a dependency — you cannot delete the exporting stack while another stack imports its values.
+> Cross-stack references create a dependency - you cannot delete the exporting stack while another stack imports its values.
 
 ---
 
 ## Change Sets
 
 A **change set** shows you exactly what changes CloudFormation will make before you apply them.
-Always use change sets in production — never `update-stack` directly without reviewing first.
+Always use change sets in production - never `update-stack` directly without reviewing first.
 
 ```bash
 # Create a change set
@@ -322,7 +322,7 @@ aws cloudformation delete-change-set \
 ## Nested Stacks
 
 Large templates become hard to manage.
-**Nested stacks** let you break a template into reusable modules — a parent stack that references child stacks via `AWS::CloudFormation::Stack`.
+**Nested stacks** let you break a template into reusable modules - a parent stack that references child stacks via `AWS::CloudFormation::Stack`.
 
 ```yaml
 # Parent template
@@ -350,7 +350,7 @@ Resources:
 ## Stack Sets
 
 **CloudFormation StackSets** deploy the same template across multiple accounts and regions in one operation.
-Used for landing zone baselines — deploy security controls, logging, IAM roles across all accounts in an AWS Organization.
+Used for landing zone baselines - deploy security controls, logging, IAM roles across all accounts in an AWS Organization.
 
 ```bash
 # Deploy a stack set across all accounts in an OU
@@ -388,7 +388,7 @@ aws cloudformation describe-stack-resource-drifts \
 ## AWS CDK
 
 **CDK (Cloud Development Kit)** lets you define infrastructure using real programming languages.
-Instead of YAML, you write TypeScript, Python, Go, Java, or .NET — with type safety, IDE autocomplete, loops, conditions, and reusable constructs.
+Instead of YAML, you write TypeScript, Python, Go, Java, or .NET - with type safety, IDE autocomplete, loops, conditions, and reusable constructs.
 
 CDK synthesises into CloudFormation templates under the hood.
 
@@ -400,7 +400,7 @@ CDK synthesises into CloudFormation templates under the hood.
 | **L2** | Higher-level constructs | Opinionated defaults, helper methods, sensible security |
 | **L3** | Patterns | Complete solutions (e.g. `ApplicationLoadBalancedFargateService`) |
 
-Always prefer L2 or L3 — they handle the boilerplate and best practices for you.
+Always prefer L2 or L3 - they handle the boilerplate and best practices for you.
 
 ### CDK Project Structure
 
@@ -415,14 +415,14 @@ cdk init app --language typescript
 ```
 my-cdk-app/
 ├── bin/
-│   └── my-cdk-app.ts    # entry point — creates the App and Stacks
+│   └── my-cdk-app.ts    # entry point - creates the App and Stacks
 ├── lib/
 │   └── my-stack.ts      # your stack definition
 ├── cdk.json             # CDK configuration
 └── package.json
 ```
 
-### Example — VPC + ECS Fargate Service
+### Example: VPC + ECS Fargate Service
 
 ```typescript
 import * as cdk from 'aws-cdk-lib';
@@ -434,16 +434,16 @@ export class AppStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // L2 construct — VPC with public + private subnets across 3 AZs
+    // L2 construct - VPC with public + private subnets across 3 AZs
     const vpc = new ec2.Vpc(this, 'AppVpc', {
       maxAzs: 3,
       natGateways: 1,
     });
 
-    // L2 — ECS cluster
+    // L2 - ECS cluster
     const cluster = new ecs.Cluster(this, 'AppCluster', { vpc });
 
-    // L3 — complete ALB + Fargate service pattern
+    // L3 - complete ALB + Fargate service pattern
     const service = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'WebService', {
       cluster,
       cpu: 512,
@@ -482,7 +482,7 @@ cdk deploy --all
 # Destroy a stack
 cdk destroy AppStack
 
-# Bootstrap — deploys CDK toolkit stack into account/region (one-time setup)
+# Bootstrap: deploys CDK toolkit stack into account/region (one-time setup)
 cdk bootstrap aws://123456789012/eu-west-1
 
 # List all stacks in the app
@@ -497,7 +497,7 @@ cdk list
 ## Quick Reference
 
 ```bash
-# CloudFormation — stacks
+# CloudFormation: stacks
 aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE
 aws cloudformation describe-stacks --stack-name prod-web
 aws cloudformation describe-stack-events --stack-name prod-web  # shows progress
@@ -520,3 +520,13 @@ aws cloudformation describe-stacks \
   --stack-name prod-web \
   --query 'Stacks[0].Outputs'
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

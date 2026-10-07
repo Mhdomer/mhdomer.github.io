@@ -132,7 +132,7 @@ To satisfy the **DevSecOps** requirements , we add stateless protection.
     
 - **VPC Flow Logs:**
 
-## 4.1 — Configure NACLs (Stateless Firewall)
+## 4.1: Configure NACLs (Stateless Firewall)
 
 
 ###  First: Create 2 NACLs
@@ -207,7 +207,7 @@ Allow ONLY from public subnets:
 
 it wont allow the response packet and need to be stated manually, To be safe, allow **ephemeral ports (1024–65535)**
 
-##### Public NACL — Inbound  
+##### Public NACL: Inbound  
 
 |Rule #|Type|Port|Source|Allow|
 |---|---|---|---|---|
@@ -217,7 +217,7 @@ it wont allow the response packet and need to be stated manually, To be safe, al
 
 ---
 
-##### Private NACL — Inbound 
+##### Private NACL: Inbound 
 
 
 
@@ -275,11 +275,10 @@ then Create the flow log
 
 ---
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer )
-- **GitHub:** [Mhdomer](https://github.comMhdomer)  
-- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

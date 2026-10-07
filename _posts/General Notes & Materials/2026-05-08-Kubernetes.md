@@ -11,7 +11,7 @@ tags:
   - devops
   - orchestration
 author: muhammed
-description: Full Kubernetes walkthrough — architecture, pods, deployments, services, ingress, config, storage, and kubectl from the ground up
+description: Full Kubernetes walkthrough - architecture, pods, deployments, services, ingress, config, storage, and kubectl from the ground up
 toc: true
 pin: false
 math: false
@@ -28,7 +28,7 @@ img:
 
 ## What is Kubernetes?
 
-Kubernetes (K8s) is a container orchestration platform. Where Docker runs a single container, Kubernetes manages **thousands of containers across many machines** — scheduling, scaling, healing, and networking them automatically.
+Kubernetes (K8s) is a container orchestration platform. Where Docker runs a single container, Kubernetes manages **thousands of containers across many machines** - scheduling, scaling, healing, and networking them automatically.
 
 **Core job of Kubernetes:**
 - Run your containers reliably across a cluster
@@ -63,8 +63,8 @@ A Kubernetes cluster has two types of machines:
 
 | Component | Role |
 |---|---|
-| `kube-apiserver` | The front door — all kubectl commands hit this REST API |
-| `etcd` | Distributed key-value store — the cluster's source of truth |
+| `kube-apiserver` | The front door - all kubectl commands hit this REST API |
+| `etcd` | Distributed key-value store - the cluster's source of truth |
 | `kube-scheduler` | Decides which node a new pod runs on |
 | `kube-controller-manager` | Runs control loops (ReplicaSet, Node, Endpoint controllers) |
 | `cloud-controller-manager` | Integrates with cloud provider (AWS, GCP, Azure) |
@@ -73,7 +73,7 @@ A Kubernetes cluster has two types of machines:
 
 | Component | Role |
 |---|---|
-| `kubelet` | Agent on each node — ensures containers are running |
+| `kubelet` | Agent on each node - ensures containers are running |
 | `kube-proxy` | Maintains network rules for Service routing |
 | `container runtime` | Actually runs containers (containerd, CRI-O) |
 
@@ -81,7 +81,7 @@ A Kubernetes cluster has two types of machines:
 
 ## Installing kubectl and a Local Cluster
 
-### kubectl — the CLI
+### kubectl: the CLI
 
 ```bash
 # Linux
@@ -128,7 +128,7 @@ cat ~/.kube/config                          # raw kubeconfig file
 
 ## Core Objects (Resources)
 
-Everything in Kubernetes is a **resource** — you describe the desired state in YAML and kubectl applies it.
+Everything in Kubernetes is a **resource** - you describe the desired state in YAML and kubectl applies it.
 
 ### The basic pattern
 
@@ -144,7 +144,7 @@ kubectl edit pod mypod             # live edit in $EDITOR
 
 ## Pods
 
-A **Pod** is the smallest deployable unit — one or more containers that share a network and storage.
+A **Pod** is the smallest deployable unit - one or more containers that share a network and storage.
 
 ```yaml
 # pod.yaml
@@ -195,13 +195,13 @@ kubectl exec -it myapp -- bash     # shell inside pod
 kubectl delete pod myapp
 ```
 
-**You almost never create naked Pods in production** — use Deployments instead (they recreate pods if they die).
+**You almost never create naked Pods in production** - use Deployments instead (they recreate pods if they die).
 
 ---
 
 ## Namespaces
 
-Namespaces are virtual clusters within a cluster — used for isolation between teams/environments.
+Namespaces are virtual clusters within a cluster - used for isolation between teams/environments.
 
 ```bash
 kubectl get namespaces
@@ -289,7 +289,7 @@ A **Service** gives a stable DNS name and IP to a set of Pods (selected by label
 
 | Type | Use case |
 |---|---|
-| `ClusterIP` | Internal only — default, reachable within cluster |
+| `ClusterIP` | Internal only - default, reachable within cluster |
 | `NodePort` | Exposes on a port on every node (30000–32767) |
 | `LoadBalancer` | Cloud load balancer (AWS ELB, GCP LB) |
 | `ExternalName` | DNS alias to an external hostname |
@@ -318,7 +318,7 @@ kubectl describe service myapp-svc
 # Test from inside the cluster
 kubectl run test --rm -it --image=busybox -- wget -qO- http://myapp-svc
 
-# NodePort — access via any node IP
+# NodePort: access via any node IP
 kubectl expose deployment myapp --type=NodePort --port=80
 minikube service myapp --url        # get the URL in minikube
 ```
@@ -383,7 +383,7 @@ kubectl describe ingress myapp-ingress
 
 ## ConfigMaps and Secrets
 
-### ConfigMap — non-sensitive configuration
+### ConfigMap: non-sensitive configuration
 
 ```yaml
 apiVersion: v1
@@ -424,7 +424,7 @@ containers:
         mountPath: /etc/app
 ```
 
-### Secret — sensitive data (base64 encoded)
+### Secret: sensitive data (base64 encoded)
 
 ```bash
 kubectl create secret generic db-creds \
@@ -451,7 +451,7 @@ volumes:
       secretName: db-creds
 ```
 
-**Secrets are base64, not encrypted by default** — use Sealed Secrets, Vault, or cloud KMS for real encryption at rest.
+**Secrets are base64, not encrypted by default** - use Sealed Secrets, Vault, or cloud KMS for real encryption at rest.
 
 ---
 
@@ -460,7 +460,7 @@ volumes:
 ### PersistentVolume (PV) and PersistentVolumeClaim (PVC)
 
 ```yaml
-# PVC — claim storage (you rarely define PVs manually; cloud providers do it)
+# PVC: claim storage (you rarely define PVs manually; cloud providers do it)
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -475,9 +475,9 @@ spec:
 ```
 
 Access modes:
-- `ReadWriteOnce` (RWO) — one node, read/write
-- `ReadOnlyMany` (ROX) — many nodes, read only
-- `ReadWriteMany` (RWX) — many nodes, read/write (requires NFS or cloud FS)
+- `ReadWriteOnce` (RWO) - one node, read/write
+- `ReadOnlyMany` (ROX) - many nodes, read only
+- `ReadWriteMany` (RWX) - many nodes, read/write (requires NFS or cloud FS)
 
 ```yaml
 # Use in a Pod
@@ -556,17 +556,17 @@ resources:
     cpu: "100m"       # minimum guaranteed (1000m = 1 CPU core)
     memory: "128Mi"   # minimum guaranteed
   limits:
-    cpu: "500m"       # hard cap — throttled if exceeded
-    memory: "256Mi"   # hard cap — OOMKilled if exceeded
+    cpu: "500m"       # hard cap - throttled if exceeded
+    memory: "256Mi"   # hard cap - OOMKilled if exceeded
 ```
 
-- **Requests** — used by the scheduler to decide which node to place the pod on
-- **Limits** — enforced at runtime; memory limit breach = pod killed
+- **Requests** - used by the scheduler to decide which node to place the pod on
+- **Limits** - enforced at runtime; memory limit breach = pod killed
 
 ### LimitRange and ResourceQuota
 
 ```yaml
-# LimitRange — default limits for a namespace
+# LimitRange: default limits for a namespace
 apiVersion: v1
 kind: LimitRange
 metadata:
@@ -584,7 +584,7 @@ spec:
 ```
 
 ```yaml
-# ResourceQuota — total cap for a namespace
+# ResourceQuota: total cap for a namespace
 apiVersion: v1
 kind: ResourceQuota
 metadata:
@@ -638,7 +638,7 @@ Requires the **metrics-server** to be running.
 
 ## Jobs and CronJobs
 
-### Job — run a task to completion
+### Job: run a task to completion
 
 ```yaml
 apiVersion: batch/v1
@@ -656,7 +656,7 @@ spec:
   backoffLimit: 3
 ```
 
-### CronJob — scheduled job
+### CronJob: scheduled job
 
 ```yaml
 apiVersion: batch/v1
@@ -686,7 +686,7 @@ kubectl logs job/db-migrate
 
 ---
 
-## RBAC — Role-Based Access Control
+## RBAC: Role-Based Access Control
 
 ### ServiceAccount
 
@@ -699,7 +699,7 @@ kubectl create serviceaccount myapp-sa
 ### Role and RoleBinding (namespace-scoped)
 
 ```yaml
-# Role — what actions are allowed
+# Role: what actions are allowed
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -712,7 +712,7 @@ rules:
 ```
 
 ```yaml
-# RoleBinding — who gets the Role
+# RoleBinding: who gets the Role
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -732,9 +732,9 @@ Use `ClusterRole` + `ClusterRoleBinding` for cluster-wide permissions.
 
 ---
 
-## Helm — Kubernetes Package Manager
+## Helm: Kubernetes Package Manager
 
-Helm is to Kubernetes what apt is to Ubuntu — it installs pre-packaged applications called **charts**.
+Helm is to Kubernetes what apt is to Ubuntu - it installs pre-packaged applications called **charts**.
 
 ```bash
 # Install Helm
@@ -774,7 +774,7 @@ kubectl get pods -l app=myapp              # filter by label
 kubectl get pods --field-selector=status.phase=Running
 kubectl get all -n staging                 # everything in a namespace
 
-# Describe (events are at the bottom — check these first when debugging)
+# Describe (events are at the bottom: check these first when debugging)
 kubectl describe pod mypod
 kubectl describe node worker-1
 
@@ -821,7 +821,7 @@ kubectl cordon node-1                     # stop scheduling new pods
 kubectl drain node-1 --ignore-daemonsets # evict pods
 kubectl uncordon node-1                  # re-enable scheduling
 
-# Events — great for debugging
+# Events: great for debugging
 kubectl get events --sort-by='.lastTimestamp'
 kubectl get events -n staging
 ```
@@ -838,16 +838,16 @@ kubectl logs mypod --previous     # logs before the crash
 ```
 
 Common statuses:
-- `Pending` — not scheduled yet (check node resources, taints, affinities)
-- `CrashLoopBackOff` — container keeps crashing (check logs)
-- `ImagePullBackOff` — can't pull image (check image name, registry credentials)
-- `OOMKilled` — exceeded memory limit (increase limits)
-- `Evicted` — node was under pressure (check node disk/memory)
+- `Pending` - not scheduled yet (check node resources, taints, affinities)
+- `CrashLoopBackOff` - container keeps crashing (check logs)
+- `ImagePullBackOff` - can't pull image (check image name, registry credentials)
+- `OOMKilled` - exceeded memory limit (increase limits)
+- `Evicted` - node was under pressure (check node disk/memory)
 
 **Service not reachable:**
 
 ```bash
-kubectl get endpoints myapp-svc   # should show pod IPs — if empty, labels don't match
+kubectl get endpoints myapp-svc   # should show pod IPs - if empty, labels don't match
 kubectl exec -it debug -- wget -qO- http://myapp-svc    # test from inside cluster
 ```
 
@@ -881,3 +881,13 @@ kubectl top pods
 | Switch namespace | `kubectl config set-context --current --namespace=ns` |
 | Install Helm chart | `helm install name repo/chart` |
 | List Helm releases | `helm list -A` |
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

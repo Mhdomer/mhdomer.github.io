@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS RDS and Aurora — Managed Relational Databases, Multi-AZ, and Read Replicas
+title: AWS RDS and Aurora - Managed Relational Databases, Multi-AZ, and Read Replicas
 date: 2026-06-02T10:00:00
 categories:
   - AWS Learning Path
@@ -12,7 +12,7 @@ tags:
   - database
   - cloud
 author: muhammed
-description: A full walkthrough of AWS RDS and Aurora — supported engines, Multi-AZ, read replicas, automated backups, encryption, RDS Proxy, and Aurora Serverless
+description: A full walkthrough of AWS RDS and Aurora - supported engines, Multi-AZ, read replicas, automated backups, encryption, RDS Proxy, and Aurora Serverless
 toc: true
 pin: false
 math: false
@@ -27,7 +27,7 @@ img:
 
 **Amazon RDS (Relational Database Service)** is a managed service that makes it easier to set up, operate, and scale relational databases in the cloud.
 AWS handles the undifferentiated heavy lifting: hardware provisioning, OS patching, database software updates, backups, and failover.
-You focus on your schema and queries — not on database administration.
+You focus on your schema and queries - not on database administration.
 
 ### Supported Engines
 
@@ -38,7 +38,7 @@ You focus on your schema and queries — not on database administration.
 | **MariaDB** | MySQL fork, community-driven |
 | **Oracle** | Enterprise; bring-your-own-license or license-included |
 | **SQL Server** | Microsoft; bring-your-own-license or license-included |
-| **Amazon Aurora** | AWS-built, MySQL and PostgreSQL compatible — covered separately below |
+| **Amazon Aurora** | AWS-built, MySQL and PostgreSQL compatible - covered separately below |
 
 ### RDS vs Self-Managed on EC2
 
@@ -62,10 +62,10 @@ You choose the instance class (CPU + RAM) and storage independently.
 
 | Class | Purpose |
 |---|---|
-| **db.t3 / db.t4g** | Burstable — dev/test, low-traffic |
-| **db.m6g / db.m7g** | General purpose — balanced CPU/memory |
-| **db.r6g / db.r7g** | Memory optimised — large databases, high connection counts |
-| **db.x2g** | Extreme memory — SAP HANA, very large in-memory workloads |
+| **db.t3 / db.t4g** | Burstable - dev/test, low-traffic |
+| **db.m6g / db.m7g** | General purpose - balanced CPU/memory |
+| **db.r6g / db.r7g** | Memory optimised - large databases, high connection counts |
+| **db.x2g** | Extreme memory - SAP HANA, very large in-memory workloads |
 
 Graviton (g-suffix) instances offer ~20% better price-performance.
 
@@ -75,9 +75,9 @@ Graviton (g-suffix) instances offer ~20% better price-performance.
 |---|---|---|
 | **gp3** | Up to 64,000 | General purpose (default) |
 | **io1** | Up to 256,000 | I/O-intensive databases |
-| **Magnetic** | Low | Legacy — do not use for new databases |
+| **Magnetic** | Low | Legacy - do not use for new databases |
 
-Storage autoscaling is available — RDS can automatically increase storage when it runs low, up to a configured maximum.
+Storage autoscaling is available - RDS can automatically increase storage when it runs low, up to a configured maximum.
 
 ```bash
 # Create an RDS PostgreSQL instance
@@ -111,7 +111,7 @@ aws rds describe-db-instances \
 ## DB Subnet Groups
 
 A **DB subnet group** is a collection of subnets in different AZs that RDS uses to place your database instances.
-Always create a DB subnet group across at least 2 AZs — required for Multi-AZ.
+Always create a DB subnet group across at least 2 AZs - required for Multi-AZ.
 Put database subnets in private subnets with no internet gateway route.
 
 ```bash
@@ -126,7 +126,7 @@ aws rds create-db-subnet-group \
 ## Multi-AZ Deployments
 
 **Multi-AZ** keeps a synchronous standby replica of your database in a different Availability Zone.
-If the primary instance fails (hardware failure, AZ outage), RDS automatically fails over to the standby — typically in under 2 minutes.
+If the primary instance fails (hardware failure, AZ outage), RDS automatically fails over to the standby - typically in under 2 minutes.
 The failover is automatic; your application reconnects to the same DNS endpoint.
 
 ```
@@ -136,7 +136,7 @@ Primary (eu-west-1a) ──synchronous replication──► Standby (eu-west-1b)
 ```
 
 **Multi-AZ is for availability (HA), not performance.**
-The standby does not serve read traffic — it only exists to take over when the primary fails.
+The standby does not serve read traffic - it only exists to take over when the primary fails.
 
 > 📸 **SCREENSHOT:** RDS → DB instance → Configuration tab.
 > Show "Multi-AZ" set to "Yes" and the Availability Zone of the primary and the secondary AZ listed.
@@ -158,15 +158,15 @@ aws rds reboot-db-instance \
 
 ## Read Replicas
 
-**Read replicas** are copies of the primary database that handle read traffic — they use asynchronous replication.
+**Read replicas** are copies of the primary database that handle read traffic - they use asynchronous replication.
 Use them to offload read queries from the primary (SELECT-heavy reporting, analytics).
 
 | Property | Value |
 |---|---|
 | Max read replicas | 5 per source (MySQL/MariaDB/PostgreSQL) |
-| Replication | Asynchronous — small lag behind primary |
+| Replication | Asynchronous - small lag behind primary |
 | Promotion | Replica can be promoted to standalone DB (breaks replication) |
-| Cross-region | Supported — create replicas in different regions |
+| Cross-region | Supported - create replicas in different regions |
 | Endpoint | Each replica has its own DNS endpoint |
 
 ```bash
@@ -194,7 +194,7 @@ aws rds promote-read-replica \
 |---|---|---|
 | **Purpose** | High availability / failover | Read scaling / offload reads |
 | **Replication** | Synchronous | Asynchronous |
-| **Serves traffic** | Standby does NOT serve reads | Yes — serves read traffic |
+| **Serves traffic** | Standby does NOT serve reads | Yes - serves read traffic |
 | **Failover** | Automatic | Manual promotion |
 
 ---
@@ -204,7 +204,7 @@ aws rds promote-read-replica \
 ### Automated Backups
 
 RDS takes daily automated backups and logs transaction logs continuously.
-This enables **Point-in-Time Recovery (PITR)** — restore to any second within the retention window.
+This enables **Point-in-Time Recovery (PITR)** - restore to any second within the retention window.
 Retention period: 0 to 35 days (0 disables automated backups).
 
 ```bash
@@ -217,7 +217,7 @@ aws rds restore-db-instance-to-point-in-time \
 
 ### Manual Snapshots
 
-Manual snapshots are user-initiated and persist until you delete them — they don't expire.
+Manual snapshots are user-initiated and persist until you delete them - they don't expire.
 Use for pre-migration snapshots, quarterly archives, or before major schema changes.
 
 ```bash
@@ -248,7 +248,7 @@ aws rds copy-db-snapshot \
 ## Encryption
 
 RDS supports encryption at rest using **AWS KMS**.
-Encryption must be enabled at creation time — you cannot encrypt an existing unencrypted instance directly.
+Encryption must be enabled at creation time - you cannot encrypt an existing unencrypted instance directly.
 
 To encrypt an existing unencrypted instance:
 1. Take a snapshot of the unencrypted instance
@@ -256,7 +256,7 @@ To encrypt an existing unencrypted instance:
 3. Restore a new instance from the encrypted snapshot
 4. Switch your application to the new endpoint
 
-All data in encrypted instances is encrypted — DB storage, automated backups, read replicas, and snapshots.
+All data in encrypted instances is encrypted - DB storage, automated backups, read replicas, and snapshots.
 
 In transit: RDS supports SSL/TLS connections.
 For PostgreSQL, set `rds.force_ssl=1` in the parameter group to require SSL for all connections.
@@ -265,7 +265,7 @@ For PostgreSQL, set `rds.force_ssl=1` in the parameter group to require SSL for 
 
 ## Parameter Groups and Option Groups
 
-**Parameter groups** contain engine configuration settings — the equivalent of `my.cnf` or `postgresql.conf`.
+**Parameter groups** contain engine configuration settings - the equivalent of `my.cnf` or `postgresql.conf`.
 Create a custom parameter group when you need non-default settings (e.g. `max_connections`, `shared_buffers`).
 
 ```bash
@@ -281,7 +281,7 @@ aws rds modify-db-parameter-group \
   --parameters 'ParameterName=max_connections,ParameterValue=500,ApplyMethod=pending-reboot'
 ```
 
-**Option groups** add optional features to the DB engine — e.g. Oracle TDE, SQL Server Transparent Data Encryption.
+**Option groups** add optional features to the DB engine - e.g. Oracle TDE, SQL Server Transparent Data Encryption.
 Most PostgreSQL and MySQL workloads don't need a custom option group.
 
 ---
@@ -294,7 +294,7 @@ It maintains a pool of established database connections and multiplexes thousand
 Use it when:
 - Your application opens and closes database connections frequently (Lambda, serverless)
 - You need to reduce connection overhead during traffic spikes
-- You want automatic failover handling — the proxy keeps connections alive during Multi-AZ failover
+- You want automatic failover handling - the proxy keeps connections alive during Multi-AZ failover
 
 ```bash
 # Create an RDS Proxy
@@ -315,14 +315,14 @@ aws rds create-db-proxy \
 ## Aurora
 
 **Amazon Aurora** is AWS's own cloud-native relational database engine.
-It is fully compatible with **MySQL** and **PostgreSQL** — most applications work without code changes.
+It is fully compatible with **MySQL** and **PostgreSQL** - most applications work without code changes.
 Aurora outperforms standard MySQL by up to 5× and PostgreSQL by up to 3×, at a lower cost than commercial databases.
 
 ### Aurora Architecture
 
 Aurora separates compute from storage.
 Storage is a distributed, fault-tolerant, self-healing system that automatically replicates 6 copies of your data across 3 AZs.
-The storage volume grows automatically in 10 GB increments as your data grows — up to 128 TB.
+The storage volume grows automatically in 10 GB increments as your data grows - up to 128 TB.
 
 ```
 Aurora Writer (primary) ──── reads/writes ────► Shared Distributed Storage (6 copies, 3 AZs)
@@ -350,7 +350,7 @@ Promotion of a reader to writer during failover takes under 30 seconds.
 ### Aurora Serverless v2
 
 Aurora Serverless v2 automatically scales compute capacity in fine-grained increments based on actual load.
-Scales from 0.5 ACUs (Aurora Capacity Units) to 128 ACUs — each ACU is approximately 2 GB RAM.
+Scales from 0.5 ACUs (Aurora Capacity Units) to 128 ACUs - each ACU is approximately 2 GB RAM.
 Ideal for variable workloads, dev/test environments, and applications with unpredictable traffic.
 
 ```bash
@@ -384,7 +384,7 @@ aws rds describe-db-instances \
   --query 'DBInstances[*].[DBInstanceIdentifier,DBInstanceClass,DBInstanceStatus,Endpoint.Address,MultiAZ]' \
   --output table
 
-# Start / stop (dev instances — not Multi-AZ)
+# Start / stop (dev instances: not Multi-AZ)
 aws rds stop-db-instance --db-instance-identifier dev-postgres
 aws rds start-db-instance --db-instance-identifier dev-postgres
 
@@ -410,3 +410,13 @@ aws pi get-resource-metrics \
   --end-time $(date --iso-8601=seconds) \
   --period-in-seconds 60
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

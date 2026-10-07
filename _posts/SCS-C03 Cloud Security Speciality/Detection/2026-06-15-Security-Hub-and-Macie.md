@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS Security Hub and Amazon Macie — CSPM and Data Classification
+title: AWS Security Hub and Amazon Macie - CSPM and Data Classification
 date: 2026-06-15T10:00:00
 categories:
   - SCS-C03 Cloud Security Speciality
@@ -13,7 +13,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 1 — Security Hub finding aggregation, security standards, ASFF, Macie sensitive data discovery, and multi-account setup
+description: SCS-C03 Domain 1 - Security Hub finding aggregation, security standards, ASFF, Macie sensitive data discovery, and multi-account setup
 toc: true
 pin: false
 math: false
@@ -43,7 +43,7 @@ Third-party tools ────────┘
 Config rules (optional) ──┘
 ```
 
-All findings are normalised into **ASFF (Amazon Security Finding Format)** — a standard JSON schema that makes findings comparable across sources.
+All findings are normalised into **ASFF (Amazon Security Finding Format)** - a standard JSON schema that makes findings comparable across sources.
 
 ```bash
 # Enable Security Hub
@@ -72,7 +72,7 @@ aws securityhub get-findings \
 ## Security Standards
 
 Security Hub evaluates your resources against built-in security standards.
-Each standard runs a set of **controls** — individual checks — and scores your compliance percentage.
+Each standard runs a set of **controls** - individual checks - and scores your compliance percentage.
 
 | Standard | Focus |
 |---|---|
@@ -82,20 +82,20 @@ Each standard runs a set of **controls** — individual checks — and scores yo
 | **NIST SP 800-53** | US government security framework |
 | **SOC 2** | Service Organisation Control 2 |
 
-**Exam tip:** FSBP is the most comprehensive and AWS-native — it covers over 200 controls.
+**Exam tip:** FSBP is the most comprehensive and AWS-native - it covers over 200 controls.
 CIS Benchmark is commonly used alongside it for compliance audit evidence.
 
 ### Suppressing Controls
 
 Some controls may not apply to your environment (e.g. a sandbox account doesn't need MFA on all users).
-Suppress them rather than disabling the standard — suppressed controls don't affect your score but keep the check in place for audit trail purposes.
+Suppress them rather than disabling the standard - suppressed controls don't affect your score but keep the check in place for audit trail purposes.
 
 ```bash
 # Disable a specific control (suppress from scoring)
 aws securityhub update-standards-control \
   --standards-control-arn arn:aws:securityhub:eu-west-1:123456789012:control/cis-aws-foundations-benchmark/v/1.2.0/1.4 \
   --control-status DISABLED \
-  --disabled-reason "Root account MFA managed by org policy — not applicable"
+  --disabled-reason "Root account MFA managed by org policy - not applicable"
 ```
 
 ---
@@ -117,7 +117,7 @@ Security Hub findings have a **workflow status** you can use to track investigat
 aws securityhub batch-update-findings \
   --finding-identifiers '[{"Id": "finding-id", "ProductArn": "arn:aws:securityhub:..."}]' \
   --workflow '{"Status": "RESOLVED"}' \
-  --note '{"Text": "Fixed — S3 block public access enabled", "UpdatedBy": "alice"}'
+  --note '{"Text": "Fixed - S3 block public access enabled", "UpdatedBy": "alice"}'
 ```
 
 ---
@@ -163,7 +163,7 @@ aws securityhub get-finding-aggregator \
 ## Amazon Macie
 
 **Amazon Macie** is a data security service that uses machine learning to automatically discover, classify, and protect sensitive data in Amazon S3.
-It detects PII (Personally Identifiable Information), financial data, credentials, and other sensitive content — at scale, across all your S3 buckets.
+It detects PII (Personally Identifiable Information), financial data, credentials, and other sensitive content - at scale, across all your S3 buckets.
 
 ---
 
@@ -222,7 +222,7 @@ aws macie2 create-classification-job \
 |---|---|
 | `SensitiveData:S3Object/Credentials` | Access keys, passwords, private keys found in an object |
 | `SensitiveData:S3Object/Financial` | Credit card numbers, bank account numbers |
-| `SensitiveData:S3Object/Personal` | PII — names, addresses, passport numbers, national IDs |
+| `SensitiveData:S3Object/Personal` | PII - names, addresses, passport numbers, national IDs |
 | `SensitiveData:S3Object/Multiple` | Multiple categories of sensitive data in one object |
 | `Policy:IAMUser/S3BlockPublicAccessDisabled` | Block Public Access disabled on a bucket |
 | `Policy:IAMUser/S3BucketEncryptionDisabled` | Bucket encryption disabled |
@@ -236,10 +236,10 @@ aws macie2 create-classification-job \
 Macie has built-in detectors for over 100 sensitive data types across multiple countries.
 
 Key categories:
-- **Credentials** — AWS access keys, GitHub tokens, private keys
-- **Financial** — Credit card numbers (Visa, Mastercard, Amex), IBAN, routing numbers
-- **Personal** — Passports, driving licences, SSNs, NHS numbers, national IDs
-- **Healthcare** — US HIPAA-regulated health information (PHI)
+- **Credentials** - AWS access keys, GitHub tokens, private keys
+- **Financial** - Credit card numbers (Visa, Mastercard, Amex), IBAN, routing numbers
+- **Personal** - Passports, driving licences, SSNs, NHS numbers, national IDs
+- **Healthcare** - US HIPAA-regulated health information (PHI)
 
 ### Custom Data Identifiers
 
@@ -256,7 +256,7 @@ aws macie2 create-custom-data-identifier \
 
 ## Multi-Account Setup
 
-Same pattern as GuardDuty — delegated administrator in the security tooling account.
+Same pattern as GuardDuty - delegated administrator in the security tooling account.
 
 ```bash
 # Enable Macie org-wide (run from delegated admin)
@@ -273,21 +273,21 @@ aws macie2 update-organization-configuration \
 ## Macie + Security Hub Integration
 
 Enable the integration and all Macie policy findings flow into Security Hub.
-Sensitive data findings do NOT flow to Security Hub by default (they contain actual sensitive data fragments — keeping them in Macie protects that data).
+Sensitive data findings do NOT flow to Security Hub by default (they contain actual sensitive data fragments - keeping them in Macie protects that data).
 
 ---
 
 ## Exam Key Points
 
 **Security Hub:**
-- Aggregates findings in **ASFF format** — normalises across all sources
+- Aggregates findings in **ASFF format** - normalises across all sources
 - Runs **security checks** against CIS Benchmark, FSBP, PCI DSS etc.
 - Use **finding aggregator** to centralise multi-region findings
 - **Suppressing** a control is better than disabling a standard
-- Security Hub **does not remediate** — it detects and alerts
+- Security Hub **does not remediate** - it detects and alerts
 
 **Macie:**
-- Only works with **S3** — not EBS, EFS, RDS, DynamoDB
+- Only works with **S3** - not EBS, EFS, RDS, DynamoDB
 - Uses **managed data identifiers** (built-in) and **custom data identifiers** (your regex)
 - **Automated discovery** = continuous background sampling
 - **Classification jobs** = on-demand targeted scans
@@ -313,3 +313,13 @@ aws macie2 get-findings --finding-ids finding-id-here
 aws macie2 list-managed-data-identifiers
 aws macie2 get-bucket-statistics
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Amazon GuardDuty — Threat Detection, Finding Types, and Automation
+title: Amazon GuardDuty - Threat Detection, Finding Types, and Automation
 date: 2026-06-11T10:00:00
 categories:
   - SCS-C03 Cloud Security Speciality
@@ -12,7 +12,7 @@ tags:
   - cloud-security
   - scs-c03
 author: muhammed
-description: SCS-C03 Domain 1 — GuardDuty finding types, data sources, multi-account setup, trusted IP lists, suppression rules, and EventBridge automation
+description: SCS-C03 Domain 1 - GuardDuty finding types, data sources, multi-account setup, trusted IP lists, suppression rules, and EventBridge automation
 toc: true
 pin: false
 math: false
@@ -27,7 +27,7 @@ img:
 
 **Amazon GuardDuty** is a managed threat detection service that continuously monitors your AWS accounts for malicious activity and unauthorised behaviour.
 It analyses multiple data sources using machine learning, anomaly detection, and integrated threat intelligence.
-There are no agents to install, no hardware to manage, and no log pipelines to build — you enable it and it starts detecting.
+There are no agents to install, no hardware to manage, and no log pipelines to build - you enable it and it starts detecting.
 
 GuardDuty feeds its findings into **Security Hub** and can trigger **EventBridge** rules to automate responses.
 
@@ -39,15 +39,15 @@ GuardDuty analyses the following sources automatically:
 
 | Data Source | What It Detects |
 |---|---|
-| **CloudTrail Management Events** | API calls — unusual API activity, credential abuse, new IAM users |
-| **CloudTrail S3 Data Events** | S3 object-level operations — exfiltration, ransomware staging |
-| **VPC Flow Logs** | Network traffic — port scanning, C2 communication, crypto mining |
-| **DNS Logs** | DNS queries from EC2 — domains associated with malware, data exfiltration via DNS |
-| **EKS Audit Logs** | Kubernetes API calls — privilege escalation, lateral movement in clusters |
+| **CloudTrail Management Events** | API calls - unusual API activity, credential abuse, new IAM users |
+| **CloudTrail S3 Data Events** | S3 object-level operations - exfiltration, ransomware staging |
+| **VPC Flow Logs** | Network traffic - port scanning, C2 communication, crypto mining |
+| **DNS Logs** | DNS queries from EC2 - domains associated with malware, data exfiltration via DNS |
+| **EKS Audit Logs** | Kubernetes API calls - privilege escalation, lateral movement in clusters |
 | **EBS Malware Protection** | Scans EBS volumes of suspicious EC2 instances for malware |
-| **Lambda Network Activity** | Unusual Lambda network connections — C2 traffic, crypto mining |
+| **Lambda Network Activity** | Unusual Lambda network connections - C2 traffic, crypto mining |
 | **RDS Login Activity** | Anomalous login patterns to Aurora databases |
-| **Runtime Monitoring (EC2/ECS/EKS)** | OS-level activity — process execution, file access, network connections |
+| **Runtime Monitoring (EC2/ECS/EKS)** | OS-level activity - process execution, file access, network connections |
 
 > 📸 **SCREENSHOT:** GuardDuty → Settings → Data sources.
 > Show all data source toggles and their status (enabled/disabled) with the coverage summary.
@@ -61,34 +61,34 @@ GuardDuty findings follow the naming convention: `ThreatPurpose:ResourceType/Thr
 ### High-Value Finding Types to Know for the Exam
 
 **Credential Compromise:**
-- `UnauthorizedAccess:IAMUser/ConsoleLoginSuccess.B` — successful console login from unusual location
-- `UnauthorizedAccess:IAMUser/MaliciousIPCaller` — API calls from a known malicious IP
-- `CredentialAccess:IAMUser/AnomalousBehavior` — unusual API calls for credentials
-- `Policy:IAMUser/RootCredentialUsage` — root account used (should never happen in production)
+- `UnauthorizedAccess:IAMUser/ConsoleLoginSuccess.B` - successful console login from unusual location
+- `UnauthorizedAccess:IAMUser/MaliciousIPCaller` - API calls from a known malicious IP
+- `CredentialAccess:IAMUser/AnomalousBehavior` - unusual API calls for credentials
+- `Policy:IAMUser/RootCredentialUsage` - root account used (should never happen in production)
 
 **Instance Compromise:**
-- `Backdoor:EC2/C&CActivity.B` — EC2 communicating with known command-and-control server
-- `CryptoCurrency:EC2/BitcoinTool.B` — EC2 querying crypto mining pool
-- `Trojan:EC2/DNSDataExfiltration` — EC2 exfiltrating data via DNS queries
-- `Recon:EC2/PortProbeUnprotectedPort` — port scanning against unprotected ports
+- `Backdoor:EC2/C&CActivity.B` - EC2 communicating with known command-and-control server
+- `CryptoCurrency:EC2/BitcoinTool.B` - EC2 querying crypto mining pool
+- `Trojan:EC2/DNSDataExfiltration` - EC2 exfiltrating data via DNS queries
+- `Recon:EC2/PortProbeUnprotectedPort` - port scanning against unprotected ports
 
 **S3 Threats:**
-- `Policy:S3/BucketPublicAccessGranted` — bucket ACL changed to public
-- `Stealth:S3/ServerAccessLoggingDisabled` — S3 access logging disabled
-- `UnauthorizedAccess:S3/MaliciousIPCaller.Custom` — S3 access from IP on custom threat list
+- `Policy:S3/BucketPublicAccessGranted` - bucket ACL changed to public
+- `Stealth:S3/ServerAccessLoggingDisabled` - S3 access logging disabled
+- `UnauthorizedAccess:S3/MaliciousIPCaller.Custom` - S3 access from IP on custom threat list
 
 **Kubernetes:**
-- `Execution:Kubernetes/ExecInKubePod` — exec command run inside a Kubernetes pod
-- `Persistence:Kubernetes/ContainerWithSensitiveMount` — container with sensitive host path mounted
-- `PrivilegeEscalation:Kubernetes/PrivilegedContainer` — privileged container launched
+- `Execution:Kubernetes/ExecInKubePod` - exec command run inside a Kubernetes pod
+- `Persistence:Kubernetes/ContainerWithSensitiveMount` - container with sensitive host path mounted
+- `PrivilegeEscalation:Kubernetes/PrivilegedContainer` - privileged container launched
 
 ### Finding Severity
 
 | Severity | Score | Meaning |
 |---|---|---|
-| **High** | 7.0–8.9 | Immediate action required — active threat |
-| **Medium** | 4.0–6.9 | Investigate — suspicious activity |
-| **Low** | 0.1–3.9 | Informational — monitor for patterns |
+| **High** | 7.0–8.9 | Immediate action required - active threat |
+| **Medium** | 4.0–6.9 | Investigate - suspicious activity |
+| **Low** | 0.1–3.9 | Informational - monitor for patterns |
 
 ---
 
@@ -122,8 +122,8 @@ aws guardduty update-organization-configuration \
 
 ## Trusted IP Lists and Threat Lists
 
-**Trusted IP list** — IP addresses that GuardDuty should NOT generate findings for (e.g. your office IPs, VPN exit points).
-**Threat IP list** — additional malicious IP addresses you supply beyond GuardDuty's built-in intelligence.
+**Trusted IP list** - IP addresses that GuardDuty should NOT generate findings for (e.g. your office IPs, VPN exit points).
+**Threat IP list** - additional malicious IP addresses you supply beyond GuardDuty's built-in intelligence.
 
 ```bash
 # Upload a trusted IP list (file must be in S3)
@@ -147,7 +147,7 @@ aws guardduty create-threat-intel-set \
 
 ## Suppression Rules
 
-**Suppression rules** automatically archive findings that match your criteria — useful for known-good activity that GuardDuty flags as suspicious.
+**Suppression rules** automatically archive findings that match your criteria - useful for known-good activity that GuardDuty flags as suspicious.
 
 Example: suppress port probe findings from your vulnerability scanner's IP range.
 
@@ -197,7 +197,7 @@ aws events put-rule \
     }
   }'
 
-# Target — Lambda function to isolate the instance
+# Target: Lambda function to isolate the instance
 aws events put-targets \
   --rule guardduty-high-severity \
   --targets '[{
@@ -223,12 +223,12 @@ aws securityhub enable-import-findings-for-product \
 
 ## Exam Key Points
 
-- GuardDuty does **not** prevent threats — it **detects** them. Prevention is WAF, SG, NACLs.
-- Disabling GuardDuty loses all existing findings — **suppression rules** are the right way to reduce noise.
-- **Root credential usage** always generates a finding regardless of legitimacy — rotate away from root for everything.
+- GuardDuty does **not** prevent threats - it **detects** them. Prevention is WAF, SG, NACLs.
+- Disabling GuardDuty loses all existing findings - **suppression rules** are the right way to reduce noise.
+- **Root credential usage** always generates a finding regardless of legitimacy - rotate away from root for everything.
 - **Multi-account**: delegated admin in security account, member accounts auto-enrolled via Organizations.
-- GuardDuty analyses VPC Flow Logs and DNS logs **without enabling them in your account** — it reads them directly from the underlying infrastructure.
-- EBS Malware Protection creates a **replica snapshot** to scan — it does not affect the running instance.
+- GuardDuty analyses VPC Flow Logs and DNS logs **without enabling them in your account** - it reads them directly from the underlying infrastructure.
+- EBS Malware Protection creates a **replica snapshot** to scan - it does not affect the running instance.
 
 ---
 
@@ -258,3 +258,13 @@ aws guardduty create-sample-findings \
 # Detector status
 aws guardduty get-detector --detector-id abc123
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

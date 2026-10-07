@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Homelab Part 2 — VMware Setup and VM Planning"
+title: "Homelab Part 2: VMware Setup and VM Planning"
 date: 2026-05-24 11:00:00 +0800
 categories:
   - Homelab
@@ -20,27 +20,26 @@ mermaid: false
 
 ## Why VMware and Not Proxmox
 
-The reference homelab uses Proxmox — a bare-metal Type 1 hypervisor you install by wiping your machine. I'm not doing that. I use my laptop daily for everything, and I'm not ready to commit to a full OS replacement.
+The reference homelab uses Proxmox - a bare-metal Type 1 hypervisor you install by wiping your machine. I'm not doing that. I use my laptop daily for everything, and I'm not ready to commit to a full OS replacement.
 
-VMware Workstation 17 Pro is a Type 2 hypervisor — it runs on top of Windows like any other application. I can start and stop my VMs whenever I want, pause them when I need full performance for other work, and keep my normal Windows setup untouched.
+VMware Workstation 17 Pro is a Type 2 hypervisor - it runs on top of Windows like any other application. I can start and stop my VMs whenever I want, pause them when I need full performance for other work, and keep my normal Windows setup untouched.
 
 The trade-off is a small performance overhead. For a homelab running media and file storage, that overhead is irrelevant.
 
 ---
 
-## VMware Networking — Which Mode to Use
+## VMware Networking: Which Mode to Use
 
 VMware gives you three network modes for VMs. Picking the right one matters.
 
 | Mode | What it does | Use case |
 |------|-------------|----------|
-| NAT | VM shares host's IP, hidden from network | Default — good for internet access but other devices can't reach the VM |
-| Bridged | VM gets its own IP on your real network | **What I'm using** — devices on your network can reach the VM directly |
+| NAT | VM shares host's IP, hidden from network | Default - good for internet access but other devices can't reach the VM |
+| Bridged | VM gets its own IP on your real network | **What I'm using** - devices on your network can reach the VM directly |
 | Host-only | VM can only talk to the host | Isolated testing, no internet |
 
-I'm using **Bridged mode** for both VMs. This means each VM gets its own IP address from my router — they appear as separate devices on my home network, just like a physical computer would. My phone, iPad, and other devices can reach them directly.
+I'm using **Bridged mode** for both VMs. This means each VM gets its own IP address from my router - they appear as separate devices on my home network, just like a physical computer would. My phone, iPad, and other devices can reach them directly.
 
-> `[SCREENSHOT]` — *VMware network adapter settings showing Bridged mode selected*
 
 ---
 
@@ -48,7 +47,7 @@ I'm using **Bridged mode** for both VMs. This means each VM gets its own IP addr
 
 I'm creating two VMs. Everything in the homelab runs inside one of these two.
 
-### VM 1 — AdGuard Home (DNS)
+### VM 1: AdGuard Home (DNS)
 
 | Setting | Value |
 |---------|-------|
@@ -58,11 +57,11 @@ I'm creating two VMs. Everything in the homelab runs inside one of these two.
 | CPU | 1 core |
 | Disk | 20GB |
 | Network | Bridged |
-| IP | Static — `192.168.1.50` |
+| IP | Static - `192.168.1.50` |
 
 Small and lightweight. It runs 24/7. I'll give it a static IP by reserving it in my router's DHCP settings.
 
-### VM 2 — K3s Node
+### VM 2: K3s Node
 
 | Setting | Value |
 |---------|-------|
@@ -72,21 +71,20 @@ Small and lightweight. It runs 24/7. I'll give it a static IP by reserving it in
 | CPU | 8 cores |
 | Disk | 200GB (thin provisioned) |
 | Network | Bridged |
-| IP | Static — `192.168.1.51` |
+| IP | Static - `192.168.1.51` |
 
-This is the main VM. Everything — Jellyfin, Nextcloud, all Kubernetes pods — runs here. I'm giving it 24GB RAM (leaving ~15GB for my Windows host and other work) and 8 cores. Thin-provisioned disk means it only uses actual space on my SSD, not the full 200GB upfront.
+This is the main VM. Everything - Jellyfin, Nextcloud, all Kubernetes pods - runs here. I'm giving it 24GB RAM (leaving ~15GB for my Windows host and other work) and 8 cores. Thin-provisioned disk means it only uses actual space on my SSD, not the full 200GB upfront.
 
 ---
 
 ## Creating the VMs
 
-### Step 1 — Download Ubuntu Server 22.04 LTS
+### Step 1: Download Ubuntu Server 22.04 LTS
 
-I download the ISO from ubuntu.com (server edition, not desktop — no GUI, lighter).
+I download the ISO from ubuntu.com (server edition, not desktop - no GUI, lighter).
 
-> `[SCREENSHOT]` — *Ubuntu downloads page with Ubuntu Server 22.04.x LTS selected*
 
-### Step 2 — Create VM in VMware
+### Step 2: Create VM in VMware
 
 **File → New Virtual Machine → Typical**
 
@@ -95,9 +93,8 @@ I download the ISO from ubuntu.com (server edition, not desktop — no GUI, ligh
 - Name: `homelab-dns` (or `homelab-k3s`)
 - Location: somewhere with enough disk space
 
-> `[SCREENSHOT]` — *VMware new VM wizard — guest OS selection screen*
 
-### Step 3 — Customize Hardware Before Finishing
+### Step 3: Customize Hardware Before Finishing
 
 Before clicking Finish, click **Customize Hardware**:
 
@@ -112,9 +109,8 @@ For `homelab-k3s`:
 - Network Adapter: Bridged
 - Hard Disk: 200GB, thin provisioned
 
-> `[SCREENSHOT]` — *VMware hardware customisation screen showing RAM and processor settings for the K3s VM*
 
-### Step 4 — Ubuntu Server Installation
+### Step 4: Ubuntu Server Installation
 
 Power on the VM and walk through the Ubuntu installer:
 
@@ -122,10 +118,9 @@ Power on the VM and walk through the Ubuntu installer:
 - Keyboard: your layout
 - Network: leave as DHCP for now (I'll set static IP after)
 - Storage: use entire disk (the virtual disk only)
-- Profile: set your username and password — I use `homelab` as the username
-- **SSH:** check **Install OpenSSH server** — essential so I can SSH in from Windows
+- Profile: set your username and password - I use `homelab` as the username
+- **SSH:** check **Install OpenSSH server** - essential so I can SSH in from Windows
 
-> `[SCREENSHOT]` — *Ubuntu server installer — OpenSSH server option checked*
 
 Installation takes about 5 minutes. Reboot when done.
 
@@ -135,10 +130,10 @@ Installation takes about 5 minutes. Reboot when done.
 
 I don't want the VM IPs changing. Two ways to do this:
 
-**Option A — Router DHCP reservation (easier)**
+**Option A - Router DHCP reservation (easier)**
 Go to my router admin page, find the VM's MAC address in the DHCP leases table, and assign it a fixed IP. The VM still uses DHCP but always gets the same address.
 
-**Option B — Static IP on the VM itself using Netplan (Ubuntu)**
+**Option B - Static IP on the VM itself using Netplan (Ubuntu)**
 
 ```yaml
 # /etc/netplan/00-installer-config.yaml
@@ -161,9 +156,8 @@ sudo netplan apply
 ip addr show ens33               # verify new IP
 ```
 
-> `[SCREENSHOT]` — *Terminal showing the VM's new static IP after netplan apply*
 
-I use Option B — it's self-contained in the VM and doesn't depend on my router's admin panel.
+I use Option B - it's self-contained in the VM and doesn't depend on my router's admin panel.
 
 ---
 
@@ -187,7 +181,6 @@ ssh-keygen -t ed25519
 ssh-copy-id homelab@192.168.1.51
 ```
 
-> `[SCREENSHOT]` — *Windows Terminal with two SSH sessions — one to each VM*
 
 ---
 
@@ -217,7 +210,6 @@ free -h
 # Swap line should show 0B total
 ```
 
-> `[SCREENSHOT]` — *`free -h` output showing Swap: 0B 0B 0B*
 
 ---
 
@@ -232,20 +224,19 @@ sudo systemctl enable open-vm-tools
 
 ---
 
-## Resource Management — Running Alongside Daily Work
+## Resource Management: Running Alongside Daily Work
 
 Since I'm using this laptop daily, I configure VMware to not let the VMs starve my host:
 
 **VMware → VM Settings → Processors → Advanced**
 - Check: "Limit processor usage" if needed
 
-**The approach I use:** I suspend the VMs when I'm doing heavy work (video, compiling, etc.) and resume them when I just need them for browsing or writing. VMware suspend/resume is instant — the VMs come back in 2–3 seconds exactly where they left off.
+**The approach I use:** I suspend the VMs when I'm doing heavy work (video, compiling, etc.) and resume them when I just need them for browsing or writing. VMware suspend/resume is instant - the VMs come back in 2–3 seconds exactly where they left off.
 
 ```
 VMware toolbar → Suspend (pause icon)  → resumes from exact state later
 ```
 
-> `[SCREENSHOT]` — *VMware showing both VMs — one running, showing power/suspend controls*
 
 ---
 
@@ -267,7 +258,6 @@ Next: set up AdGuard Home on the DNS VM so I have internal DNS for my homelab ho
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

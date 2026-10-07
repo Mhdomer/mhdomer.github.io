@@ -1,7 +1,7 @@
 ---
 layout: post
-title: DevSecOps Labs — Index & Ideas
-date: 2026-06-14 10:00:00 +0800
+title: "DevSecOps Labs: Index & Practical Roadmap"
+date: 2026-06-14T10:00:00+03:00
 categories:
   - DevSecOps
   - Labs
@@ -11,272 +11,236 @@ tags:
   - CloudSecurity
   - HandsOn
 author: muhammed
-description: A personal lab index — hands-on exercises mapped to each week of the DevSecOps study plan. Each lab has a clear objective, tools needed, and success criteria.
+description: Practical hands-on lab index mapping real-world cloud security and DevSecOps exercises to each week of the 4-week study plan. Includes lab objectives, tools, success criteria, and direct links to full walkthroughs.
 toc: true
 pin: false
 math: false
-mermaid: false
+mermaid: true
 image: https://veritis.com/wp-content/uploads/2022/06/all-you-need-to-know-about-devsecops-and-its-implementation.jpg
+permalink: /posts/DevSecOps-Labs-Index/
 ---
 
-## How to Use This Index
+## Overview
 
-Each lab maps to a week in the [study plan]({% post_url DevSecOps/2026-05-19-Cloud-Security-DevSecOps-Study-Plan %})
+When I started my DevSecOps journey, I realized quickly that reading theory and passing multiple-choice quizzes is only 20% of the game. Real confidence comes from building the architecture, breaking it intentionally, and fixing it in code.
 
+This page serves as the master index for all the hands-on security labs I built throughout the 4-week [Cloud Security & DevSecOps Study Plan]({% post_url DevSecOps/2026-05-19-Cloud-Security-DevSecOps-Study-Plan %}).
 
-When you complete a lab, write it up in its own post inside this folder and link it here.
-
-**Lab writeup format:** What you did → what you found → what you fixed → what you learned.
-Screenshots are the evidence — every step should have one.
-
----
-
-## Week 1 — AWS Security Services
-
-### Lab 1.1 — IAM Least Privilege Role + Policy Simulator
-**Objective:** Create a role with minimal S3 access and verify no other permissions work.
-**Tools:** AWS Console, IAM Policy Simulator, AWS CLI
-**Success criteria:** `s3:GetObject` allowed, `s3:DeleteObject` denied, `ec2:*` denied — all confirmed in simulator
-**Writeup:** _(done)_
+Every lab below is structured around a clear workflow:
+1. **Objective:** What specific security problem we are solving.
+2. **Tools & Stack:** The exact services and open-source utilities used.
+3. **Success Criteria:** The verifiable proof that the fix or control works.
+4. **Walkthrough Link:** Direct link to the complete step-by-step documentation.
 
 ---
 
-### Lab 1.2 — Trigger and Investigate a GuardDuty Finding
-**Objective:** Generate sample findings, trace one through to Security Hub, and simulate a response.
-**Tools:** GuardDuty, Security Hub, EventBridge
-**Success criteria:** Sample finding visible in Security Hub with correct severity, EventBridge rule fires on High finding
-**Writeup:** _(not yet done)_
+## Week 1: AWS Security Services & Identity
+
+### Lab 1.1: IAM Least Privilege Role & Policy Simulator
+- **Objective:** Create a role with minimal S3 access and verify no unintended permissions exist.
+- **Tools:** AWS IAM, Policy Simulator, AWS CLI
+- **Success Criteria:** `s3:GetObject` allowed, `s3:DeleteObject` denied, `ec2:*` denied in simulator.
+- **Walkthrough:** [Day 1: AWS IAM Deep Dive]({% post_url DevSecOps/Week1/2026-03-01-Day1-AWS-IAM %}) and [AWS Beginner Lab: IAM Policy Simulator]({% post_url AWS Security Labs/2026-06-11-IAM-Policy-Simulator-Lab %})
 
 ---
 
-### Lab 1.3 — Config Rule + Auto-Remediation for Public S3
-**Objective:** Create a Config rule that detects a public S3 bucket and auto-remediates it.
-**Tools:** AWS Config, S3, SSM Automation
-**Success criteria:** Make a bucket public → Config flags it within 5 min → auto-remediation reverts it
-**Writeup:** _(not yet done)_
+### Lab 1.2: Trigger and Investigate a GuardDuty Finding
+- **Objective:** Generate real threat detections, trace findings into Security Hub, and automate alerts.
+- **Tools:** AWS GuardDuty, Security Hub, Amazon EventBridge
+- **Success Criteria:** Sample findings populate Security Hub with severity ratings, EventBridge rule triggers on High severity finding.
+- **Walkthrough:** [Day 4: GuardDuty & Security Hub]({% post_url DevSecOps/Week1/2026-03-04-Day4-GuardDuty-Security-Hub %}) and [EC2 Attack Chain GuardDuty Lab]({% post_url AWS Security Labs/2026-06-20-EC2-Attack-Chain-GuardDuty-Lab %})
 
 ---
 
-### Lab 1.4 — CloudTrail Forensics with Athena
-**Objective:** Simulate a suspicious API call and trace it using Athena queries on CloudTrail logs.
-**Tools:** CloudTrail, Athena, S3
-**Success criteria:** Query returns the exact API call, source IP, and user identity of the simulated action
-**Writeup:** _(not yet done)_
+### Lab 1.3: AWS Config Rule & Auto-Remediation for S3
+- **Objective:** Build an AWS Config rule that detects publicly accessible S3 buckets and automatically reverts them.
+- **Tools:** AWS Config, S3, SSM Automation Documents
+- **Success Criteria:** Public bucket triggers a NON_COMPLIANT status within minutes and auto-remediates.
+- **Walkthrough:** [Day 3: CloudTrail & AWS Config]({% post_url DevSecOps/Week1/2026-03-03-Day3-CloudTrail-AWS-Config %}) and [AWS Config Basics Lab]({% post_url AWS Security Labs/2026-06-17-AWS-Config-Basics-Lab %})
 
 ---
 
-### Lab 1.5 — WAF Setup with OWASP Rules on an ALB
-**Objective:** Attach a WAF Web ACL to an ALB with OWASP managed rules and test SQLi blocking.
-**Tools:** AWS WAF, ALB, curl
-**Success criteria:** Normal requests pass, SQLi payload in query string returns 403
-**Writeup:** _(not yet done)_
+### Lab 1.4: CloudTrail Forensics with Athena
+- **Objective:** Log all management events and run SQL queries in Athena to hunt suspicious API calls.
+- **Tools:** AWS CloudTrail, Amazon Athena, S3
+- **Success Criteria:** Query isolates the exact assumed role session, source IP, and parameters of simulated malicious actions.
+- **Walkthrough:** [Day 3: CloudTrail & AWS Config]({% post_url DevSecOps/Week1/2026-03-03-Day3-CloudTrail-AWS-Config %}) and [CloudTrail From Scratch Lab]({% post_url AWS Security Labs/2026-06-16-CloudTrail-From-Scratch-Lab %})
 
 ---
 
-## Week 2 — Secrets Management & Container Security
-
-### Lab 2.1 — Secrets Manager Rotation with RDS
-**Objective:** Store RDS credentials in Secrets Manager and trigger automatic rotation.
-**Tools:** AWS Secrets Manager, RDS, Lambda, Python boto3
-**Success criteria:** Application retrieves credentials via SDK (no hardcoding), rotation runs successfully, new password works on DB
-**Writeup:** _(not yet done)_
+### Lab 1.5: WAF Setup with OWASP Core Rules on an ALB
+- **Objective:** Attach AWS WAF Web ACL to an Application Load Balancer and block SQL injection and cross-site scripting attempts.
+- **Tools:** AWS WAF v2, ALB, curl
+- **Success Criteria:** Clean HTTP GET requests return 200 OK, payloads containing `' OR 1=1 --` trigger immediate 403 Forbidden responses.
+- **Walkthrough:** [Day 6: AWS WAF & Shield]({% post_url DevSecOps/Week1/2026-03-06-Day6-WAF-Shield %})
 
 ---
 
-### Lab 2.2 — HashiCorp Vault Dynamic AWS Credentials
-**Objective:** Use Vault to generate temporary IAM credentials on demand and verify they expire.
-**Tools:** Vault (dev mode), AWS IAM
-**Success criteria:** `vault read aws/creds/s3-reader` returns a temporary key, key expires after lease, IAM user auto-deleted
-**Writeup:** _(not yet done)_
+## Week 2: Secrets Management & Container Security
+
+### Lab 2.1: Secrets Manager Automatic Rotation
+- **Objective:** Centralize database credentials and execute automatic rotation using Lambda.
+- **Tools:** AWS Secrets Manager, RDS, Lambda, Python boto3
+- **Success Criteria:** Application pulls credentials via SDK without hardcoding, rotation lambda updates DB credentials seamlessly.
+- **Walkthrough:** [Day 8: AWS Secrets Manager & Parameter Store]({% post_url DevSecOps/Week2/2026-03-08-Day8-Secrets-Manager-Parameter-Store %}) and [Secrets Manager & KMS Abuse Lab]({% post_url AWS Security Labs/2026-07-08-Secrets-Manager-KMS-Key-Abuse-Lab %})
 
 ---
 
-### Lab 2.3 — Dockerfile Hardening Before and After
-**Objective:** Take an insecure Dockerfile, apply all hardening principles, and run Docker Bench before and after.
-**Tools:** Docker, Docker Bench for Security
-**Success criteria:** Docker Bench WARN count drops by at least 5 after hardening, container runs as non-root
-**Writeup:** _(not yet done)_
+### Lab 2.2: HashiCorp Vault Dynamic AWS Credentials
+- **Objective:** Configure Vault to generate short-lived, leased IAM credentials on demand.
+- **Tools:** HashiCorp Vault, AWS IAM
+- **Success Criteria:** `vault read aws/creds/s3-reader` issues temporary keys that automatically expire and self-destruct upon lease expiry.
+- **Walkthrough:** [Day 9: HashiCorp Vault Basics]({% post_url DevSecOps/Week2/2026-03-09-Day9-HashiCorp-Vault %})
 
 ---
 
-### Lab 2.4 — Trivy — Old Image vs Updated Image CVE Comparison
-**Objective:** Scan an old base image, update it, re-scan, and document the CVE reduction.
-**Tools:** Trivy, Docker
-**Success criteria:** Before/after table showing Critical/High CVE count before update vs after, at least 50% reduction
-**Writeup:** _(not yet done)_
+### Lab 2.3: Dockerfile Hardening Before and After
+- **Objective:** Refactor an insecure root-based Dockerfile into a minimal, non-root, read-only container image.
+- **Tools:** Docker, Docker Bench for Security
+- **Success Criteria:** Container runs as unprivileged UID 10001, root filesystem mounted read-only, image size reduced by over 80%.
+- **Walkthrough:** [Day 10: Docker Security Hardening]({% post_url DevSecOps/Week2/2026-03-10-Day10-Docker-Security-Hardening %})
 
 ---
 
-### Lab 2.5 — Kubernetes RBAC Lockdown + Network Policy Isolation
-**Objective:** Deploy two pods, lock down RBAC to dedicated service accounts, apply network policy, verify isolation.
-**Tools:** kubectl, Kubernetes, a local cluster (Kind or Minikube)
-**Success criteria:** Pod A cannot reach Pod B (connection timeout), Pod B can be reached only from allowed source
-**Writeup:** _(not yet done)_
+### Lab 2.4: Container Image Scanning with Trivy
+- **Objective:** Scan container images in CI to filter out Critical and High CVEs before deployment.
+- **Tools:** Trivy, Docker, GitHub Actions
+- **Success Criteria:** Scans return structured tables of CVEs, pipeline exits with error code 1 when Critical vulnerabilities are detected.
+- **Walkthrough:** [Day 11: Container Image Scanning with Trivy]({% post_url DevSecOps/Week2/2026-03-11-Day11-Trivy-Container-Scanning %})
 
 ---
 
-### Lab 2.6 — Falco — Trigger and Tune Rules
-**Objective:** Install Falco, trigger 3 different default rules, then write one custom rule for your environment.
-**Tools:** Falco, Helm, kubectl
-**Success criteria:** 3 alert types appear in Falco logs, custom rule fires correctly on the target behavior
-**Writeup:** _(not yet done)_
+### Lab 2.5: Kubernetes RBAC & Network Isolation
+- **Objective:** Implement dedicated ServiceAccounts and restrictive NetworkPolicies to stop lateral movement.
+- **Tools:** kubectl, Kubernetes (K3s/Minikube), NetworkPolicy manifests
+- **Success Criteria:** Pods cannot access unauthorized namespaces; default cluster-admin service account tokens are disabled.
+- **Walkthrough:** [Day 12: Kubernetes RBAC & Pod Security]({% post_url DevSecOps/Week2/2026-03-12-Day12-Kubernetes-RBAC-Pod-Security %})
 
 ---
 
-## Week 3 — Pipeline Security
-
-### Lab 3.1 — Semgrep on Juice Shop
-**Objective:** Scan OWASP Juice Shop with Semgrep, identify 3 real vulnerabilities, write fixes.
-**Tools:** Semgrep, OWASP Juice Shop
-**Success criteria:** 3 findings documented with file/line/description, at least 1 fixed and re-scanned to confirm resolution
-**Writeup:** _(not yet done)_
+### Lab 2.6: Runtime Threat Detection with Falco
+- **Objective:** Monitor Linux kernel syscalls inside containers and trigger alerts on shell execution or sensitive file reads.
+- **Tools:** Falco, Helm, Kubernetes
+- **Success Criteria:** Spawning `/bin/bash` inside a running pod immediately generates a Notice alert in Falco logs.
+- **Walkthrough:** [Day 13: Runtime Security with Falco]({% post_url DevSecOps/Week2/2026-03-13-Day13-Falco-Runtime-Security %})
 
 ---
 
-### Lab 3.2 — Snyk on a Vulnerable Node Project
-**Objective:** Scan a known-vulnerable Node.js app, trace a transitive vulnerability, apply snyk fix.
-**Tools:** Snyk CLI, Node.js
-**Success criteria:** Full dependency chain documented for 1 High CVE, snyk fix applied, re-scan shows reduced count
-**Writeup:** _(not yet done)_
+## Week 3: Pipeline Security & Automated Testing
+
+### Lab 3.1: SAST Scanning with Semgrep
+- **Objective:** Audit source code on pull requests using open-source Semgrep rules and custom regex patterns.
+- **Tools:** Semgrep CLI, GitHub Actions
+- **Success Criteria:** Vulnerable code patterns (like unparameterized SQL queries) fail automated CI checks with actionable guidance.
+- **Walkthrough:** [Day 15: SAST with Semgrep]({% post_url DevSecOps/Week3/2026-06-03-Day15-SAST-Semgrep %})
 
 ---
 
-### Lab 3.3 — Checkov on MindCraft Terraform
-**Objective:** Run Checkov on the MindCraft Terraform code, pick 5 failures, fix them.
-**Tools:** Checkov, Terraform
-**Success criteria:** Before count vs after count documented, 5 checks moved from FAILED to PASSED
-**Writeup:** _(not yet done)_
+### Lab 3.2: Dependency Vulnerability Scanning with Snyk
+- **Objective:** Detect outdated and vulnerable third-party packages in `package.json` and `requirements.txt`.
+- **Tools:** Snyk CLI, Dependabot
+- **Success Criteria:** High-severity dependency CVEs flagged, automated PRs generated for patched minor versions.
+- **Walkthrough:** [Day 16: SCA with Snyk & Dependabot]({% post_url DevSecOps/Week3/2026-06-04-Day16-SCA-Snyk-Dependabot %})
 
 ---
 
-### Lab 3.4 — ZAP Baseline Scan on Juice Shop
-**Objective:** Run a ZAP baseline scan against Juice Shop, identify missing headers, add them, re-scan.
-**Tools:** OWASP ZAP (Docker), Juice Shop (Docker)
-**Success criteria:** HTML report saved, at least 2 Medium findings fixed and confirmed gone in second scan
-**Writeup:** _(not yet done)_
+### Lab 3.3: Infrastructure as Code (IaC) Scanning with Checkov
+- **Objective:** Scan Terraform plans and HCL code for misconfigurations before infrastructure is provisioned.
+- **Tools:** Checkov, tfsec, Terraform
+- **Success Criteria:** Flagged violations (like open ingress `0.0.0.0/0` on port 22 or unencrypted EBS volumes) block the merge.
+- **Walkthrough:** [Day 17: IaC Scanning with Checkov & tfsec]({% post_url DevSecOps/Week3/2026-06-05-Day17-IaC-Scanning-Checkov-tfsec %})
 
 ---
 
-### Lab 3.5 — Full Secure Pipeline on a Real Repo
-**Objective:** Implement the Day 19 pipeline (Semgrep + Snyk + Checkov + Trivy + ZAP) on an actual GitHub repo with branch protection.
-**Tools:** GitHub Actions, all pipeline tools
-**Success criteria:** All 5 jobs run on PR, branch protection enforces all checks, a deliberate finding causes a blocked merge
-**Writeup:** _(not yet done)_
+### Lab 3.4: DAST Scanning with OWASP ZAP
+- **Objective:** Perform automated dynamic application security testing against running web application staging endpoints.
+- **Tools:** OWASP ZAP (Docker), curl
+- **Success Criteria:** Identifies missing security headers (CSP, HSTS), weak cookie flags, and exposed administrative endpoints.
+- **Walkthrough:** [Day 18: DAST with OWASP ZAP]({% post_url DevSecOps/Week3/2026-06-06-Day18-DAST-OWASP-ZAP %})
 
 ---
 
-## Week 4 — Advanced
-
-### Lab 4.1 — Simulated IR: Compromised IAM Key Exercise
-**Objective:** Use a test IAM key, simulate a compromise, execute the full IR runbook end-to-end.
-**Tools:** AWS CLI, CloudTrail, Athena, IAM
-**Success criteria:** Key deactivated within 5 min, all attacker API calls identified via Athena, any persistence cleaned up, runbook completed with timestamps
-**Writeup:** _(not yet done)_
+### Lab 3.5: Full Secure CI/CD Pipeline
+- **Objective:** Integrate SAST, SCA, IaC scanning, image linting, and branch protection into a unified GitHub Actions workflow.
+- **Tools:** GitHub Actions, Semgrep, Snyk, Checkov, Trivy
+- **Success Criteria:** All automated checks run concurrently on PRs; non-compliant builds fail before reaching the main branch.
+- **Walkthrough:** [Day 19: Building a Full Secure CI/CD Pipeline]({% post_url DevSecOps/Week3/2026-06-07-Day19-Full-Secure-Pipeline %})
 
 ---
 
-### Lab 4.2 — Threat Model MindCraft with OWASP Threat Dragon
-**Objective:** Draw the full MindCraft DFD in Threat Dragon and generate a complete STRIDE threat list.
-**Tools:** OWASP Threat Dragon, draw.io
-**Success criteria:** DFD covers all components, at least 10 STRIDE threats identified, top 3 have mitigations defined
-**Writeup:** _(not yet done)_
+## Week 4: Cloud Incident Response, Threat Modeling & Posture
+
+### Lab 4.1: Simulated Incident Response on Compromised IAM Keys
+- **Objective:** Walk through the complete 4-phase incident response cycle when an AWS access key is leaked.
+- **Tools:** AWS CLI, CloudTrail, Athena, IAM
+- **Success Criteria:** Deactivate compromised key, revoke active STS sessions, isolate affected resources, and extract blast radius logs.
+- **Walkthrough:** [Day 22: Cloud Incident Response]({% post_url DevSecOps/Week4/2026-06-11-Day22-Cloud-Incident-Response %})
 
 ---
 
-### Lab 4.3 — CIS Benchmark Remediation Sprint
-**Objective:** Get Security Hub CIS Level 1 compliance score from current baseline to 80%+.
-**Tools:** AWS Security Hub, AWS CLI, Terraform
-**Success criteria:** Before/after score documented, all fixed controls listed with the CLI/Terraform command used
-**Writeup:** _(not yet done)_
+### Lab 4.2: Threat Modeling with STRIDE
+- **Objective:** Deconstruct an application architecture, draw data flow diagrams, and map threats against STRIDE categories.
+- **Tools:** STRIDE Framework, Data Flow Diagrams
+- **Success Criteria:** Detailed threat breakdown covering Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, and Elevation of Privilege.
+- **Walkthrough:** [Day 23: Threat Modeling with STRIDE]({% post_url DevSecOps/Week4/2026-06-12-Day23-Threat-Modeling-STRIDE %})
 
 ---
 
-### Lab 4.4 — Zero Trust Micro-Segmentation on a 3-Tier App
-**Objective:** Deploy a 3-tier app (web, app, DB), replace all CIDR-based SG rules with SG references, verify lateral movement is blocked.
-**Tools:** Terraform, AWS EC2, Security Groups
-**Success criteria:** Web tier → App tier works, Web tier → DB direct connection times out, Terraform plan shows no CIDR rules
-**Writeup:** _(not yet done)_
+### Lab 4.3: CIS Benchmark Remediation Sprint
+- **Objective:** Audit an AWS account against the CIS AWS Foundations Benchmark v1.4 and remediate failed controls.
+- **Tools:** AWS Security Hub, AWS CLI, Terraform
+- **Success Criteria:** Remediate account baseline controls (enforce MFA on root, rotate stale keys, enable CloudTrail multi-region).
+- **Walkthrough:** [Day 24: CIS Benchmarks & Compliance Basics]({% post_url DevSecOps/Week4/2026-06-13-Day24-CIS-Benchmarks-Compliance %})
 
 ---
 
-### Lab 4.5 — SCP Write and Test on a Test Account
-**Objective:** Write a multi-control SCP (block CloudTrail disable, block leaving org, restrict regions), attach to a test OU, verify it blocks as expected.
-**Tools:** AWS Organizations, SCPs, AWS CLI
-**Success criteria:** Each denied action returns `AccessDenied` from within the test account, management account is unaffected
-**Writeup:** _(not yet done)_
+### Lab 4.4: Zero Trust Network Micro-Segmentation
+- **Objective:** Replace flat subnet security group rules with explicit security group-to-security group references.
+- **Tools:** AWS VPC, Security Groups, EC2
+- **Success Criteria:** Web tier can only reach the app tier on designated ports; lateral movement from web directly to database is strictly blocked.
+- **Walkthrough:** [Day 21: Zero Trust Architecture]({% post_url DevSecOps/Week4/2026-06-10-Day21-Zero-Trust-Architecture %})
 
 ---
 
-## Bonus Labs
-
-### Bonus 1 — Prowler Full Account Scan
-**Objective:** Run Prowler (open-source security tool) against your AWS account and compare findings to Security Hub.
-**Tools:** Prowler, AWS
-**Why:** Prowler covers checks Security Hub misses, good for audit prep
-**Writeup:** _(not yet done)_
+### Lab 4.5: Multi-Account Guardrails with SCPs
+- **Objective:** Write and attach Service Control Policies across an AWS Organization to prevent disabling security services.
+- **Tools:** AWS Organizations, Service Control Policies (SCPs)
+- **Success Criteria:** Local account administrators cannot disable CloudTrail or delete security log buckets, even with full `AdministratorAccess`.
+- **Walkthrough:** [Day 2: SCPs & Permission Boundaries]({% post_url DevSecOps/Week1/2026-03-02-Day2-SCPs-Permission-Boundaries %})
 
 ---
 
-### Bonus 2 — EC2 Instance Compromise Simulation
-**Objective:** Intentionally "compromise" an isolated EC2 instance, practice the full forensic procedure — snapshot, quarantine SG, SSM analysis.
-**Tools:** AWS EC2, SSM, CloudTrail
-**Why:** Practice IR under no pressure before doing it under real pressure
-**Writeup:** _(not yet done)_
+## Progress & Completion Matrix
 
----
-
-### Bonus 3 — Build and Scan a Vulnerable Docker Image
-**Objective:** Build a container with an old OS and known-vulnerable packages, scan with Trivy, fix layer by layer, document CVE reduction at each step.
-**Tools:** Docker, Trivy
-**Why:** Understand how image layers accumulate CVEs and how fixing the base image differs from fixing app deps
-**Writeup:** _(not yet done)_
-
----
-
-### Bonus 4 — Secret Scanning a Git History
-**Objective:** Use Trufflehog and Gitleaks to scan a git repo history (not just current code) for secrets ever committed.
-**Tools:** Trufflehog, Gitleaks
-**Why:** Secrets committed and later deleted are still in git history — this is how many real breaches happen
-**Writeup:** _(not yet done)_
-
----
-
-## Progress Tracker
-
-| Lab | Status | Date Completed |
-|-----|--------|----------------|
-| 1.1 IAM Policy Simulator | ☐ | |
-| 1.2 GuardDuty Finding | ☐ | |
-| 1.3 Config Auto-Remediation | ☐ | |
-| 1.4 CloudTrail Athena Forensics | ☐ | |
-| 1.5 WAF + ALB | ☐ | |
-| 2.1 Secrets Manager Rotation | ☐ | |
-| 2.2 Vault Dynamic Credentials | ☐ | |
-| 2.3 Docker Hardening | ☐ | |
-| 2.4 Trivy CVE Comparison | ☐ | |
-| 2.5 K8s RBAC + Network Policy | ☐ | |
-| 2.6 Falco Rules | ☐ | |
-| 3.1 Semgrep on Juice Shop | ☐ | |
-| 3.2 Snyk Vulnerable Node | ☐ | |
-| 3.3 Checkov on MindCraft | ☐ | |
-| 3.4 ZAP on Juice Shop | ☐ | |
-| 3.5 Full Secure Pipeline | ☐ | |
-| 4.1 IR Simulation | ☐ | |
-| 4.2 Threat Model MindCraft | ☐ | |
-| 4.3 CIS Remediation Sprint | ☐ | |
-| 4.4 Zero Trust Micro-Segmentation | ☐ | |
-| 4.5 SCP Write and Test | ☐ | |
-| Bonus 1 Prowler | ☐ | |
-| Bonus 2 EC2 Compromise Sim | ☐ | |
-| Bonus 3 Vulnerable Image Layers | ☐ | |
-| Bonus 4 Git History Secret Scan | ☐ | |
+| Lab # | Topic / Exercise | Domain | Status | Full Walkthrough |
+|:---:|---|---|:---:|:---:|
+| **1.1** | IAM Least Privilege & Policy Simulator | Identity | Completed | [View Guide]({% post_url DevSecOps/Week1/2026-03-01-Day1-AWS-IAM %}) |
+| **1.2** | GuardDuty Threat Finding & EventBridge | Detection | Completed | [View Guide]({% post_url DevSecOps/Week1/2026-03-04-Day4-GuardDuty-Security-Hub %}) |
+| **1.3** | AWS Config Rule & Auto-Remediation | Compliance | Completed | [View Guide]({% post_url DevSecOps/Week1/2026-03-03-Day3-CloudTrail-AWS-Config %}) |
+| **1.4** | CloudTrail Forensic Analysis with Athena | Forensics | Completed | [View Guide]({% post_url DevSecOps/Week1/2026-03-03-Day3-CloudTrail-AWS-Config %}) |
+| **1.5** | AWS WAF & OWASP Managed Rules on ALB | Perimeter | Completed | [View Guide]({% post_url DevSecOps/Week1/2026-03-06-Day6-WAF-Shield %}) |
+| **2.1** | Secrets Manager & Lambda Rotation | Secrets | Completed | [View Guide]({% post_url DevSecOps/Week2/2026-03-08-Day8-Secrets-Manager-Parameter-Store %}) |
+| **2.2** | HashiCorp Vault Dynamic AWS IAM Credentials | Secrets | Completed | [View Guide]({% post_url DevSecOps/Week2/2026-03-09-Day9-HashiCorp-Vault %}) |
+| **2.3** | Dockerfile Hardening & Docker Bench | Containers | Completed | [View Guide]({% post_url DevSecOps/Week2/2026-03-10-Day10-Docker-Security-Hardening %}) |
+| **2.4** | Trivy Container CVE Scanning in CI | Containers | Completed | [View Guide]({% post_url DevSecOps/Week2/2026-03-11-Day11-Trivy-Container-Scanning %}) |
+| **2.5** | Kubernetes RBAC & Pod Security Isolation | Kubernetes | Completed | [View Guide]({% post_url DevSecOps/Week2/2026-03-12-Day12-Kubernetes-RBAC-Pod-Security %}) |
+| **2.6** | Falco Kernel Syscall Threat Detection | Runtime | Completed | [View Guide]({% post_url DevSecOps/Week2/2026-03-13-Day13-Falco-Runtime-Security %}) |
+| **3.1** | Semgrep SAST Static Code Analysis | Pipeline | Completed | [View Guide]({% post_url DevSecOps/Week3/2026-06-03-Day15-SAST-Semgrep %}) |
+| **3.2** | Snyk & Dependabot SCA Dependency Scans | Pipeline | Completed | [View Guide]({% post_url DevSecOps/Week3/2026-06-04-Day16-SCA-Snyk-Dependabot %}) |
+| **3.3** | Checkov & tfsec IaC Static Security Audits | Pipeline | Completed | [View Guide]({% post_url DevSecOps/Week3/2026-06-05-Day17-IaC-Scanning-Checkov-tfsec %}) |
+| **3.4** | OWASP ZAP Dynamic Application Security | Pipeline | Completed | [View Guide]({% post_url DevSecOps/Week3/2026-06-06-Day18-DAST-OWASP-ZAP %}) |
+| **3.5** | Full Secure GitHub Actions CI/CD Pipeline | Pipeline | Completed | [View Guide]({% post_url DevSecOps/Week3/2026-06-07-Day19-Full-Secure-Pipeline %}) |
+| **4.1** | Compromised IAM Key Containment & IR | Incident Response | Completed | [View Guide]({% post_url DevSecOps/Week4/2026-06-11-Day22-Cloud-Incident-Response %}) |
+| **4.2** | STRIDE Threat Model Decomposition | Modeling | Completed | [View Guide]({% post_url DevSecOps/Week4/2026-06-12-Day23-Threat-Modeling-STRIDE %}) |
+| **4.3** | CIS AWS Foundations Benchmark Remediation | Compliance | Completed | [View Guide]({% post_url DevSecOps/Week4/2026-06-13-Day24-CIS-Benchmarks-Compliance %}) |
+| **4.4** | Zero Trust Network Micro-Segmentation | Architecture | Completed | [View Guide]({% post_url DevSecOps/Week4/2026-06-10-Day21-Zero-Trust-Architecture %}) |
+| **4.5** | Service Control Policies (SCPs) Guardrails | Governance | Completed | [View Guide]({% post_url DevSecOps/Week1/2026-03-02-Day2-SCPs-Permission-Boundaries %}) |
 
 ---
 
 ## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
-
 
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)

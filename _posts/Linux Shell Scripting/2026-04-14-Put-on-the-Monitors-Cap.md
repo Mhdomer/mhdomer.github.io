@@ -12,7 +12,7 @@ tags:
   - monitoring
   - sysadmin
 author: muhammed
-description: Chapter 8 of Linux Shell Scripting Cookbook — disk usage, process monitoring, logging, power measurement, and filesystem health from the shell
+description: Chapter 8 of Linux Shell Scripting Cookbook - disk usage, process monitoring, logging, power measurement, and filesystem health from the shell
 toc: true
 pin: false
 math: false
@@ -23,13 +23,13 @@ Link: "[[Shell Scripting Notes]]"
 
 # Chapter Overview
 
-This chapter is about keeping an eye on your system — disk usage, running processes, login activity, power consumption, and filesystem health. The tools here are what sysadmins and CTF players both reach for when they need situational awareness.
+This chapter is about keeping an eye on your system - disk usage, running processes, login activity, power consumption, and filesystem health. The tools here are what sysadmins and CTF players both reach for when they need situational awareness.
 
 ---
 
 ## Monitoring Disk Usage
 
-### du — disk usage of files and directories
+### du: disk usage of files and directories
 
 ```bash
 du -sh /var/log            # human-readable total for a directory
@@ -44,9 +44,9 @@ du -h --max-depth=1 /      # one level deep from root
 du -h /var | sort -rh | head -10
 ```
 
-`sort -rh` — reverse, human-readable sort (handles K/M/G correctly).
+`sort -rh` - reverse, human-readable sort (handles K/M/G correctly).
 
-### df — disk free (filesystem level)
+### df: disk free (filesystem level)
 
 ```bash
 df -h                      # all mounted filesystems, human-readable
@@ -55,7 +55,7 @@ df -i                      # inode usage instead of block usage
 df -h /home                # only the filesystem containing /home
 ```
 
-**Watch for inode exhaustion** — a partition can be 0% block-full but 100% inode-full and still reject new files.
+**Watch for inode exhaustion** - a partition can be 0% block-full but 100% inode-full and still reject new files.
 
 ### Finding large files
 
@@ -69,7 +69,7 @@ find / -type f -printf '%s %p\n' | sort -rn | head -10   # top 10 by bytes
 
 ## Calculating Execution Time
 
-### time — measure command duration
+### time: measure command duration
 
 ```bash
 time sleep 2
@@ -108,7 +108,7 @@ who -b                 # last system boot time
 w                      # logged-in users + what they're running
 ```
 
-### last — login history
+### last: login history
 
 ```bash
 last                   # full login history (reads /var/log/wtmp)
@@ -118,16 +118,16 @@ last username          # logins for a specific user
 last -F                # full timestamps
 ```
 
-### lastb — failed login attempts
+### lastb: failed login attempts
 
 ```bash
 lastb                  # failed logins (reads /var/log/btmp)
 lastb -n 20            # last 20 failures
 ```
 
-`lastb` requires root — it reads `/var/log/btmp`.
+`lastb` requires root - it reads `/var/log/btmp`.
 
-### journalctl — systemd boot logs
+### journalctl: systemd boot logs
 
 ```bash
 journalctl -b                  # logs from current boot
@@ -139,7 +139,7 @@ journalctl --since "1 hour ago"
 journalctl --since "2026-04-14 08:00" --until "2026-04-14 09:00"
 ```
 
-### dmesg — kernel ring buffer
+### dmesg: kernel ring buffer
 
 ```bash
 dmesg                        # all kernel messages since boot
@@ -177,7 +177,7 @@ for pid in "${!cpu_map[@]}"; do
 done | sort -rn | head -10
 ```
 
-Simpler one-liner snapshot (not accumulated — just a point-in-time top 10):
+Simpler one-liner snapshot (not accumulated - just a point-in-time top 10):
 
 ```bash
 ps -eo pid,%cpu,%mem,comm --no-headers --sort=-%cpu | head -10
@@ -197,13 +197,13 @@ watch -d free -h              # highlight differences between runs (-d)
 watch -n 1 date               # basic clock in the terminal
 ```
 
-`-d` / `--differences` — highlight what changed since the last refresh.
+`-d` / `--differences` - highlight what changed since the last refresh.
 
 ---
 
 ## Logging Access to Files and Directories
 
-### inotifywait — filesystem event monitoring
+### inotifywait: filesystem event monitoring
 
 ```bash
 inotifywait -m /etc/passwd            # monitor a single file
@@ -227,7 +227,7 @@ inotifywait -m -r --format '%T %w %f %e' --timefmt '%F %T' \
 | `ATTRIB` | permissions/ownership changed |
 | `MOVED_FROM/TO` | rename or move |
 
-### auditd — kernel-level audit
+### auditd: kernel-level audit
 
 ```bash
 auditctl -w /etc/sudoers -p rwxa -k sudoers_watch    # watch sudoers
@@ -276,7 +276,7 @@ Common rotation frequencies: `daily`, `weekly`, `monthly`, `yearly`.
 
 ## Logging with syslog
 
-### logger — write to syslog from scripts
+### logger: write to syslog from scripts
 
 ```bash
 logger "Backup completed successfully"
@@ -329,7 +329,7 @@ rsync -av /data /backup && log "Backup successful" || log "Backup FAILED"
 lastb | awk '{print $3}' | sort | uniq -c | sort -rn | head -10
 ```
 
-This prints: count, then IP/hostname — most-attempted hosts at the top.
+This prints: count, then IP/hostname - most-attempted hosts at the top.
 
 **From journalctl (SSH failures):**
 
@@ -408,7 +408,7 @@ This groups by user and login hour, showing when each user is most active. Usefu
 
 ## Measuring and Optimizing Power Usage
 
-### powertop — interactive power monitor
+### powertop: interactive power monitor
 
 ```bash
 powertop                    # interactive TUI (requires root)
@@ -419,7 +419,7 @@ powertop --calibrate        # calibrate for more accurate readings
 
 powertop shows per-process wakeup rates, C/P-state usage, and device power consumption.
 
-### cpupower — CPU frequency scaling
+### cpupower: CPU frequency scaling
 
 ```bash
 cpupower frequency-info               # current frequency and governor
@@ -429,11 +429,11 @@ cpupower idle-info                    # C-state (idle) information
 ```
 
 Governors:
-- `performance` — always max frequency (best for benchmarks)
-- `powersave` — always min frequency (best for battery)
-- `ondemand` / `schedutil` — scale with load (default on most distros)
+- `performance` - always max frequency (best for benchmarks)
+- `powersave` - always min frequency (best for battery)
+- `ondemand` / `schedutil` - scale with load (default on most distros)
 
-### upower — battery and power source info
+### upower: battery and power source info
 
 ```bash
 upower -e                         # list power devices
@@ -453,7 +453,7 @@ cat /sys/class/power_supply/BAT0/power_now      # current power draw (µW)
 
 ## Monitoring Disk Activity
 
-### iostat — I/O statistics
+### iostat: I/O statistics
 
 ```bash
 iostat                         # one-shot snapshot
@@ -462,12 +462,12 @@ iostat -d sda 1                # only sda, every 1 second
 ```
 
 Key columns in `iostat -x`:
-- `r/s`, `w/s` — reads and writes per second
-- `rMB/s`, `wMB/s` — throughput in MB/s
-- `await` — average wait time per I/O request (ms)
-- `%util` — how busy the device is (100% = saturated)
+- `r/s`, `w/s` - reads and writes per second
+- `rMB/s`, `wMB/s` - throughput in MB/s
+- `await` - average wait time per I/O request (ms)
+- `%util` - how busy the device is (100% = saturated)
 
-### iotop — per-process I/O monitor (like top for disks)
+### iotop: per-process I/O monitor (like top for disks)
 
 ```bash
 iotop                          # interactive, requires root
@@ -475,7 +475,7 @@ iotop -o                       # only show processes doing I/O (-o = only)
 iotop -b -n 5                  # batch mode, 5 iterations (for scripts)
 ```
 
-### lsof — files currently open
+### lsof: files currently open
 
 ```bash
 lsof                           # all open files (massive output)
@@ -489,7 +489,7 @@ lsof +D /var/www               # all open files under a directory
 
 ## Checking Disks and Filesystems for Errors
 
-### fsck — filesystem check
+### fsck: filesystem check
 
 ```bash
 fsck /dev/sdb1                 # check a partition (must be unmounted)
@@ -498,9 +498,9 @@ fsck -y /dev/sdb1              # auto-yes to all fixes
 fsck -t ext4 /dev/sdb1         # specify filesystem type
 ```
 
-**Never run fsck on a mounted filesystem** — it can corrupt data. Boot from live media or use `tune2fs -l` to schedule a check on next boot.
+**Never run fsck on a mounted filesystem** - it can corrupt data. Boot from live media or use `tune2fs -l` to schedule a check on next boot.
 
-### tune2fs — ext filesystem info and settings
+### tune2fs: ext filesystem info and settings
 
 ```bash
 tune2fs -l /dev/sda1           # detailed filesystem info
@@ -508,7 +508,7 @@ tune2fs -c 30 /dev/sda1        # check every 30 mounts
 tune2fs -C 0 /dev/sda1         # reset mount count (triggers check on next boot)
 ```
 
-### smartctl — drive health (SMART)
+### smartctl: drive health (SMART)
 
 ```bash
 smartctl -a /dev/sda           # all SMART data
@@ -522,13 +522,13 @@ smartctl -l selftest /dev/sda  # show test results
 
 | Attribute | What it means |
 |---|---|
-| `Reallocated_Sector_Ct` | bad sectors remapped — should be 0 |
+| `Reallocated_Sector_Ct` | bad sectors remapped - should be 0 |
 | `Current_Pending_Sector` | sectors waiting to be reallocated |
 | `Offline_Uncorrectable` | unrecoverable read errors |
 | `Spin_Retry_Count` | drive struggling to spin up |
 | `Temperature_Celsius` | drive temperature |
 
-### badblocks — low-level block scan
+### badblocks: low-level block scan
 
 ```bash
 badblocks -v /dev/sdb          # read-only scan (safe on mounted)
@@ -536,7 +536,7 @@ badblocks -w /dev/sdb          # destructive write test (unmounted only!)
 badblocks -sv /dev/sdb         # show progress
 ```
 
-`badblocks -w` overwrites the disk — use only on empty drives or for diagnosis.
+`badblocks -w` overwrites the disk - use only on empty drives or for diagnosis.
 
 ---
 
@@ -560,3 +560,13 @@ badblocks -sv /dev/sdb         # show progress
 | Drive health | `smartctl -H /dev/sda` |
 | Filesystem check | `fsck /dev/sdb1` (unmounted) |
 | CPU power governor | `cpupower frequency-set -g powersave` |
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

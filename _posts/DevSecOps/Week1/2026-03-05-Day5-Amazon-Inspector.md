@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 1 — Day 5: Amazon Inspector"
+title: "Day 5: Amazon Inspector - Automated Cloud Vulnerability Scanning"
 date: 2026-03-05 10:00:00 +0800
 categories:
   - DevSecOps
@@ -11,7 +11,7 @@ tags:
   - VulnerabilityManagement
   - CloudSecurity
 author: muhammed
-description: A full walkthrough of Amazon Inspector v2 — automated vulnerability scanning for EC2 instances, ECR container images, and Lambda functions.
+description: A practical walkthrough of Amazon Inspector v2 - automated vulnerability scanning for EC2 instances, ECR container images, Lambda functions, and smart prioritization.
 toc: true
 pin: false
 math: false
@@ -19,227 +19,186 @@ mermaid: false
 image: /assets/devsecops/inspector.png
 ---
 
-## What is Amazon Inspector?
+## The Question: How Do You Know Your Workloads Are Vulnerable?
 
-Amazon Inspector is AWS's managed vulnerability scanning service. It automatically discovers and scans your workloads for software vulnerabilities and unintended network exposure — without you installing anything manually.
+When you deploy infrastructure to the cloud, you are rarely writing 100% of the code or compiling the operating system yourself:
 
+- You launch an Ubuntu or Amazon Linux EC2 instance running Nginx and OpenSSL.
+- You build a Docker container based on `python:3.9` containing dozens of Debian packages.
+- You deploy a serverless Lambda function importing libraries like `requests`, `urllib3`, or `boto3`.
 
-**Inspector v2** (the current version) covers:
-- EC2 instances — OS packages and software vulnerabilities
-- Amazon ECR container images — on push and continuously
-- AWS Lambda functions — application dependencies
+Every week, security researchers discover new vulnerabilities (CVEs) in those exact libraries. How do you know when an EC2 instance in your production fleet or a container image in your registry has an unpatched remote code execution vulnerability?
 
-All findings flow into Security Hub automatically.
+Do you SSH into every machine manually and run package audits every morning?
 
-*Inspector dashboard showing total findings count, breakdown by severity, and coverage summary (EC2 instances, ECR repos, Lambda functions scanned)*
+That is the exact problem **Amazon Inspector v2** solves. It is AWS's fully managed, continuous vulnerability scanner that inspects your EC2 instances, ECR container registries, and Lambda functions automatically.
 
-![g](/assets/devsecops/week1/Pasted%20image%2020260523201014.png)
-
----
-
-## How Inspector Works
-
-Inspector uses the **AWS Systems Manager (SSM) Agent** already running on your EC2 instances — no new agent needed. It scans:
-
-1. Installed packages on the OS
-2. Application libraries (Python pip packages, Node modules, Java JARs)
-3. Network reachability — which ports are open to the internet
-
-For ECR and Lambda, Inspector integrates directly with those services — no agent at all.
-
-— *Inspector → Coverage page showing all EC2 instances listed with their scanning status (Active/Inactive) and SSM agent status*
-
-![f](/assets/devsecops/week1/Pasted%20image%2020260523202651.png)
+![Amazon Inspector dashboard summary overview](/assets/devsecops/week1/Pasted%20image%2020260523201014.png)
 
 ---
 
-## Enabling Inspector
+## What Amazon Inspector v2 Covers
 
-1. Inspector → Get started → Enable Inspector
-2. Choose what to scan: EC2, ECR, Lambda
-3. For multi-account: enable from the delegated admin account in Organizations
+Unlike legacy scanners that require scheduled maintenance windows or heavy third-party agents, Inspector v2 is continuous and near-real-time:
 
- — *Inspector → Enable Inspector page showing the three scan types (EC2, ECR, Lambda) with toggle switches being enabled*
+1. **Amazon EC2 Instances:** Scans installed operating system packages (via apt, yum, or dnf) and application runtime libraries without installing a dedicated security agent. It leverages the AWS Systems Manager (SSM) Agent already baked into standard cloud AMIs.
+2. **Amazon ECR (Elastic Container Registry):** Scans container images both on-push and continuously as new CVEs are added to the national vulnerability database.
+3. **AWS Lambda Functions:** Scans application dependencies packaged inside your function code (e.g. `package.json`, `requirements.txt`, Gemfiles).
 
-Inspector starts scanning immediately and continuously — no schedule to configure.
-
----
-
-## Understanding Findings
-
-### Severity Scoring
-
-Inspector uses **CVSS v3** scores and adds **Amazon Inspector score** which factors in:
-
-- CVSS base score
-- Network reachability of the affected resource
-- Exploit availability (is there a working exploit in the wild?)
-
-This means the same CVE might score differently on two instances — a critical CVE on a publicly reachable instance scores higher than the same CVE on an isolated internal instance.
-
-| Inspector Score | Severity |
-|-----------------|----------|
-| 9.0 – 10.0 | Critical |
-| 7.0 – 8.9 | High |
-| 4.0 – 6.9 | Medium |
-| 1.0 – 3.9 | Low |
-| 0.0 | Informational |
-
- — *Inspector → Findings list showing several findings with their Inspector Score, CVSS score, severity badge, and the affected resource ARN*
-
-
-![g](/assets/devsecops/week1/Pasted%20image%2020260523203025.png)
-
+All discovered vulnerabilities automatically feed directly into AWS Security Hub.
 
 ---
 
-### Finding Detail
+## How Inspector Works Under the Hood
 
-Each finding shows:
+### Agentless Scanning via SSM
 
- — *Inspector → a specific finding expanded showing: CVE ID, description, affected package name and version, fixed version, CVSS vector, exploit availability, and the affected EC2 instance or ECR image*
+For EC2 instances, Inspector relies on the **AWS Systems Manager (SSM) Agent**.
 
-Key fields:
-- **CVE ID** — the specific vulnerability identifier
-- **Affected package** — which package has the vulnerability
-- **Fixed version** — what version you need to upgrade to
-- **Exploit available** — whether a public exploit exists (prioritize these)
-- **Network reachability** — if the port hosting the vulnerable service is internet-exposed
+![Amazon Inspector coverage SSM agent status](/assets/devsecops/week1/Pasted%20image%2020260523202651.png)
+
+If an instance is managed by SSM, Inspector collects the inventory of installed packages and evaluates them against vulnerability feeds. It also checks network reachability: looking at VPC route tables, internet gateways, and security groups to determine if the port associated with that vulnerable service is reachable from the open internet!
 
 ---
 
-## EC2 Scanning
+## Decoding the Inspector Score: Why Context Matters
 
-Inspector scans EC2 instances for:
-- OS package vulnerabilities (via SSM)
-- Network exposure — open ports reachable from the internet or other VPCs
+One of the biggest headaches for junior security engineers is **alert fatigue**. You run a scanner, and it spits out 400 "Critical" and "High" CVEs. Where do you start?
 
-**Requirement:** SSM Agent must be installed and running on the instance (it is by default on Amazon Linux, Ubuntu, and Windows AMIs).
+A generic CVSS v3 score (e.g. 9.8 Critical) only measures the theoretical severity of a vulnerability in a lab setting. It does not know anything about your cloud architecture.
 
- — *Inspector → EC2 findings filtered by a specific instance, showing all vulnerabilities found on that instance sorted by score*
+Amazon Inspector calculates a adjusted **Amazon Inspector Score** that combines three factors:
 
-**Fixing EC2 findings:**
-Most EC2 findings are resolved by patching packages. Use AWS Systems Manager Patch Manager to automate this:
+```
+[ CVSS Base Score ] + [ Network Reachability ] + [ Exploit Availability ] 
+                           = Amazon Inspector Adjusted Score
+```
 
-1. SSM → Patch Manager → Configure patching
-2. Define a patch baseline (e.g. approve critical patches automatically)
-3. Schedule a maintenance window
+| Factor | What Inspector Evaluates |
+| :--- | :--- |
+| **CVSS Base Score** | The severity of the software flaw itself |
+| **Network Reachability** | Is the affected port actually open to `0.0.0.0/0` via security groups and internet gateways, or is the server isolated in a private subnet? |
+| **Exploit Availability** | Is there a weaponized public exploit available in the wild (e.g. on Metasploit or GitHub)? |
 
- — *SSM Patch Manager → patch compliance dashboard showing instances with their patch status (Compliant/Non-compliant)*
+![Amazon Inspector findings list with scores](/assets/devsecops/week1/Pasted%20image%2020260523203025.png)
+
+### The Real-World Impact
+
+- A Critical CVE on an isolated backend database inside a private subnet without internet access will have its Inspector score adjusted downward because attackers cannot reach it directly.
+- The exact same CVE on an internet-facing public web server with an exploit published online will receive a maximum 10.0 Inspector score and trigger urgent alarms.
 
 ---
 
-## ECR Container Image Scanning
+## Container Vulnerability Scanning in Amazon ECR
 
-Inspector scans ECR images:
-- **On push** — every time an image is pushed to ECR
-- **Continuously** — existing images are re-evaluated when new CVEs are published
+When you push a container image to Amazon ECR, Inspector unpacks the image layers and analyzes both the base operating system packages (like glibc or OpenSSL) and language dependencies.
 
-This means an image that was clean yesterday can become non-compliant today if a new CVE is discovered for a package it contains.
+### Continuous Re-Scanning: The Silent Risk
 
-### Enabling ECR scanning
+A common misconception among beginners:
 
-1. ECR → a repository → Edit → Scan settings → Enable Inspector scanning
+> *"I scanned my Docker image before deploying it last month and it had zero vulnerabilities, so my container is secure."*
 
- — *ECR → repository settings showing Inspector scanning enabled with "Scan on push" and "Continuous scanning" both active*
+New CVEs are published every single day. An image that was 100% clean in January might have three Critical CVEs discovered in March.
 
-### Viewing image findings
+Amazon Inspector performs **continuous scanning** on ECR repositories. Whenever a new CVE is disclosed, Inspector retroactively re-evaluates all stored images and alerts you immediately if an existing image in production has become vulnerable.
 
-1. ECR → repository → select an image → Vulnerabilities tab
+### Fixing Container Findings: The DevSecOps Pattern
 
-— *ECR → image → Vulnerabilities tab showing a list of CVEs found in the image layers, with severity, package name, installed version, and fixed version columns*
+Never attempt to patch a container by running `apt update` inside a live running container. Containers should be immutable.
 
-**Common fix:** Update the base image (`FROM python:3.12-slim` instead of an old version) and rebuild.
+Instead, fix the root cause in your `Dockerfile`:
 
 ```dockerfile
-# Before — old base with known CVEs
+# BEFORE: Using an outdated, bloated base image with 80+ known CVEs
 FROM python:3.9
 
-# After — updated base
+# AFTER: Using an updated, slim base image with regular security updates
 FROM python:3.12-slim
 ```
 
+Update your base image, rebuild the container in your CI/CD pipeline, run your tests, and deploy the new image tag.
+
 ---
 
-## Lambda Function Scanning
+## AWS Lambda Function Scanning
 
-Inspector scans Lambda functions for vulnerabilities in their dependency packages (the libraries in your `requirements.txt`, `package.json`, etc.).
-
- — *Inspector → Lambda findings showing a function with a vulnerable dependency — package name, CVE, and severity listed*
-
-**Fixing Lambda findings:** Update the dependency version in your requirements file and redeploy.
+For serverless architectures, Inspector scans both the function code dependencies and Lambda layers:
 
 ```txt
-# requirements.txt — before
+# requirements.txt - BEFORE (Vulnerable to CVE-2023-32681)
 requests==2.25.0
 
-# After — fixed version
+# requirements.txt - AFTER (Patched version)
 requests==2.31.0
 ```
 
----
-
-## Prioritization Strategy
-
-With potentially hundreds of findings, prioritize using this order:
-
-1. **Critical + Exploit Available + Network Reachable** — fix immediately
-2. **Critical + Exploit Available** — fix this sprint
-3. **Critical, no exploit** — fix within 30 days
-4. **High + Exploit Available** — fix within 30 days
-5. **High, no exploit** — fix within 90 days
-6. **Medium and below** — track and fix in regular patching cycles
-
-— *Inspector → Findings filtered by: Severity=Critical AND Exploit available=Yes AND Network reachable=Yes — showing the highest priority findings to fix first*
+When you update your dependency version in your requirements file and redeploy via SAM, Terraform, or the Serverless Framework, Inspector re-evaluates the function and automatically closes the finding.
 
 ---
 
-## Inspector + Security Hub Integration
+## Prioritization Strategy: How to Triage Without Losing Your Mind
 
-All Inspector findings automatically appear in Security Hub. You don't need to configure this — it's automatic once both services are enabled.
+When facing a long list of findings across your accounts, use this practical triage matrix:
 
-This means you can:
-- See Inspector findings alongside GuardDuty threats in one dashboard
-- Use Security Hub's workflow to assign, track, and resolve findings
-- Set up EventBridge rules to alert on new Critical findings from Inspector
-
- — *Security Hub → Findings filtered by "Product name = Inspector" showing findings flowing in from Inspector with their resource ARNs*
+1. **Priority 1 (Fix within 24-48 hours):** Inspector Score 9.0 - 10.0, public exploit available, and network reachable from the internet.
+2. **Priority 2 (Fix within 14 days):** High severity (7.0 - 8.9) with public exploits available.
+3. **Priority 3 (Fix within 30 days):** Critical severity without known public exploits.
+4. **Priority 4 (Regular maintenance cycle):** Medium and Low severity findings addressed during scheduled library upgrades.
 
 ---
 
-## Lab — Scan an EC2 Instance
+## Hands-on Walkthrough: Finding and Patching an EC2 Vulnerability
 
-1. Make sure Inspector is enabled and your EC2 instance has SSM Agent running
-2. Inspector → EC2 findings → filter by your instance ID
+Let's walk through identifying an unpatched package on an EC2 instance and watching Inspector close the finding:
 
- — *Inspector → Findings page with the instance ID filter applied, showing all vulnerabilities for that specific instance*
+### Step 1: Locate the Vulnerability in Inspector
 
-3. Sort by Inspector Score (highest first)
-4. Click the top finding — review the CVE, affected package, fixed version
-5. Connect to the instance via SSM Session Manager and update the package:
+1. Open **Amazon Inspector -> Findings**.
+2. Filter by your EC2 instance ID.
+3. Review the top finding: note the CVE ID, the affected package name (e.g. `curl`), and the **Fixed version**.
+
+### Step 2: Connect via AWS Systems Manager Session Manager
+
+Avoid using raw SSH keys. Connect securely using SSM Session Manager:
 
 ```bash
-# Amazon Linux / RHEL
-sudo yum update <package-name> -y
-
-# Ubuntu / Debian
-sudo apt-get install --only-upgrade <package-name>
+aws ssm start-session --target i-0123456789abcdef0
 ```
 
-6. After update, Inspector re-scans automatically within a few minutes
-7. The finding should move to `CLOSED` once the package is patched
+### Step 3: Upgrade the Affected Package
 
- — *Inspector → finding status changed to Closed after the package was patched on the instance*
+Run the package manager update command:
+
+```bash
+# On Amazon Linux 2023 / RHEL
+sudo dnf update curl -y
+
+# On Ubuntu / Debian
+sudo apt-get update && sudo apt-get --only-upgrade install curl -y
+```
+
+### Step 4: Verify Automatic Closure
+
+Within a few minutes of package installation, the SSM Agent sends an updated software inventory to Inspector. Inspector validates that the installed package version is now equal to or greater than the fixed version, and moves the finding state to **CLOSED** automatically.
+
+---
+
+## Junior Pitfalls to Avoid
+
+1. **Missing SSM IAM Permissions:** If your EC2 instances do not show up under Amazon Inspector coverage, 99% of the time it is because the instance lacks an IAM role with the `AmazonSSMManagedInstanceCore` policy attached. Without this policy, the instance cannot communicate with AWS Systems Manager.
+2. **Ignoring Docker Base Image Hygiene:** Using `latest` tags or full development base images (e.g. `ubuntu:latest` or `python:3.9`) pulls in hundreds of unnecessary utilities (compilers, debuggers, curl) that inflate your vulnerability count. Always use minimal base images like `-slim`, `-alpine`, or distroless images.
+3. **Treating Vulnerability Management as a One-Time Task:** Security is not a checklist item you complete before launch. Set up automated Slack or email alerts from Security Hub so engineers are notified whenever a new Critical finding appears in ECR or EC2.
 
 ---
 
 ## Key Takeaways
 
-- Inspector is always-on — no schedule, no manual scans
-- The Inspector score factors in exploitability and network exposure, not just CVSS — use it for prioritization
-- ECR continuous scanning means an image can become vulnerable after it was already deployed — check regularly
-- Fix Critical findings with public exploits first — they're the ones attackers actively use
-- Inspector findings automatically flow into Security Hub for unified tracking
+- Amazon Inspector provides agentless, continuous vulnerability scanning across EC2 instances, ECR container repositories, and Lambda functions.
+- The Inspector Score intelligently factors in exploit availability and actual network reachability, saving you from alert fatigue.
+- ECR continuous scanning catches newly disclosed CVEs in images that were deployed weeks or months ago.
+- Remediate container vulnerabilities at the source (updating Dockerfile base images) rather than patching live containers.
+- Ensure all EC2 instances have the SSM Agent active and the `AmazonSSMManagedInstanceCore` IAM role attached.
 
 ---
 
@@ -247,9 +206,10 @@ sudo apt-get install --only-upgrade <package-name>
 
 <div class="references">
 <ul>
-  <li><a href="https://docs.aws.amazon.com/inspector/latest/user/what-is-inspector.html" target="_blank">Amazon Inspector User Guide</a></li>
-  <li><a href="https://docs.aws.amazon.com/inspector/latest/user/findings-understanding-severity.html" target="_blank">Inspector Finding Severity</a></li>
-  <li><a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager.html" target="_blank">AWS Systems Manager Patch Manager</a></li>
+  <li><a href="https://docs.aws.amazon.com/inspector/latest/user/what-is-inspector.html" target="_blank">Amazon Inspector v2 User Guide</a></li>
+  <li><a href="https://docs.aws.amazon.com/inspector/latest/user/findings-understanding-severity.html" target="_blank">Understanding Amazon Inspector Finding Severity</a></li>
+  <li><a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html" target="_blank">AWS Systems Manager Session Manager Overview</a></li>
+  <li><a href="https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning-enhanced.html" target="_blank">Enhanced Container Scanning with Amazon Inspector and ECR</a></li>
 </ul>
 </div>
 
@@ -258,7 +218,6 @@ sudo apt-get install --only-upgrade <package-name>
 ## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
-
 
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)

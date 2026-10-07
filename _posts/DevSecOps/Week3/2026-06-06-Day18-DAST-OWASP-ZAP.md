@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 3 — Day 18: DAST with OWASP ZAP"
+title: "Day 18: DAST with OWASP ZAP - Dynamic Web Application Security Testing"
 date: 2026-06-06 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - AppSec
   - DevSecOps
 author: muhammed
-description: A full walkthrough of OWASP ZAP for dynamic application security testing — spidering, active scanning, API testing, and running ZAP in CI against a staging environment.
+description: A full walkthrough of OWASP ZAP for dynamic application security testing - spidering, active scanning, API testing, and running ZAP in CI against a staging environment.
 toc: true
 pin: false
 math: false
@@ -22,7 +22,7 @@ image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fthfvnext.bing
 
 ## What is DAST?
 
-Dynamic Application Security Testing (DAST) tests a **running application** by sending real HTTP requests and analyzing the responses — just like a real attacker would.
+Dynamic Application Security Testing (DAST) tests a **running application** by sending real HTTP requests and analyzing the responses - just like a real attacker would.
 
 Unlike SAST (which reads code) and SCA (which reads dependency files), DAST actually interacts with your application at runtime.
 
@@ -49,8 +49,8 @@ OWASP ZAP (Zed Attack Proxy) is the most widely used open-source DAST tool. It w
 **Scan modes:**
 | Mode | Description |
 |------|-------------|
-| Baseline scan | Passive only — no active attacks, safe for production |
-| Full scan | Active scanning — sends attack payloads, staging only |
+| Baseline scan | Passive only - no active attacks, safe for production |
+| Full scan | Active scanning - sends attack payloads, staging only |
 | API scan | Scans OpenAPI/Swagger/GraphQL endpoints |
 
 ---
@@ -68,9 +68,9 @@ docker run --rm ghcr.io/zaproxy/zaproxy:stable zap.sh -version
 
 ---
 
-## Baseline Scan (Passive — Safe for Any Environment)
+## Baseline Scan (Passive: Safe for Any Environment)
 
-The baseline scan crawls the site and runs passive checks only — it reads responses but doesn't send attack payloads. Safe to run against production.
+The baseline scan crawls the site and runs passive checks only - it reads responses but doesn't send attack payloads. Safe to run against production.
 
 ```bash
 # Baseline scan against a URL
@@ -81,7 +81,6 @@ docker run --rm ghcr.io/zaproxy/zaproxy:stable \
   -J zap-report.json
 ```
 
-> `[SCREENSHOT]` — *Terminal showing ZAP baseline scan running — crawling pages, then the summary output showing PASS/WARN/FAIL for each check, and the total alert count by severity*
 
 **What the baseline scan checks:**
 - Missing security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Content-Security-Policy`, `Strict-Transport-Security`)
@@ -92,9 +91,9 @@ docker run --rm ghcr.io/zaproxy/zaproxy:stable \
 
 ---
 
-## Full Scan (Active — Staging Only)
+## Full Scan (Active: Staging Only)
 
-The full scan adds active attack payloads — it will send SQLi, XSS, and other payloads to your app. **Only run this against staging or dedicated test environments.**
+The full scan adds active attack payloads - it will send SQLi, XSS, and other payloads to your app. **Only run this against staging or dedicated test environments.**
 
 ```bash
 docker run --rm ghcr.io/zaproxy/zaproxy:stable \
@@ -105,7 +104,6 @@ docker run --rm ghcr.io/zaproxy/zaproxy:stable \
   -m 10       # max crawl time in minutes
 ```
 
-> `[SCREENSHOT]` — *Terminal showing ZAP full scan running — active scanner progress with the number of requests sent, followed by the alert list with severity levels (High/Medium/Low/Informational)*
 
 ---
 
@@ -124,7 +122,6 @@ docker run --rm \
   -r api-scan-report.html
 ```
 
-> `[SCREENSHOT]` — *Terminal showing ZAP API scan parsing the OpenAPI spec, listing the endpoints it found, and then scanning each one — followed by the alert summary*
 
 ---
 
@@ -134,20 +131,19 @@ ZAP categorizes alerts by risk level:
 
 | Risk | Description |
 |------|-------------|
-| High | Critical vulnerabilities — SQLi, XSS, SSRF, command injection |
-| Medium | Significant weaknesses — missing security headers, CSRF, path traversal |
-| Low | Minor issues — info disclosure, verbose error messages |
-| Informational | Not vulnerabilities — just observations |
+| High | Critical vulnerabilities - SQLi, XSS, SSRF, command injection |
+| Medium | Significant weaknesses - missing security headers, CSRF, path traversal |
+| Low | Minor issues - info disclosure, verbose error messages |
+| Informational | Not vulnerabilities - just observations |
 
-> `[SCREENSHOT]` — *ZAP HTML report opened in browser showing the alerts tree on the left grouped by risk level, and a specific High alert expanded on the right showing the URL, parameter, evidence, and solution*
 
 Each alert includes:
-- **URL** — which endpoint triggered it
-- **Parameter** — which parameter was vulnerable
-- **Attack** — the payload ZAP used
-- **Evidence** — what in the response confirmed the vulnerability
-- **Solution** — how to fix it
-- **CWE** — the relevant weakness category
+- **URL** - which endpoint triggered it
+- **Parameter** - which parameter was vulnerable
+- **Attack** - the payload ZAP used
+- **Evidence** - what in the response confirmed the vulnerability
+- **Solution** - how to fix it
+- **CWE** - the relevant weakness category
 
 ---
 
@@ -168,13 +164,11 @@ docker run --rm \
   -r dvwa-report.html
 ```
 
-> `[SCREENSHOT]` — *DVWA running in browser showing the login page and dashboard, confirming the vulnerable app is accessible*
 
-> `[SCREENSHOT]` — *ZAP report for DVWA showing multiple High alerts — SQL Injection, Reflected XSS, command injection — with the specific parameters and evidence*
 
 ---
 
-## Security Headers — Common Findings
+## Security Headers: Common Findings
 
 One of the most common ZAP findings is missing security headers. Here's what each header does and how to set it:
 
@@ -217,7 +211,6 @@ add_header Content-Security-Policy "default-src 'self'" always;
 add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 ```
 
-> `[SCREENSHOT]` — *Browser dev tools → Network → response headers for the app after adding security headers — showing all the above headers present with their values*
 
 ---
 
@@ -270,7 +263,7 @@ docker run --rm \
 
 ```yaml
 # .github/workflows/dast.yml
-name: DAST — ZAP Scan
+name: DAST - ZAP Scan
 
 on:
   push:
@@ -300,9 +293,8 @@ jobs:
           path: zap-report.html
 ```
 
-> `[SCREENSHOT]` — *GitHub Actions run showing the ZAP baseline scan step — output shows alerts found with their risk level, and the step either passes or fails based on the threshold configured*
 
-**ZAP rules file** — control which alerts fail the build:
+**ZAP rules file** - control which alerts fail the build:
 
 ```tsv
 # .zap/rules.tsv
@@ -313,13 +305,13 @@ jobs:
 10098      IGNORE  Cross-Domain Misconfiguration (low risk env)
 ```
 
-- `FAIL` — the step fails (non-zero exit code)
-- `WARN` — logged but doesn't fail the build
-- `IGNORE` — not reported
+- `FAIL` - the step fails (non-zero exit code)
+- `WARN` - logged but doesn't fail the build
+- `IGNORE` - not reported
 
 ---
 
-## Lab — Baseline Scan Against DVWA or Juice Shop
+## Lab: Baseline Scan Against DVWA or Juice Shop
 
 **Objective:** Run a ZAP baseline scan against a local vulnerable app and review the report.
 
@@ -340,26 +332,23 @@ docker run --rm \
   -J /zap/wrk/juice-shop-baseline.json
 ```
 
-> `[SCREENSHOT]` — *Terminal showing ZAP scanning Juice Shop — the crawl progress, then the alert summary table with risk counts*
 
 3. Open `reports/juice-shop-baseline.html` in a browser
 
-> `[SCREENSHOT]` — *ZAP HTML report for Juice Shop opened in browser — showing High/Medium/Low/Info alert counts, and the list of findings with their URLs*
 
 4. Pick 2 Medium findings → look at what header or config is missing → implement the fix in Nginx or the app config
 
 5. Re-run the scan → confirm the fixed alert is gone from the report
 
-> `[SCREENSHOT]` — *Second ZAP scan report showing fewer alerts after the security headers were added — the previously failing header checks now absent*
 
 ---
 
 ## Key Takeaways
 
-- DAST tests the running app — it finds what SAST and SCA miss because it interacts with real responses
-- Baseline scan is safe for any environment — no attack payloads, just passive observation
-- Full/active scan only against staging — never production
-- Security headers are the most common DAST finding and the easiest to fix — add them in Nginx/ALB config
+- DAST tests the running app - it finds what SAST and SCA miss because it interacts with real responses
+- Baseline scan is safe for any environment - no attack payloads, just passive observation
+- Full/active scan only against staging - never production
+- Security headers are the most common DAST finding and the easiest to fix - add them in Nginx/ALB config
 - ZAP in CI as a baseline scan gives you continuous coverage on every deployment
 - Use a rules file (`.tsv`) to decide what fails the build vs what's just a warning
 - Combine SAST + SCA + IaC scan + DAST in sequence for a full pipeline security gate
@@ -383,7 +372,6 @@ docker run --rm \
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

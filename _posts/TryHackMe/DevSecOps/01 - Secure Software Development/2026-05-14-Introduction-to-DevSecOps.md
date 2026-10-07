@@ -18,6 +18,7 @@ toc: true
 pin: false
 math: false
 mermaid: true
+permalink: /posts/DevSecOps-Introduction-to-DevSecOps/
 image: https://cdn-images.tryhackme.com/room-icons/00050c31a2b84443dcc58d4513939515.png
 ---
 

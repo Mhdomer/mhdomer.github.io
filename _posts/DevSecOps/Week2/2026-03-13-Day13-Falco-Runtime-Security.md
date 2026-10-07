@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 2 — Day 13: Runtime Security with Falco"
+title: "Day 13: Runtime Security with Falco - Kernel-Level Threat Detection"
 date: 2026-03-13 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - Kubernetes
   - DevSecOps
 author: muhammed
-description: A full walkthrough of Falco — syscall-based runtime threat detection for containers and Kubernetes, writing custom rules, and forwarding alerts to Slack or a SIEM.
+description: A practical walkthrough of Falco - kernel syscall-based runtime threat detection for containers and Kubernetes, writing custom detection rules, and alerting via Falcosidekick.
 toc: true
 pin: false
 math: false
@@ -20,39 +20,91 @@ mermaid: false
 image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmedia.licdn.com%2Fdms%2Fimage%2Fsync%2Fv2%2FD5627AQHhpbuHrWjt8g%2Farticleshare-shrink_800%2Farticleshare-shrink_800%2F0%2F1739776311104%3Fe%3D2147483647%26v%3Dbeta%26t%3DqkjvQasmKkDuzA0qXgLNx3QzuOu7lGCSB5dkbwyqUwI&f=1&nofb=1&ipt=65b9cf1c22e2e98d755ccdec4dcb035de897372776a00add99ffecd660869d90
 ---
 
-## The Gap That Scanning Misses
+## The Blind Spot in Container Security
 
-Trivy scans images for known CVEs. RBAC restricts who can deploy what. But neither tells you what's happening **inside a running container right now**.
+Over the past few days, we covered build-time and deploy-time security:
+- We hardened our Dockerfiles on Day 10 (non-root users, dropped capabilities).
+- We scanned images for known CVEs using Trivy on Day 11.
+- We locked down cluster identities and network access using Kubernetes RBAC and Network Policies on Day 12.
 
-What if a container starts a shell? What if it reads `/etc/shadow`? What if it opens a network connection to an unusual IP? What if a cryptominer process spawns?
+All of those controls are critical, but they share one major limitation: **they only check things before or as they are deployed.**
 
-That's what **Falco** detects — suspicious behavior at the system call level, in real time.
+What happens when an attacker finds a brand-new zero-day vulnerability in your application runtime?
+
+- An attacker sends an exploit to an Nginx container.
+- The exploit succeeds, and the container suddenly spawns `/bin/sh`.
+- The attacker attempts to read `/etc/shadow`, drops a crypto-miner binary into `/tmp`, or opens a socket connection to a Command & Control (C2) server.
+
+Neither Trivy nor RBAC can see this happening. The container image was clean when scanned, and the pod was deployed legitimately.
+
+This is why we need **Runtime Security**. And in the cloud native world, **Falco** is the undisputed standard.
 
 ---
 
-## How Falco Works
+## The Motion Sensor Analogy: How Falco Works
 
-Falco runs as a privileged daemonset on each Kubernetes node (or as a host process). It hooks into the Linux kernel via:
-- **eBPF probe** — modern, recommended (no kernel module needed)
-- **Kernel module** — traditional approach
-- **`/proc` filesystem** — minimal, fallback option
+Think of your security stack like a high-security building:
 
-Every system call made by every container on the node is evaluated against Falco's rule set. When a call matches a rule, Falco fires an alert.
+- **Trivy / Inspector:** The building inspectors who review the architectural blueprints and check the materials before construction begins.
+- **Kubernetes RBAC:** The electronic card readers at the building entrance deciding who gets through the lobby.
+- **Falco:** The **infrared motion sensors and acoustic microphones** inside every room, listening for abnormal behavior 24/7!
 
-> `[SCREENSHOT]` — *Falco architecture diagram or the Falco pods running: kubectl get pods -n falco showing a falco pod on each node (DaemonSet)*
+Even if someone walked through the front door with a valid visitor badge (RBAC) and clean clothes (zero CVEs), the moment they start prying open an air vent with a crowbar, the motion sensor trips and sounds the alarm!
+
+```
++-------------------------------------------------------------+
+|                     Container / Application                 |
++-------------------------------------------------------------+
+                              |
+                     System Call (syscall)
+           (e.g., execve "/bin/sh", openat "/etc/shadow")
+                              |
+                              v
++-------------------------------------------------------------+
+|                      Linux Kernel                           |
+|                                                             |
+|   +-----------------------------------------------------+   |
+|   |         eBPF Probe (Kernel Instrumentation)         |   |
+|   +-----------------------------------------------------+   |
++-------------------------------------------------------------+
+                              |
+                              v
++-------------------------------------------------------------+
+|                 Falco Rule Engine (User Space)              |
+|        Evaluates syscall against security rules             |
++-------------------------------------------------------------+
+                              |
+                              v
+                    [ Alert: WARNING / CRITICAL ]
+```
+
+### What is a System Call (Syscall)?
+
+Whenever any program inside a container wants to perform an action in the real world:
+- Start a process (`execve`)
+- Read or write a file (`openat`, `read`, `write`)
+- Open a network socket (`socket`, `connect`)
+
+It **cannot** do this on its own. It must ask the underlying Linux kernel via a **system call**.
+
+Falco taps into this kernel crossroad using **eBPF (Extended Berkeley Packet Filter)**. It intercepts the syscall stream in real time, parses the arguments, enriches the event with Kubernetes metadata (pod name, namespace, container image), and checks it against a rules engine.
 
 ---
 
 ## Installing Falco on Kubernetes
 
-### Via Helm (recommended)
+The recommended method to deploy Falco across a Kubernetes cluster is using its official Helm chart with the **eBPF driver**:
+
+### Step 1: Add the Helm Repository
 
 ```bash
-# Add the Falco Helm repo
 helm repo add falcosecurity https://falcosecurity.github.io/charts
 helm repo update
+```
 
-# Install Falco with eBPF driver
+### Step 2: Install with eBPF and Falcosidekick
+
+```bash
 helm install falco falcosecurity/falco \
   --namespace falco \
   --create-namespace \
@@ -61,276 +113,151 @@ helm install falco falcosecurity/falco \
   --set falcosidekick.webui.enabled=true
 ```
 
-> `[SCREENSHOT]` — *Terminal showing helm install falco completing successfully, followed by kubectl get pods -n falco showing falco and falcosidekick pods running*
+Falco deploys as a `DaemonSet`, meaning one Falco pod runs on every single worker node in your cluster, monitoring every container running on that host.
 
-### Verify Falco is Running
+### Step 3: Verify Falco is Active
 
 ```bash
-kubectl logs -n falco -l app.kubernetes.io/name=falco | head -30
+kubectl get pods -n falco
+kubectl logs -n falco -l app.kubernetes.io/name=falco -f
 ```
-
-> `[SCREENSHOT]` — *kubectl logs output showing Falco starting up, loading rules files, and printing "Falco initialized, ready to help"*
 
 ---
 
 ## Understanding Falco Rules
 
-Rules are written in YAML and describe patterns to detect.
-
-### Rule Structure
+Falco rules are defined in YAML and follow a straightforward syntax:
 
 ```yaml
-- rule: Shell Spawned in Container
-  desc: A shell was spawned in a container — could indicate an attacker exploring the environment
+- rule: Shell Spawned in Production Container
+  desc: Detects an interactive shell spawned inside a running workload
   condition: >
     spawned_process and
     container and
     shell_procs and
-    not container.image.repository in (trusted_images)
+    k8s.ns.name = "production"
   output: >
-    Shell spawned in container
-    (user=%user.name user_loginuid=%user.loginuid
-     container=%container.name
-     image=%container.image.repository:%container.image.tag
-     shell=%proc.name parent=%proc.pname
-     cmdline=%proc.cmdline)
+    Interactive shell spawned in container
+    (user=%user.name pod=%k8s.pod.name ns=%k8s.ns.name
+     container=%container.name image=%container.image.repository
+     shell=%proc.name cmdline=%proc.cmdline)
   priority: WARNING
   tags: [container, shell, mitre_execution]
 ```
 
-**Key fields:**
-| Field | Purpose |
-|-------|---------|
-| `condition` | Boolean expression using Falco fields and macros |
-| `output` | Log message when the rule fires |
-| `priority` | DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT, EMERGENCY |
-| `tags` | For categorization and filtering |
+### Deconstructing the Rule
+
+- **`condition`**: A logical expression built using Falco fields and macros. Here, it checks if a new process was spawned, if it occurred inside a container, if the process is a known shell (`bash`, `sh`, `zsh`), and if it occurred in the `production` namespace.
+- **`output`**: The formatted log string emitted when the condition matches. Notice the rich context: username, pod name, namespace, image tag, and the full command line executed!
+- **`priority`**: Severity level (`EMERGENCY`, `ALERT`, `CRITICAL`, `ERROR`, `WARNING`, `NOTICE`, `INFO`, `DEBUG`).
 
 ---
 
-## Default Rules — What Falco Catches Out of the Box
+## Default Detections Out of the Box
 
-Falco ships with a rich default ruleset. Key rules:
+Falco ships with an extensive library of default rules. Some of the most critical built-in detections include:
 
-| Rule | What it detects |
-|------|----------------|
-| `Terminal shell in container` | Interactive shell started in a running container |
-| `Write below binary dir` | Writing to `/bin`, `/sbin`, `/usr/bin` etc. in a container |
-| `Read sensitive file untrusted` | Container reading `/etc/shadow`, `/etc/sudoers` etc. |
-| `Contact K8S API Server From Container` | Container calling the Kubernetes API |
-| `Launch Privileged Container` | A privileged container is started |
-| `Outbound Connection to C2 Servers` | Connection to known C2 IP addresses |
-| `Crypto Mining Activity` | Processes associated with crypto mining tools |
-| `Modify binary dirs` | Files written to system binary directories |
-| `Container Drift Detected` | A new executable is created in a running container (ELF file) |
+| Default Rule Name | What It Catches |
+| :--- | :--- |
+| `Terminal shell in container` | Someone running `kubectl exec` or an attacker spawning a shell |
+| `Write below binary dir` | An attacker attempting to modify `/bin`, `/sbin`, or `/usr/bin` |
+| `Read sensitive file untrusted` | Unauthorized processes reading `/etc/shadow`, `/etc/sudoers` |
+| `Contact K8S API Server From Container`| Workloads querying the internal Kubernetes API unexpectedly |
+| `Crypto Mining Activity` | Known mining process names (`xmrig`, `minergate`) or mining pool ports |
+| `Launch Privileged Container` | A new container launched with full root host capabilities |
 
 ---
 
-## Triggering Rules — Live Demo
+## Triggering Real Falco Alerts (Hands-on)
 
-### Trigger "Terminal shell in container"
+Let's test Falco live to see how it catches suspicious activity:
+
+### Test 1: Spawn a Shell Inside a Pod
+
+In one terminal window, start streaming Falco logs:
 
 ```bash
-# In one terminal, exec into a running container
-kubectl exec -it <pod-name> -- /bin/sh
-
-# In another terminal, watch Falco logs
 kubectl logs -n falco -l app.kubernetes.io/name=falco -f
 ```
 
-> `[SCREENSHOT]` — *kubectl logs -n falco showing a Falco alert firing: "Warning Terminal shell in container (user=root container=myapp image=myapp:latest shell=sh)" with timestamp*
-
-### Trigger "Read sensitive file"
+In a second terminal window, exec into any running workload:
 
 ```bash
-# Inside the container shell
+kubectl exec -it <test-pod-name> -- /bin/sh
+```
+
+Within a fraction of a second, Falco outputs a warning alert:
+
+```
+14:22:01.129381023: Warning Interactive shell spawned in container (user=root pod=test-pod-684b9c-xyz ns=default container=web image=nginx:alpine shell=sh cmdline=sh)
+```
+
+### Test 2: Attempting to Read `/etc/shadow`
+
+Inside that pod shell, run:
+
+```bash
 cat /etc/shadow
 ```
 
-> `[SCREENSHOT]` — *Falco log showing "Warning Sensitive file opened for reading (user=root file=/etc/shadow container=myapp)"*
+Falco catches the sensitive file access immediately:
 
-### Trigger "Write below binary dir"
+```
+14:22:15.908234120: Warning Sensitive file opened for reading by untrusted program (user=root file=/etc/shadow program=cat)
+```
+
+### Test 3: Attempting to Drop a Binary in `/bin`
+
+Inside the container, try creating a file in the system binaries directory:
 
 ```bash
-# Inside the container
-touch /bin/malware
+touch /bin/malware_payload
 ```
 
-> `[SCREENSHOT]` — *Falco log showing "Error Write below binary dir (user=root file=/bin/malware container=myapp)"*
+Falco detects the directory write anomaly:
 
----
-
-## Writing Custom Rules
-
-### Detect Unusual Outbound Connections
-
-```yaml
-- rule: Unexpected Outbound Connection
-  desc: A container is making an outbound connection to an unexpected destination
-  condition: >
-    outbound and
-    container and
-    not fd.sport in (80, 443, 5432, 6379) and
-    not container.image.repository in (trusted_network_images)
-  output: >
-    Unexpected outbound connection from container
-    (container=%container.name
-     image=%container.image.repository
-     connection=%fd.name
-     proc=%proc.name)
-  priority: WARNING
 ```
-
-### Detect Crypto Mining by CPU Behavior
-
-```yaml
-- rule: Crypto Mining Process
-  desc: Likely crypto mining activity detected
-  condition: >
-    spawned_process and
-    container and
-    proc.name in (xmrig, minergate, ethminer, cgminer, bfgminer)
-  output: >
-    Crypto mining process detected
-    (container=%container.name
-     image=%container.image.repository
-     proc=%proc.name
-     cmdline=%proc.cmdline)
-  priority: CRITICAL
-```
-
-### Detect Container Drift (New Executables)
-
-```yaml
-- rule: New Executable Dropped in Container
-  desc: A new ELF binary was created in a running container — potential malware drop
-  condition: >
-    container and
-    evt.type=write and
-    fd.typechar=f and
-    (fd.name startswith /bin/ or fd.name startswith /usr/bin/ or fd.name startswith /tmp/) and
-    spawned_process
-  output: >
-    New binary dropped in container
-    (container=%container.name
-     file=%fd.name
-     user=%user.name)
-  priority: CRITICAL
+14:22:30.450123991: Error File below /bin or /etc opened for writing (user=root file=/bin/malware_payload program=touch)
 ```
 
 ---
 
-## Falco Fields Reference
+## Forwarding Alerts with Falcosidekick
 
-Useful fields for writing conditions and output:
+By default, Falco prints alerts to stdout. In production, you need alerts sent to your team's chat channels and SIEM.
 
-| Field | Value |
-|-------|-------|
-| `container.name` | Container name |
-| `container.image.repository` | Image name |
-| `container.image.tag` | Image tag |
-| `proc.name` | Process name |
-| `proc.cmdline` | Full command line |
-| `proc.pname` | Parent process name |
-| `user.name` | Username |
-| `fd.name` | File/socket name |
-| `fd.sport` | Source port |
-| `fd.dport` | Destination port |
-| `k8s.pod.name` | Kubernetes pod name |
-| `k8s.ns.name` | Kubernetes namespace |
+**Falcosidekick** acts as an event forwarder for Falco, supporting over 50 destinations including Slack, Discord, Microsoft Teams, AWS SNS, Datadog, Elasticsearch, and PagerDuty.
 
----
-
-## Falco Sidekick — Forwarding Alerts
-
-Falco outputs to stdout by default. **Falco Sidekick** routes alerts to external systems.
-
-Supported outputs include: Slack, PagerDuty, Splunk, Elasticsearch, Teams, Datadog, AWS SNS, and 50+ others.
-
-### Configure Slack Output
+### Configuring Slack Integration via Helm
 
 ```bash
 helm upgrade falco falcosecurity/falco \
   --namespace falco \
   --set falcosidekick.enabled=true \
-  --set falcosidekick.config.slack.webhookurl="https://hooks.slack.com/services/YOUR/WEBHOOK/URL" \
+  --set falcosidekick.config.slack.webhookurl="https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK" \
   --set falcosidekick.config.slack.minimumpriority="warning"
 ```
 
-> `[SCREENSHOT]` — *Slack channel showing a Falco alert message with container name, image, rule name, and severity — formatted as a Slack message card*
-
-### Falco Sidekick UI
-
-```bash
-# Port-forward the Sidekick UI
-kubectl port-forward svc/falco-falcosidekick-ui 2802:2802 -n falco
-# Open http://localhost:2802
-```
-
-> `[SCREENSHOT]` — *Falco Sidekick UI in browser showing a dashboard with alert counts by priority, a timeline of recent alerts, and a table of the latest events with rule names, containers, and priorities*
+Now, any Warning, Error, or Critical security event in your cluster pops up as an interactive card in your Slack security channel!
 
 ---
 
-## Falco in AWS EKS
+## Junior Pitfalls to Avoid
 
-When running on EKS, some additional setup is needed since managed node groups don't allow kernel module installation. Use the eBPF driver:
-
-```bash
-helm install falco falcosecurity/falco \
-  --namespace falco \
-  --create-namespace \
-  --set driver.kind=ebpf \
-  --set ebpf.enabled=true
-```
-
-For Fargate (no node access), Falco cannot run — it requires access to the host kernel. Use Sysdig or AWS-native options instead.
-
----
-
-## Lab — Install Falco and Trigger a Rule
-
-1. Install Falco via Helm on your cluster:
-```bash
-helm repo add falcosecurity https://falcosecurity.github.io/charts && helm repo update
-helm install falco falcosecurity/falco -n falco --create-namespace --set driver.kind=ebpf
-```
-
-2. Wait for the DaemonSet to be ready:
-```bash
-kubectl rollout status daemonset/falco -n falco
-```
-
-3. Start watching logs:
-```bash
-kubectl logs -n falco -l app.kubernetes.io/name=falco -f
-```
-
-4. In another terminal, exec into any running pod and open a shell:
-```bash
-kubectl exec -it <any-pod> -- /bin/sh
-```
-
-> `[SCREENSHOT]` — *Two terminals side by side: left showing kubectl exec into a pod, right showing the Falco log immediately printing the "Terminal shell in container" warning alert*
-
-5. Inside the shell, try to read a sensitive file:
-```bash
-cat /etc/shadow 2>/dev/null || echo "file not found"
-```
-
-> `[SCREENSHOT]` — *Falco log showing the "Read sensitive file untrusted" alert firing with the container name and filename*
-
-6. Exit the shell — confirm no more alerts fire after exiting
+1. **Forgetting Node-Level Resource Limits:** Because Falco monitors every syscall on the host, a node with thousands of rapid file operations can cause high CPU usage if rules are poorly tuned. Always monitor Falco's CPU and memory usage in production.
+2. **Alert Fatigue from CI/CD Runners:** CI/CD runner pods (like Jenkins or GitLab runners) constantly spawn shells and run build commands. Falco will alert on every single build step if you do not add an exception for your build namespaces.
+3. **Running Falco on AWS Fargate:** AWS Fargate does not give access to the underlying EC2 host or Linux kernel. Falco cannot run as an eBPF daemon on Fargate; you must use EC2 managed node groups.
+4. **Treating Shell Access as Normal in Production:** In healthy production environments, engineers should never need to `kubectl exec` into containers. Use ephemeral debug containers (`kubectl debug`) or rely on logs and observability metrics instead.
 
 ---
 
 ## Key Takeaways
 
-- Falco detects what's happening inside containers right now — scanning tools can't do this
-- The default ruleset covers the most common attack patterns — enable it and you're already ahead
-- Write custom rules for your environment — unusual ports, specific process names, sensitive file paths
-- Falco Sidekick routes alerts to your team's communication and SIEM tools
-- Exec'ing into a production container should always fire a Falco alert — if it doesn't, something's wrong
-- Combine Falco (runtime) + Trivy (build time) + RBAC (access control) for defense in depth
+- Trivy catches vulnerabilities at build time; Falco catches active exploits and intrusions at runtime.
+- Falco uses eBPF to monitor Linux kernel system calls (`execve`, `openat`, `connect`) with near-zero overhead.
+- Default Falco rules catch interactive shells, sensitive credential reads, binary tampering, and crypto-mining out of the box.
+- Use Falcosidekick to route alerts to Slack, PagerDuty, or AWS SNS for rapid incident response.
+- Combine build-time scanning, RBAC guardrails, and runtime detection for true defense-in-depth.
 
 ---
 
@@ -338,10 +265,10 @@ cat /etc/shadow 2>/dev/null || echo "file not found"
 
 <div class="references">
 <ul>
-  <li><a href="https://falco.org/docs/" target="_blank">Falco Documentation</a></li>
-  <li><a href="https://github.com/falcosecurity/falco/tree/master/rules" target="_blank">Falco Default Rules</a></li>
-  <li><a href="https://github.com/falcosecurity/falcosidekick" target="_blank">Falco Sidekick</a></li>
-  <li><a href="https://falco.org/docs/reference/rules/supported-fields/" target="_blank">Falco Supported Fields</a></li>
+  <li><a href="https://falco.org/docs/" target="_blank">Falco Official Documentation</a></li>
+  <li><a href="https://github.com/falcosecurity/falco/tree/master/rules" target="_blank">Falco Core Detection Rules Repository</a></li>
+  <li><a href="https://github.com/falcosecurity/falcosidekick" target="_blank">Falcosidekick Output Forwarder</a></li>
+  <li><a href="https://ebpf.io/" target="_blank">Introduction to eBPF Technology</a></li>
 </ul>
 </div>
 
@@ -351,7 +278,6 @@ cat /etc/shadow 2>/dev/null || echo "file not found"
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

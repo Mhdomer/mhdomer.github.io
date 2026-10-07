@@ -10,14 +10,14 @@ tags:
   - Reference
   - Security
 author: muhammed
-description: A deep-dive reference on the core network protocols — how they work, what ports they use, and their security implications. Built for quick lookup during CTFs, pentests, and cloud security work.
+description: A deep-dive reference on the core network protocols, how they work, what ports they use, and their security implications. Built for quick lookup during CTFs, pentests, and cloud security work.
 toc: true
 pin: false
 math: false
 mermaid: false
 ---
 
-## The OSI Model — Quick Reference
+## The OSI Model: Quick Reference
 
 | Layer | Number | Name | Protocol Examples |
 |-------|--------|------|------------------|
@@ -40,7 +40,7 @@ mermaid: false
 
 ---
 
-## Port Reference — Most Common
+## Port Reference: Most Common
 
 | Port | Protocol | Service |
 |------|----------|---------|
@@ -82,18 +82,18 @@ mermaid: false
 
 ---
 
-## TCP — Transmission Control Protocol
+## TCP: Transmission Control Protocol
 
 ### How It Works
 
-TCP is **connection-oriented** — a connection must be established before data flows.
+TCP is **connection-oriented**. A connection must be established before data flows.
 
 **Three-way handshake:**
 ```
 Client          Server
   |--- SYN ------->|   Client wants to connect
   |<-- SYN-ACK ----|   Server acknowledges, also requests
-  |--- ACK ------->|   Client acknowledges — connection open
+  |--- ACK ------->|   Client acknowledges, connection open
   |=== DATA ======>|
   |--- FIN ------->|   Client done sending
   |<-- FIN-ACK ----|   Server acknowledges close
@@ -102,18 +102,18 @@ Client          Server
 **TCP Flags:**
 | Flag | Meaning |
 |------|---------|
-| SYN | Synchronize — initiate connection |
-| ACK | Acknowledge — confirm receipt |
-| FIN | Finish — graceful close |
-| RST | Reset — abrupt close (port closed, error) |
-| PSH | Push — send data immediately without buffering |
-| URG | Urgent — prioritize this data |
+| SYN | Synchronize, initiate connection |
+| ACK | Acknowledge, confirm receipt |
+| FIN | Finish, graceful close |
+| RST | Reset, abrupt close (port closed, error) |
+| PSH | Push, send data immediately without buffering |
+| URG | Urgent, prioritize this data |
 
 ### Security Implications
 
 - **SYN flood (DoS):** Attacker sends mass SYN packets, server allocates state for each → exhausts memory. Mitigated by SYN cookies.
 - **TCP RST injection:** Attacker spoofs RST packet to tear down a connection (used in censorship and DoS).
-- **Port scanning:** `SYN` scan (`nmap -sS`) — sends SYN, if `SYN-ACK` returns → port open, then sends RST without completing handshake (stealth).
+- **Port scanning:** `SYN` scan (`nmap -sS`): sends SYN, if `SYN-ACK` returns → port open, then sends RST without completing handshake (stealth).
 - **Session hijacking:** Predict/spoof sequence numbers to inject data into an established TCP session.
 
 ```bash
@@ -129,11 +129,11 @@ nc -nv target 80
 
 ---
 
-## UDP — User Datagram Protocol
+## UDP: User Datagram Protocol
 
-**Connectionless** — no handshake, no guaranteed delivery, no ordering.
+**Connectionless.** No handshake, no guaranteed delivery, no ordering.
 
-**When to use:** Speed over reliability — DNS, DHCP, NTP, video streaming, VoIP, gaming.
+**When to use:** Speed over reliability: DNS, DHCP, NTP, video streaming, VoIP, gaming.
 
 **Security implications:**
 - **UDP amplification attacks:** Attacker sends small spoofed request to UDP service (DNS, NTP, SSDP) → large response sent to victim. Amplification factor can be 10-500x.
@@ -149,12 +149,12 @@ nmap -sU --top-ports 20 target
 
 ---
 
-## IP — Internet Protocol
+## IP: Internet Protocol
 
 IP handles addressing and routing. Every packet carries:
 - Source IP
 - Destination IP
-- TTL (Time To Live — decremented at each hop, packet dropped at 0)
+- TTL (Time To Live, decremented at each hop, packet dropped at 0)
 - Protocol (6=TCP, 17=UDP, 1=ICMP)
 
 ### IPv4 vs IPv6
@@ -195,9 +195,9 @@ IP handles addressing and routing. Every packet carries:
 
 ---
 
-## ICMP — Internet Control Message Protocol
+## ICMP: Internet Control Message Protocol
 
-ICMP carries control messages — errors, diagnostics. Not used for data transfer.
+ICMP carries control messages: errors, diagnostics. Not used for data transfer.
 
 **Key ICMP types:**
 
@@ -215,7 +215,7 @@ ICMP carries control messages — errors, diagnostics. Not used for data transfe
 - **Ping sweep:** ICMP echo requests to find live hosts (`nmap -sn`)
 - **ICMP tunneling:** Data exfiltration by embedding payload in ICMP packets (tools: icmpsh, ptunnel)
 - **Ping of Death:** Oversized ICMP packet causes buffer overflow (historical, patched)
-- Firewalls often block ICMP — a host not responding to ping doesn't mean it's down
+- Firewalls often block ICMP. A host not responding to ping doesn't mean it's down
 
 ```bash
 # Ping sweep
@@ -228,7 +228,7 @@ tracert target         # Windows
 
 ---
 
-## DNS — Domain Name System
+## DNS: Domain Name System
 
 DNS translates domain names to IP addresses. Uses UDP port 53 (TCP for zone transfers and large responses).
 
@@ -257,11 +257,11 @@ Browser → OS cache → /etc/hosts → Recursive resolver (ISP/8.8.8.8)
 ### DNS Security Implications
 
 - **DNS enumeration:** Find subdomains, mail servers, zone info
-- **Zone transfer (AXFR):** If misconfigured, dumps entire DNS zone — full subdomain list
+- **Zone transfer (AXFR):** If misconfigured, dumps entire DNS zone: full subdomain list
 - **DNS cache poisoning:** Inject malicious records into resolver cache
 - **DNS amplification:** Small query → large response, used for DDoS
 - **DNS tunneling:** Encode data in DNS queries for C2 or exfiltration
-- **Subdomain takeover:** DNS points to a cloud resource (S3, GitHub Pages) that no longer exists — attacker claims it
+- **Subdomain takeover:** DNS points to a cloud resource (S3, GitHub Pages) that no longer exists; attacker claims it
 
 ```bash
 # Basic lookups
@@ -286,7 +286,7 @@ ffuf -w subdomains.txt -u http://FUZZ.example.com
 
 ---
 
-## HTTP — HyperText Transfer Protocol
+## HTTP: HyperText Transfer Protocol
 
 ### Request Structure
 
@@ -347,14 +347,14 @@ X-Content-Type-Options: nosniff
 
 ### Security Implications
 
-- **HTTP vs HTTPS:** HTTP is plaintext — credentials, cookies, and data visible to any network observer
+- **HTTP vs HTTPS:** HTTP is plaintext: credentials, cookies, and data visible to any network observer
 - **Verb tampering:** Server may handle unexpected methods (e.g., PUT, DELETE) without auth checks
-- **Host header injection:** Server uses `Host:` header to route — inject to get password reset links for another domain
+- **Host header injection:** Server uses `Host:` header to route; inject to get password reset links for another domain
 - **CORS misconfiguration:** `Access-Control-Allow-Origin: *` allows any site to read responses from your API
 
 ---
 
-## TLS/SSL — Transport Layer Security
+## TLS/SSL: Transport Layer Security
 
 TLS encrypts traffic at the transport layer. Provides: **confidentiality, integrity, authentication**.
 
@@ -382,19 +382,19 @@ Client                          Server
 
 | Version | Status |
 |---------|--------|
-| SSL 2.0 | Broken — disable |
-| SSL 3.0 | Broken (POODLE) — disable |
-| TLS 1.0 | Deprecated — disable |
-| TLS 1.1 | Deprecated — disable |
-| TLS 1.2 | Acceptable — widely used |
-| TLS 1.3 | Current — use this |
+| SSL 2.0 | Broken, disable |
+| SSL 3.0 | Broken (POODLE), disable |
+| TLS 1.0 | Deprecated, disable |
+| TLS 1.1 | Deprecated, disable |
+| TLS 1.2 | Acceptable, widely used |
+| TLS 1.3 | Current, use this |
 
 ### Security Implications
 
 - **Expired/self-signed certs:** Users get warnings, MITM possible if ignored
-- **Weak cipher suites:** RC4, DES, 3DES, NULL ciphers — allow downgrade or decryption
+- **Weak cipher suites:** RC4, DES, 3DES, NULL ciphers: allow downgrade or decryption
 - **BEAST, POODLE, HEARTBLEED:** Historical TLS/OpenSSL vulnerabilities
-- **Certificate pinning bypass:** Mobile apps can pin certs — bypass with Frida or custom CA install
+- **Certificate pinning bypass:** Mobile apps can pin certs: bypass with Frida or custom CA install
 - **MITM:** Intercept TLS by presenting your own cert (requires victim to trust your CA)
 
 ```bash
@@ -410,7 +410,7 @@ echo | openssl s_client -connect target:443 2>/dev/null | openssl x509 -noout -t
 
 ---
 
-## SSH — Secure Shell
+## SSH: Secure Shell
 
 SSH provides encrypted remote shell access, tunneling, and file transfer. Default port 22.
 
@@ -420,7 +420,7 @@ SSH provides encrypted remote shell access, tunneling, and file transfer. Defaul
 |--------|-------------|
 | Password | Username + password over encrypted channel |
 | Public key | Client proves possession of private key matching server's `authorized_keys` |
-| Certificate | SSH CA signs user keys — scalable for large teams |
+| Certificate | SSH CA signs user keys, scalable for large teams |
 | GSSAPI/Kerberos | Integrated with enterprise auth |
 
 ### Key Commands
@@ -456,10 +456,10 @@ sftp user@host
 
 ### Security Implications
 
-- **Default port 22:** Targeted by mass scanners — consider changing port or using port knocking
-- **Password auth:** Brute-forceable — disable it, use key auth only
+- **Default port 22:** Targeted by mass scanners; consider changing port or using port knocking
+- **Password auth:** Brute-forceable: disable it, use key auth only
 - **Root login:** Disable `PermitRootLogin` in `sshd_config`
-- **Known hosts:** SSH warns on first connection — TOFU (Trust On First Use) — if skipped, MITM possible
+- **Known hosts:** SSH warns on first connection, TOFU (Trust On First Use); if skipped, MITM possible
 - **Private key theft:** If `~/.ssh/id_rsa` is readable, attacker gets full access to all servers
 
 ```bash
@@ -474,7 +474,7 @@ nmap --script ssh2-enum-algos target
 
 ---
 
-## SMB — Server Message Block
+## SMB: Server Message Block
 
 SMB provides file sharing, printer sharing, and named pipes on Windows networks. Port 445 (direct), 139 (NetBIOS).
 
@@ -482,13 +482,13 @@ SMB provides file sharing, printer sharing, and named pipes on Windows networks.
 
 | Version | OS | Notes |
 |---------|-----|-------|
-| SMBv1 | Windows XP/2003 | Dangerous — EternalBlue, WannaCry. Disable immediately |
+| SMBv1 | Windows XP/2003 | Dangerous: EternalBlue, WannaCry. Disable immediately |
 | SMBv2 | Windows Vista/2008 | Major improvement |
 | SMBv3 | Windows 8/2012+ | Encryption support |
 
 ### Security Implications
 
-- **EternalBlue (MS17-010):** Remote code execution via SMBv1 — used by WannaCry/NotPetya
+- **EternalBlue (MS17-010):** Remote code execution via SMBv1: used by WannaCry/NotPetya
 - **Pass-the-Hash:** Reuse captured NTLM hash without cracking it
 - **SMB relay:** Capture and relay auth to another SMB server
 - **Null session:** Anonymous access to share list and user enumeration (older systems)
@@ -511,19 +511,19 @@ crackmapexec smb target -u user -H hash  # pass the hash
 
 ---
 
-## FTP — File Transfer Protocol
+## FTP: File Transfer Protocol
 
 FTP transfers files. Port 21 (control), Port 20 (data in active mode).
 
 **Active vs Passive:**
-- **Active:** Server initiates data connection back to client — blocked by most firewalls
-- **Passive:** Client initiates both connections — firewall-friendly, more common
+- **Active:** Server initiates data connection back to client; blocked by most firewalls
+- **Passive:** Client initiates both connections; firewall-friendly, more common
 
 ### Security Implications
 
-- **Plaintext:** Credentials and data sent unencrypted — visible to network sniffers
-- **Anonymous login:** Many FTP servers allow login with `anonymous/anonymous` — check for writable dirs
-- **FTPS vs SFTP:** FTPS = FTP + TLS (still port 21). SFTP = SSH file transfer (port 22) — different protocol entirely
+- **Plaintext:** Credentials and data sent unencrypted; visible to network sniffers
+- **Anonymous login:** Many FTP servers allow login with `anonymous/anonymous`; check for writable dirs
+- **FTPS vs SFTP:** FTPS = FTP + TLS (still port 21). SFTP = SSH file transfer (port 22), different protocol entirely
 - **Bounce attack:** Use FTP server to scan other hosts via `PORT` command
 
 ```bash
@@ -544,7 +544,7 @@ nmap --script ftp-anon,ftp-bounce -p 21 target
 
 ---
 
-## SMTP — Simple Mail Transfer Protocol
+## SMTP: Simple Mail Transfer Protocol
 
 SMTP sends email. Port 25 (server-to-server), 587 (client submission), 465 (SMTPS).
 
@@ -564,7 +564,7 @@ v=spf1 include:_spf.google.com ~all
 
 ### Security Implications
 
-- **Open relay:** SMTP server that forwards mail for anyone — used for spam and phishing
+- **Open relay:** SMTP server that forwards mail for anyone, used for spam and phishing
 - **User enumeration:** `VRFY user@domain` or `RCPT TO:` responses reveal valid users
 - **Email spoofing:** Without DMARC enforcement, attacker sends email pretending to be your domain
 - **STARTTLS downgrade:** Force plaintext by stripping STARTTLS negotiation
@@ -591,17 +591,17 @@ nmap --script smtp-open-relay -p 25 target
 
 ---
 
-## SNMP — Simple Network Management Protocol
+## SNMP: Simple Network Management Protocol
 
 SNMP monitors and manages network devices. UDP ports 161 (queries), 162 (traps).
 
 **Versions:**
-- **v1, v2c:** Community string auth (plaintext password) — `public` and `private` are defaults
-- **v3:** Proper auth + encryption — use this
+- **v1, v2c:** Community string auth (plaintext password): `public` and `private` are defaults
+- **v3:** Proper auth + encryption, use this
 
 ### Security Implications
 
-- **Default community strings:** `public` (read) and `private` (write) — widely unchanged
+- **Default community strings:** `public` (read) and `private` (write), widely unchanged
 - **Information disclosure:** SNMP can dump routing tables, interface info, running processes, installed software, user accounts
 - **v1/v2c plaintext:** Community string visible on the wire
 - **Write access:** SNMP write with `private` community can change device config
@@ -621,15 +621,15 @@ nmap --script snmp-info,snmp-sysdescr -p 161 -sU target
 
 ---
 
-## LDAP — Lightweight Directory Access Protocol
+## LDAP: Lightweight Directory Access Protocol
 
 LDAP queries directory services (Active Directory, OpenLDAP). Port 389 (plaintext), 636 (LDAPS).
 
 ### Security Implications
 
-- **Anonymous bind:** LDAP allows querying without credentials on many default configs — dump users, groups, org structure
-- **LDAP injection:** User input injected into LDAP filter — similar to SQLi
-- **Credential exposure:** LDAP often used to validate credentials — cleartext on port 389 unless LDAPS used
+- **Anonymous bind:** LDAP allows querying without credentials on many default configs: dump users, groups, org structure
+- **LDAP injection:** User input injected into LDAP filter, similar to SQLi
+- **Credential exposure:** LDAP often used to validate credentials; cleartext on port 389 unless LDAPS used
 - **AD enumeration:** BloodHound uses LDAP to map Active Directory attack paths
 
 ```bash
@@ -645,7 +645,7 @@ nmap --script ldap-search -p 389 target
 
 ---
 
-## ARP — Address Resolution Protocol
+## ARP: Address Resolution Protocol
 
 ARP maps IP addresses to MAC addresses on a local network. No authentication.
 
@@ -653,7 +653,7 @@ ARP maps IP addresses to MAC addresses on a local network. No authentication.
 
 - **ARP spoofing/poisoning:** Attacker broadcasts fake ARP replies claiming they have the gateway's IP → intercepts all traffic (MITM)
 - **ARP cache poisoning:** Victim's ARP cache associates attacker's MAC with gateway IP
-- **Gratuitous ARP:** Unsolicited ARP — sent to update caches (legitimate use) but also used for poisoning
+- **Gratuitous ARP:** Unsolicited ARP, sent to update caches (legitimate use) but also used for poisoning
 
 ```bash
 # ARP spoofing (MITM)
@@ -674,7 +674,7 @@ ip neigh show   # Linux
 
 ---
 
-## NFS — Network File System
+## NFS: Network File System
 
 NFS allows remote filesystem mounting. Port 2049.
 
@@ -700,10 +700,10 @@ cat /etc/exports
 
 ## Key Takeaways
 
-- **Protocol = attack surface.** Every open port running a protocol is an entry point — know what each one does.
-- **UDP is underscanned.** Most scans focus on TCP — UDP services like SNMP, DNS, NFS are often left wide open.
-- **Plaintext protocols are 2026 problems.** FTP, HTTP, Telnet, SMTP (port 25), SNMP v1/v2c, LDAP (port 389) — anything on these in a modern network is a finding.
-- **Default credentials are everywhere.** SNMP `public`/`private`, FTP `anonymous`, SMB null session — always check.
+- **Protocol = attack surface.** Every open port running a protocol is an entry point. Know what each one does.
+- **UDP is underscanned.** Most scans focus on TCP. UDP services like SNMP, DNS, NFS are often left wide open.
+- **Plaintext protocols are 2026 problems.** FTP, HTTP, Telnet, SMTP (port 25), SNMP v1/v2c, LDAP (port 389): anything on these in a modern network is a finding.
+- **Default credentials are everywhere.** SNMP `public`/`private`, FTP `anonymous`, SMB null session: always check.
 - **DNS is both a recon target and an exfiltration channel.** Enumerate it thoroughly, and monitor for DNS tunneling.
 
 ---
@@ -713,8 +713,8 @@ cat /etc/exports
 <div class="references">
 <ul>
   <li><a href="https://nmap.org/book/man.html" target="_blank">Nmap Reference Guide</a></li>
-  <li><a href="https://book.hacktricks.xyz/network-services-pentesting" target="_blank">HackTricks — Network Services Pentesting</a></li>
-  <li><a href="https://www.rfc-editor.org/" target="_blank">RFC Editor — Protocol Specifications</a></li>
+  <li><a href="https://book.hacktricks.xyz/network-services-pentesting" target="_blank">HackTricks: Network Services Pentesting</a></li>
+  <li><a href="https://www.rfc-editor.org/" target="_blank">RFC Editor: Protocol Specifications</a></li>
   <li><a href="https://www.wireshark.org/docs/" target="_blank">Wireshark Documentation</a></li>
 </ul>
 </div>
@@ -725,7 +725,6 @@ cat /etc/exports
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

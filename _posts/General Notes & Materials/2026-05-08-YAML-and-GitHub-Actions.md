@@ -11,8 +11,8 @@ tags:
   - devops
   - automation
 author: muhammed
-description: Full YAML syntax guide and GitHub Actions walkthrough — triggers, jobs, steps, secrets, matrix builds, reusable workflows, and real-world CI/CD pipelines
-excerpt: Full YAML syntax guide and GitHub Actions walkthrough — triggers, jobs, steps, secrets, matrix builds, reusable workflows, and real-world CI/CD pipelines
+description: Full YAML syntax guide and GitHub Actions walkthrough - triggers, jobs, steps, secrets, matrix builds, reusable workflows, and real-world CI/CD pipelines
+excerpt: Full YAML syntax guide and GitHub Actions walkthrough - triggers, jobs, steps, secrets, matrix builds, reusable workflows, and real-world CI/CD pipelines
 toc: true
 pin: false
 math: false
@@ -27,7 +27,7 @@ img:
 
 ---
 
-## Part 1 — YAML
+## Part 1: YAML
 
 YAML (YAML Ain't Markup Language) is a human-readable data serialisation format. It's the config language for GitHub Actions, Kubernetes, Docker Compose, Ansible, and more. Getting it wrong silently breaks things, so understanding it properly matters.
 
@@ -35,27 +35,27 @@ YAML (YAML Ain't Markup Language) is a human-readable data serialisation format.
 
 ### Basic Rules
 
-- **Indentation is structure** — use spaces only, never tabs
+- **Indentation is structure** - use spaces only, never tabs
 - **2 spaces** per indent level is the convention (4 also works, just be consistent)
-- **Case sensitive** — `Name` and `name` are different keys
+- **Case sensitive** - `Name` and `name` are different keys
 - **`#`** starts a comment
 - A YAML file can contain multiple documents separated by `---`
 
 ---
 
-### Scalars — Strings, Numbers, Booleans, Null
+### Scalars: Strings, Numbers, Booleans, Null
 
 ```yaml
-# Strings — quotes are optional unless the value contains special characters
+# Strings: quotes are optional unless the value contains special characters
 name: Mohamed
 greeting: "Hello, World!"
 path: 'C:\Users\user'          # single quotes: no escape sequences
 multiword: this is fine too    # no quotes needed for plain text
 
-# Avoid ambiguity — quote these
+# Avoid ambiguity: quote these
 version: "1.0"                 # unquoted 1.0 is a float
 yes_string: "yes"              # unquoted yes/no/true/false = boolean
-port: "8080"                   # unquoted integers stay integers — pick a side
+port: "8080"                   # unquoted integers stay integers - pick a side
 
 # Numbers
 count: 42
@@ -77,17 +77,17 @@ explicit: ~         # also null
 
 ---
 
-### Strings — Multiline
+### Strings: Multiline
 
 ```yaml
-# Literal block scalar |  — preserves newlines
+# Literal block scalar | : preserves newlines
 script: |
   #!/bin/bash
   echo "Hello"
   echo "World"
 # Result: "#!/bin/bash\necho \"Hello\"\necho \"World\"\n"
 
-# Folded block scalar >  — newlines become spaces (good for long sentences)
+# Folded block scalar > : newlines become spaces (good for long sentences)
 description: >
   This is a very long description
   that spans multiple lines but
@@ -104,31 +104,31 @@ literal_keep: |+         # | keep all trailing newlines
   line two
 
 
-# Inline — escape sequences work in double-quoted strings
+# Inline: escape sequences work in double-quoted strings
 escaped: "first line\nsecond line\ttabbed"
 ```
 
 ---
 
-### Collections — Lists and Maps
+### Collections: Lists and Maps
 
 ```yaml
-# List (sequence) — block style
+# List (sequence): block style
 fruits:
   - apple
   - banana
   - cherry
 
-# List — flow style (inline)
+# List: flow style (inline)
 fruits: [apple, banana, cherry]
 
-# Map (mapping) — block style
+# Map (mapping): block style
 person:
   name: Mohamed
   age: 22
   city: Dubai
 
-# Map — flow style (inline)
+# Map: flow style (inline)
 person: {name: Mohamed, age: 22}
 
 # List of maps
@@ -160,7 +160,7 @@ config:
 
 ---
 
-### Anchors and Aliases — DRY in YAML
+### Anchors and Aliases: DRY in YAML
 
 Anchors (`&`) define a reusable block. Aliases (`*`) reference it. `<<` merges a map.
 
@@ -194,11 +194,11 @@ GitHub Actions uses anchors extensively to avoid repeating `env:` blocks.
 ### Common Gotchas
 
 ```yaml
-# Colon in a value — must quote
+# Colon in a value: must quote
 url: "https://example.com"     # unquoted colon breaks parsing
 message: "Error: not found"    # same issue
 
-# Value starting with { or [ — must quote
+# Value starting with { or [: must quote
 json: '{"key": "value"}'
 list: '[1, 2, 3]'
 
@@ -212,12 +212,12 @@ empty_string: ""   # empty string
 null_value:        # null (no value at all)
 
 # Octal integers in YAML 1.1
-mode: 0755         # parsed as octal 493 in old parsers — quote it: "0755"
+mode: 0755         # parsed as octal 493 in old parsers - quote it: "0755"
 ```
 
 ---
 
-## Part 2 — GitHub Actions
+## Part 2: GitHub Actions
 
 GitHub Actions is a CI/CD platform built into GitHub. Workflows are YAML files stored in `.github/workflows/`.
 
@@ -237,7 +237,7 @@ GitHub Actions is a CI/CD platform built into GitHub. Workflows are YAML files s
 
 ```yaml
 name: CI Pipeline          # shown in GitHub UI
-run-name: "Build ${{ github.sha }}"   # optional — shown per-run
+run-name: "Build ${{ github.sha }}"   # optional - shown per-run
 
 on: ...                    # when to trigger
 
@@ -344,7 +344,7 @@ jobs:
     # Environment (for secrets and protection rules)
     environment: production
 
-    # Outputs — pass data to dependent jobs
+    # Outputs - pass data to dependent jobs
     outputs:
       version: ${{ steps.get-version.outputs.version }}
 
@@ -454,7 +454,7 @@ ${{ expression }}
 ### Key contexts
 
 ```yaml
-# github context — event info
+# github context: event info
 ${{ github.sha }}               # commit SHA
 ${{ github.ref }}               # refs/heads/main
 ${{ github.ref_name }}          # main
@@ -470,7 +470,7 @@ ${{ env.NODE_VERSION }}
 # secrets context
 ${{ secrets.MY_SECRET }}
 
-# steps context — outputs from earlier steps
+# steps context: outputs from earlier steps
 ${{ steps.step-id.outputs.value }}
 ${{ steps.step-id.outcome }}    # success, failure, skipped
 
@@ -514,9 +514,9 @@ fromJSON('{"key":"value"}')
 Go to: **Repo → Settings → Secrets and variables → Actions → New repository secret**
 
 Levels:
-- **Repository secrets** — available to that repo only
-- **Environment secrets** — only available when job targets that environment
-- **Organisation secrets** — shared across repos
+- **Repository secrets** - available to that repo only
+- **Environment secrets** - only available when job targets that environment
+- **Organisation secrets** - shared across repos
 
 ### Using secrets
 
@@ -530,7 +530,7 @@ steps:
     run: ./deploy.sh
 ```
 
-Secrets are **masked** in logs — GitHub replaces the value with `***`.
+Secrets are **masked** in logs - GitHub replaces the value with `***`.
 
 ### Variables (non-secret config)
 
@@ -602,7 +602,7 @@ Speed up workflows by caching dependencies between runs.
   run: npm ci
 ```
 
-The cache key includes a hash of `package-lock.json` — a new key is created when dependencies change.
+The cache key includes a hash of `package-lock.json` - a new key is created when dependencies change.
 
 **`setup-*` actions often have built-in caching:**
 
@@ -668,10 +668,10 @@ Go to **Repo → Settings → Environments** to configure:
 
 ## Reusable Workflows
 
-Call one workflow from another — like a function.
+Call one workflow from another - like a function.
 
 ```yaml
-# .github/workflows/deploy.yml — the reusable workflow
+# .github/workflows/deploy.yml: the reusable workflow
 on:
   workflow_call:
     inputs:
@@ -692,7 +692,7 @@ jobs:
 ```
 
 ```yaml
-# .github/workflows/ci.yml — calls the reusable workflow
+# .github/workflows/ci.yml: calls the reusable workflow
 jobs:
   deploy-staging:
     uses: ./.github/workflows/deploy.yml
@@ -926,3 +926,13 @@ jobs:
 | Cache | `actions/cache@v4` with `key` |
 | Artifact | `actions/upload-artifact@v4` + `download-artifact` |
 {% endraw %}
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

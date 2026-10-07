@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS CLI & IAM — Credentials, Roles, Policies, and Attack Paths
+title: AWS CLI & IAM - Credentials, Roles, Policies, and Attack Paths
 date: 2026-05-09T10:00:00
 categories:
   - AWS Learning Path
@@ -12,7 +12,7 @@ tags:
   - cloud-security
   - devsecops
 author: muhammed
-description: A practical guide to AWS CLI setup, IAM identities, credential types, policy structure, and how attackers abuse misconfigured IAM — written from a cloud security perspective
+description: A practical guide to AWS CLI setup, IAM identities, credential types, policy structure, and how attackers abuse misconfigured IAM - written from a cloud security perspective
 toc: true
 pin: false
 math: false
@@ -26,7 +26,7 @@ img:
 ## What is IAM?
 
 IAM (Identity and Access Management) is the AWS service that controls **who** can do **what** on **which** AWS resources.
-Every API call made to AWS — whether from the console, CLI, SDK, or a Lambda function — is authenticated and authorised through IAM.
+Every API call made to AWS - whether from the console, CLI, SDK, or a Lambda function - is authenticated and authorised through IAM.
 Getting IAM wrong is the single most common cause of cloud security incidents.
 
 ---
@@ -50,7 +50,7 @@ aws --version
 ### Configuration
 
 ```bash
-aws configure                          # interactive setup — asks for 4 values
+aws configure                          # interactive setup - asks for 4 values
 aws configure --profile dev            # create a named profile
 aws configure list                     # show current config
 aws configure list-profiles            # list all profiles
@@ -59,7 +59,7 @@ aws configure list-profiles            # list all profiles
 When you run `aws configure` it stores credentials in two files:
 
 ```
-~/.aws/credentials   ← access keys (sensitive — never commit this)
+~/.aws/credentials   ← access keys (sensitive - never commit this)
 ~/.aws/config        ← region, output format, profiles
 ```
 
@@ -97,7 +97,7 @@ export AWS_PROFILE=dev                 # set default profile for the session
 ### Output formats
 
 ```bash
-aws ec2 describe-instances --output json    # default — machine-readable
+aws ec2 describe-instances --output json    # default - machine-readable
 aws ec2 describe-instances --output table  # human-readable table
 aws ec2 describe-instances --output text   # plain text, good for scripting
 aws ec2 describe-instances --output yaml   # YAML format
@@ -134,7 +134,7 @@ Each one is used differently and has different security implications.
 
 A **user** is a long-term identity for a person or application.
 Users can have two types of credentials: a **password** (for console access) and **access keys** (for CLI/API access).
-Access keys are the most common credential type found in breaches — they get hardcoded in code, committed to GitHub, or left in CI/CD logs.
+Access keys are the most common credential type found in breaches - they get hardcoded in code, committed to GitHub, or left in CI/CD logs.
 
 ```bash
 aws iam list-users                              # list all IAM users
@@ -160,10 +160,10 @@ aws iam list-groups-for-user --user-name alice  # groups a user belongs to
 ### 3. IAM Roles
 
 A **role** is a temporary identity that can be **assumed** by a trusted entity.
-Roles have no long-term credentials — when assumed, AWS issues short-lived temporary credentials (valid 15 minutes to 12 hours).
+Roles have no long-term credentials - when assumed, AWS issues short-lived temporary credentials (valid 15 minutes to 12 hours).
 Roles are used by EC2 instances, Lambda functions, other AWS services, cross-account access, and federated users.
 
-This is the **recommended** pattern for giving AWS resources access to other AWS services — never hardcode access keys in an EC2 instance when you can attach a role.
+This is the **recommended** pattern for giving AWS resources access to other AWS services - never hardcode access keys in an EC2 instance when you can attach a role.
 
 ```bash
 aws iam list-roles                              # list all roles
@@ -206,7 +206,7 @@ Examples: `AWSServiceRoleForEC2Spot`, `AWSServiceRoleForECS`.
 
 A **policy** is a JSON document that defines permissions.
 It lists which **actions** are allowed or denied on which **resources** under which **conditions**.
-IAM uses a **default deny** model — everything is denied unless explicitly allowed.
+IAM uses a **default deny** model - everything is denied unless explicitly allowed.
 
 ### Policy Structure
 
@@ -232,7 +232,7 @@ IAM uses a **default deny** model — everything is denied unless explicitly all
 
 | Field | Purpose |
 |---|---|
-| `Version` | Always `"2012-10-17"` — the policy language version |
+| `Version` | Always `"2012-10-17"` - the policy language version |
 | `Statement` | Array of permission blocks |
 | `Sid` | Optional statement ID for human readability |
 | `Effect` | `Allow` or `Deny` |
@@ -346,7 +346,7 @@ export AWS_PROFILE=dev
 ### Checking who you are
 
 ```bash
-aws sts get-caller-identity           # always run this first — shows account, user/role ARN
+aws sts get-caller-identity           # always run this first - shows account, user/role ARN
 ```
 
 Output:
@@ -425,7 +425,7 @@ If that role has `AdministratorAccess` or broad `*` permissions, anyone who can 
 An attacker with a foothold on an EC2 instance queries the metadata service:
 
 ```bash
-# IMDSv1 (vulnerable — no auth required)
+# IMDSv1 (vulnerable: no auth required)
 curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
 curl http://169.254.169.254/latest/meta-data/iam/security-credentials/MyRole
 ```
@@ -438,8 +438,8 @@ This returns temporary credentials that can be used directly.
 
 | | IMDSv1 | IMDSv2 |
 |---|---|---|
-| Authentication | None — any HTTP GET works | Requires a session token (PUT first) |
-| SSRF risk | High — any SSRF reaches it | Mitigated — requires a PUT request first |
+| Authentication | None - any HTTP GET works | Requires a session token (PUT first) |
+| SSRF risk | High - any SSRF reaches it | Mitigated - requires a PUT request first |
 | Enforcement | Default on older instances | Must be explicitly required |
 
 **Require IMDSv2 on an existing instance:**
@@ -476,7 +476,7 @@ Common escalation paths:
 | `iam:PassRole` + `lambda:CreateFunction` | Create a Lambda with an admin role and invoke it |
 | `sts:AssumeRole` | Assume a more permissive role |
 
-**Tool:** [Pacu](https://github.com/RhinoSecurityLabs/pacu) — AWS exploitation framework that automates privilege escalation enumeration.
+**Tool:** [Pacu](https://github.com/RhinoSecurityLabs/pacu) - AWS exploitation framework that automates privilege escalation enumeration.
 
 ### 5. Confused Deputy via Resource-Based Policies
 
@@ -508,8 +508,8 @@ An attacker reads these files to map the account structure before escalating.
 ```
 ✅  Enable MFA for all IAM users, especially root
 ✅  Never use the root account for day-to-day work
-✅  Use IAM roles for applications — never hardcode access keys
-✅  Apply least privilege — start with no permissions, add what's needed
+✅  Use IAM roles for applications - never hardcode access keys
+✅  Apply least privilege - start with no permissions, add what's needed
 ✅  Set a permissions boundary on developer-created roles
 ✅  Enable CloudTrail to log all API calls
 ✅  Rotate access keys every 90 days
@@ -561,10 +561,10 @@ aws ec2 modify-instance-metadata-options \
 
 
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **GitHub:** [Mhdomer](https://github.comMhdomer)  
-- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

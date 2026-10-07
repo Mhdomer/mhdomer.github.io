@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Homelab Part 5 — MetalLB and Nginx Ingress"
+title: "Homelab Part 5: MetalLB and Nginx Ingress"
 date: 2026-05-24 14:00:00 +0800
 categories:
   - Homelab
@@ -12,7 +12,7 @@ tags:
   - Ingress
   - Networking
 author: muhammed
-description: Installing MetalLB to give Kubernetes real local IPs, and Nginx Ingress to route traffic to the right service based on hostname — the networking layer the entire homelab runs on.
+description: Installing MetalLB to give Kubernetes real local IPs, and Nginx Ingress to route traffic to the right service based on hostname - the networking layer the entire homelab runs on.
 toc: true
 pin: false
 math: false
@@ -23,13 +23,13 @@ mermaid: false
 
 My K3s cluster is running but I can't access anything from my home network yet. Here's why:
 
-Kubernetes services use virtual IPs that only exist inside the cluster. When I create a service for Jellyfin, it gets something like `10.43.87.23` — a cluster-internal IP that nothing outside the VM can reach.
+Kubernetes services use virtual IPs that only exist inside the cluster. When I create a service for Jellyfin, it gets something like `10.43.87.23` - a cluster-internal IP that nothing outside the VM can reach.
 
 In cloud Kubernetes (EKS, GKE), when you create a `LoadBalancer` service, the cloud automatically provisions a real IP and a load balancer. On bare metal, that cloud integration doesn't exist.
 
-**MetalLB** solves the LoadBalancer problem — it gives Kubernetes the ability to assign real IPs from my home network to services.
+**MetalLB** solves the LoadBalancer problem - it gives Kubernetes the ability to assign real IPs from my home network to services.
 
-**Nginx Ingress** solves the routing problem — instead of a separate IP/port for every service, one IP handles all traffic and routes based on the hostname.
+**Nginx Ingress** solves the routing problem - instead of a separate IP/port for every service, one IP handles all traffic and routes based on the hostname.
 
 ---
 
@@ -39,11 +39,10 @@ I need to reserve a small IP range for MetalLB. These IPs must be:
 - On the same subnet as my home network (`192.168.1.0/24`)
 - Outside my router's DHCP range (so the router won't assign them to other devices)
 
-My router's DHCP range is typically `192.168.1.100–192.168.1.200`. I'll tell MetalLB to use `192.168.1.200–192.168.1.210` — 11 addresses, more than enough.
+My router's DHCP range is typically `192.168.1.100–192.168.1.200`. I'll tell MetalLB to use `192.168.1.200–192.168.1.210` - 11 addresses, more than enough.
 
 I also update my router's DHCP range to stop at `192.168.1.199` so it doesn't conflict.
 
-> `[SCREENSHOT]` — *Router DHCP settings showing range ending at .199, leaving .200+ free for MetalLB*
 
 ---
 
@@ -64,7 +63,6 @@ kubectl get pods -n networking
 # metallb-speaker-xxx                   1/1     Running
 ```
 
-> `[SCREENSHOT]` — *`kubectl get pods -n networking` showing MetalLB controller and speaker both Running*
 
 ### Configure the IP Pool
 
@@ -95,9 +93,8 @@ spec:
 kubectl apply -f metallb-pool.yaml
 ```
 
-`L2Advertisement` tells MetalLB to use Layer 2 (ARP) to advertise IPs — meaning it responds to ARP requests on my network for those IPs, making them reachable from any device on the LAN.
+`L2Advertisement` tells MetalLB to use Layer 2 (ARP) to advertise IPs - meaning it responds to ARP requests on my network for those IPs, making them reachable from any device on the LAN.
 
-> `[SCREENSHOT]` — *`kubectl apply -f metallb-pool.yaml` output showing both resources created*
 
 ### Verify MetalLB Works
 
@@ -126,7 +123,6 @@ kubectl get svc test-lb
 kubectl delete -f test-lb.yaml
 ```
 
-> `[SCREENSHOT]` — *`kubectl get svc test-lb` showing EXTERNAL-IP: 192.168.1.200 assigned by MetalLB*
 
 ---
 
@@ -140,7 +136,7 @@ helm install ingress-nginx ingress-nginx/ingress-nginx \
   --set controller.service.loadBalancerIP=192.168.1.200
 ```
 
-Pinning the IP to `192.168.1.200` ensures Nginx Ingress always gets that specific IP from MetalLB — important because my DNS records point there.
+Pinning the IP to `192.168.1.200` ensures Nginx Ingress always gets that specific IP from MetalLB - important because my DNS records point there.
 
 Wait for it to be ready:
 
@@ -150,7 +146,6 @@ kubectl get svc -n networking
 # ingress-nginx-controller   LoadBalancer   192.168.1.200   80:xxx/TCP,443:xxx/TCP
 ```
 
-> `[SCREENSHOT]` — *`kubectl get svc -n networking` showing ingress-nginx-controller with EXTERNAL-IP 192.168.1.200*
 
 ---
 
@@ -220,7 +215,6 @@ kubectl apply -f hello-world.yaml
 
 Add `hello.home.lab` to AdGuard DNS rewrites pointing to `192.168.1.200`, then open `http://hello.home.lab` in my browser.
 
-> `[SCREENSHOT]` — *Browser showing the Nginx hello world page at hello.home.lab*
 
 Clean up:
 
@@ -232,7 +226,7 @@ kubectl delete -f hello-world.yaml
 
 ## Installing Cert-Manager (TLS)
 
-I want `https://jellyfin.home.lab` — not just `http://`. Cert-Manager automates TLS certificate issuance and renewal.
+I want `https://jellyfin.home.lab` - not just `http://`. Cert-Manager automates TLS certificate issuance and renewal.
 
 ```bash
 helm install cert-manager jetstack/cert-manager \
@@ -248,7 +242,7 @@ kubectl get pods -n networking | grep cert-manager
 
 ### Create a Self-Signed CA for Internal Services
 
-For my internal `.home.lab` services I'll use a self-signed certificate authority. Let's Encrypt only works for public domains — I'll use that in Part 9 when I set up Cloudflare Tunnel.
+For my internal `.home.lab` services I'll use a self-signed certificate authority. Let's Encrypt only works for public domains - I'll use that in Part 9 when I set up Cloudflare Tunnel.
 
 ```yaml
 # internal-ca.yaml
@@ -289,7 +283,6 @@ kubectl apply -f internal-ca.yaml
 kubectl get clusterissuers
 ```
 
-> `[SCREENSHOT]` — *`kubectl get clusterissuers` showing selfsigned-issuer and homelab-ca-issuer both Ready*
 
 ### Trust the CA on My Devices
 
@@ -305,7 +298,6 @@ Copy `homelab-ca.crt` to Windows and install it:
 
 On iPhone/iPad: AirDrop the cert file → tap it → Settings → downloaded profile → install.
 
-> `[SCREENSHOT]` — *Windows Certificate Import Wizard showing the homelab CA being installed to Trusted Root CAs*
 
 ---
 
@@ -376,7 +368,7 @@ At the end of Part 5 I have:
 - ✅ Homelab CA installed as trusted on my devices
 - ✅ Traffic routing by hostname working and tested
 
-Next: persistent storage with Longhorn — so Jellyfin and Nextcloud don't lose their data when pods restart.
+Next: persistent storage with Longhorn - so Jellyfin and Nextcloud don't lose their data when pods restart.
 
 ---
 
@@ -384,7 +376,6 @@ Next: persistent storage with Longhorn — so Jellyfin and Nextcloud don't lose 
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

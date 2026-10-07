@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS VPC Architecture Patterns — Inbound, Outbound, and Inspection VPCs
+title: AWS VPC Architecture Patterns - Inbound, Outbound, and Inspection VPCs
 date: 2026-05-21T10:00:00
 categories:
   - AWS Learning Path
@@ -12,7 +12,7 @@ tags:
   - cloud-security
   - architecture
 author: muhammed
-description: A walkthrough of enterprise AWS VPC architecture patterns — inbound, outbound, and inspection VPCs, Transit Gateway hub-and-spoke, and centralized egress and security
+description: A walkthrough of enterprise AWS VPC architecture patterns - inbound, outbound, and inspection VPCs, Transit Gateway hub-and-spoke, and centralized egress and security
 toc: true
 pin: false
 math: false
@@ -26,7 +26,7 @@ img:
 ## Why Multiple VPCs?
 
 A single VPC works fine for a small application.
-As you grow — multiple teams, multiple environments, compliance requirements, third-party security appliances — you need to think about how VPCs relate to each other and how traffic flows between them.
+As you grow - multiple teams, multiple environments, compliance requirements, third-party security appliances - you need to think about how VPCs relate to each other and how traffic flows between them.
 
 Enterprise AWS accounts typically split networking into **dedicated VPCs by function**:
 
@@ -36,17 +36,17 @@ Enterprise AWS accounts typically split networking into **dedicated VPCs by func
 | **Inbound VPC** | Entry point for traffic coming from the internet |
 | **Outbound VPC** | Centralised exit point for all traffic going to the internet |
 | **Inspection VPC** | Runs IDS/IPS and firewall appliances that inspect all east-west traffic |
-| **Workload VPCs** | Where your actual applications live — isolated per team or environment |
+| **Workload VPCs** | Where your actual applications live - isolated per team or environment |
 | **Shared Services VPC** | Central services like DNS, AD, monitoring, that all workloads need |
 
 This pattern is called **hub-and-spoke** and it is the foundation of the AWS Landing Zone architecture.
 
 ---
 
-## Transit Gateway — The Hub
+## Transit Gateway: The Hub
 
 When you have many VPCs that need to communicate, VPC peering does not scale.
-Peering is one-to-one — 10 VPCs need 45 peering connections.
+Peering is one-to-one - 10 VPCs need 45 peering connections.
 **AWS Transit Gateway (TGW)** solves this.
 
 A Transit Gateway is a central network hub.
@@ -87,11 +87,11 @@ aws ec2 describe-transit-gateway-attachments --output table
 
 ### Transit Gateway Route Tables
 
-The TGW has its own route tables — separate from VPC route tables.
+The TGW has its own route tables - separate from VPC route tables.
 You can segment traffic: workload VPCs route to the inspection VPC before going anywhere else.
 
 > 📸 **SCREENSHOT:** VPC → Transit Gateways → Transit Gateway Route Tables.
-> Show two route tables — one for workload VPCs (routes pointing to inspection) and one for the inspection VPC (routes pointing to final destinations).
+> Show two route tables - one for workload VPCs (routes pointing to inspection) and one for the inspection VPC (routes pointing to final destinations).
 
 ---
 
@@ -100,10 +100,10 @@ You can segment traffic: workload VPCs route to the inspection VPC before going 
 The **Inbound VPC** (sometimes called the perimeter VPC) is the dedicated entry point for traffic coming from the internet into your environment.
 It contains internet-facing resources that all workloads share:
 
-- **AWS WAF** — filters malicious HTTP requests at the edge
-- **Application Load Balancer** — routes to the correct workload VPC
-- **AWS Shield Advanced** — DDoS protection
-- **AWS Network Firewall** (optional) — stateful traffic inspection
+- **AWS WAF** - filters malicious HTTP requests at the edge
+- **Application Load Balancer** - routes to the correct workload VPC
+- **AWS Shield Advanced** - DDoS protection
+- **AWS Network Firewall** (optional) - stateful traffic inspection
 
 Traffic flow:
 
@@ -140,12 +140,12 @@ Centralising inbound traffic means one team owns the perimeter, WAF rules are co
 ## Outbound VPC
 
 The **Outbound VPC** provides a centralised, controlled exit point for all outbound internet traffic from your workloads.
-Without it, each workload VPC has its own NAT Gateway — you have no visibility or control over what workloads are calling on the internet.
+Without it, each workload VPC has its own NAT Gateway - you have no visibility or control over what workloads are calling on the internet.
 
 The Outbound VPC contains:
-- **NAT Gateways** — shared across all workload VPCs (cost saving)
-- **AWS Network Firewall** — inspects and filters outbound traffic (block malware C2, restrict domains)
-- **Flow logs** — centralised egress logging
+- **NAT Gateways** - shared across all workload VPCs (cost saving)
+- **AWS Network Firewall** - inspects and filters outbound traffic (block malware C2, restrict domains)
+- **Flow logs** - centralised egress logging
 
 Traffic flow from workload to internet:
 
@@ -212,14 +212,14 @@ drop tls any any -> any any (sid:999; rev:1;)
 
 ## Inspection VPC
 
-The **Inspection VPC** sits in the middle of your network and inspects **east-west traffic** — traffic between workload VPCs, or between workloads and on-premises.
+The **Inspection VPC** sits in the middle of your network and inspects **east-west traffic** - traffic between workload VPCs, or between workloads and on-premises.
 It runs third-party security appliances: Check Point, Palo Alto, Fortinet, or AWS Network Firewall.
 
 East-west traffic without an Inspection VPC:
 
 ```
 Workload A VPC → Transit Gateway → Workload B VPC
-(no inspection — traffic passes freely)
+(no inspection - traffic passes freely)
 ```
 
 East-west traffic with an Inspection VPC:
@@ -228,7 +228,7 @@ East-west traffic with an Inspection VPC:
 Workload A VPC → Transit Gateway → Inspection VPC → Firewall → Transit Gateway → Workload B VPC
 ```
 
-This requires careful TGW route table design — you must force all inter-VPC traffic through the inspection VPC before it reaches the destination.
+This requires careful TGW route table design - you must force all inter-VPC traffic through the inspection VPC before it reaches the destination.
 
 ### Inspection VPC components
 
@@ -270,10 +270,10 @@ Only allowed traffic gets forwarded to the destination.
 
 The **Shared Services VPC** hosts infrastructure that all workloads need access to:
 
-- **Route 53 Resolver endpoints** — centralised DNS for hybrid networks
-- **AWS Directory Service / Managed Microsoft AD** — Active Directory for workloads
-- **AWS Systems Manager** — patching, parameter store, session manager
-- **Monitoring and logging infrastructure** — Prometheus, Grafana, log aggregation
+- **Route 53 Resolver endpoints** - centralised DNS for hybrid networks
+- **AWS Directory Service / Managed Microsoft AD** - Active Directory for workloads
+- **AWS Systems Manager** - patching, parameter store, session manager
+- **Monitoring and logging infrastructure** - Prometheus, Grafana, log aggregation
 
 Rather than replicating these services in every workload VPC, you put them once in the Shared Services VPC and connect via Transit Gateway.
 
@@ -303,7 +303,7 @@ Use cases:
 
 ---
 
-## Summary — When to Use What
+## Summary: When to Use What
 
 | Scenario | Solution |
 |---|---|
@@ -345,10 +345,10 @@ aws ec2 describe-flow-logs --output table
 
 
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **GitHub:** [Mhdomer](https://github.comMhdomer)  
-- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

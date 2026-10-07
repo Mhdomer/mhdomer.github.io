@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 3 — Day 19: Building a Full Secure CI/CD Pipeline"
+title: "Day 19: Building a Secure CI/CD Pipeline - Shifting Security Left"
 date: 2026-06-07 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - Pipeline
   - AppSec
 author: muhammed
-description: Assembling all Week 3 security tools into a single GitHub Actions pipeline — Semgrep, Snyk, Checkov, tfsec, Trivy, and ZAP running as sequential security gates on every PR and push.
+description: Assembling all Week 3 security tools into a single GitHub Actions pipeline - Semgrep, Snyk, Checkov, tfsec, Trivy, and ZAP running as sequential security gates on every PR and push.
 toc: true
 pin: false
 math: false
@@ -22,7 +22,7 @@ image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmiro.medium.c
 
 ## The Goal
 
-This day ties together everything from Week 3: SAST, SCA, IaC scanning, image scanning, and DAST into one cohesive pipeline. Each tool is a gate — findings at a certain severity block the merge.
+This day ties together everything from Week 3: SAST, SCA, IaC scanning, image scanning, and DAST into one cohesive pipeline. Each tool is a gate - findings at a certain severity block the merge.
 
 **Pipeline stages in order:**
 
@@ -56,7 +56,7 @@ Merge allowed (all gates passed)
 
 ---
 
-## Security Gates — What Blocks a Merge
+## Security Gates: What Blocks a Merge
 
 | Stage | Blocks merge on | Warns on |
 |-------|----------------|---------|
@@ -67,11 +67,11 @@ Merge allowed (all gates passed)
 | Trivy | CRITICAL CVEs | HIGH CVEs |
 | ZAP | FAIL rules (High alerts) | WARN rules |
 
-**Philosophy:** Block on things that are definitely exploitable or a clear misconfiguration. Warn on everything else — don't make the pipeline so noisy it gets bypassed.
+**Philosophy:** Block on things that are definitely exploitable or a clear misconfiguration. Warn on everything else - don't make the pipeline so noisy it gets bypassed.
 
 ---
 
-## Full Pipeline — GitHub Actions
+## Full Pipeline: GitHub Actions
 
 ```yaml
 # .github/workflows/secure-pipeline.yml
@@ -92,7 +92,7 @@ jobs:
   # Stage 1: SAST
   # ─────────────────────────────────────
   sast:
-    name: SAST — Semgrep
+    name: SAST - Semgrep
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
@@ -121,7 +121,7 @@ jobs:
   # Stage 2: SCA
   # ─────────────────────────────────────
   sca:
-    name: SCA — Snyk
+    name: SCA - Snyk
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -146,7 +146,7 @@ jobs:
   # Stage 3: IaC Scanning
   # ─────────────────────────────────────
   iac-scan:
-    name: IaC — Checkov + tfsec
+    name: IaC - Checkov + tfsec
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -227,7 +227,7 @@ jobs:
   # Stage 6+7: Deploy to staging + DAST
   # ─────────────────────────────────────
   dast:
-    name: DAST — ZAP Baseline
+    name: DAST - ZAP Baseline
     runs-on: ubuntu-latest
     needs: [build-and-scan]
     steps:
@@ -257,9 +257,7 @@ jobs:
         run: docker compose -f docker-compose.staging.yml down
 ```
 
-> `[SCREENSHOT]` — *GitHub Actions showing the full pipeline with all 5 jobs (sast, sca, iac-scan, build-and-scan, dast) — all green on a clean run, with the dependency arrows showing the execution order*
 
-> `[SCREENSHOT]` — *GitHub PR showing all 5 required status checks listed — Semgrep, Snyk, Checkov+tfsec, Trivy, ZAP — all with green checkmarks before merge is allowed*
 
 ---
 
@@ -270,14 +268,13 @@ Set up branch protection to enforce the pipeline gates:
 1. GitHub repo → Settings → Branches → Add rule for `main`
 2. Enable: **Require status checks to pass before merging**
 3. Add required checks:
-   - `SAST — Semgrep`
-   - `SCA — Snyk`
-   - `IaC — Checkov + tfsec`
+   - `SAST - Semgrep`
+   - `SCA - Snyk`
+   - `IaC - Checkov + tfsec`
    - `Build + Trivy Image Scan`
-   - `DAST — ZAP Baseline`
+   - `DAST - ZAP Baseline`
 4. Enable: **Require branches to be up to date before merging**
 
-> `[SCREENSHOT]` — *GitHub → Branch protection rules settings showing the 5 required status checks listed and "Require branches to be up to date" enabled*
 
 Now a PR literally cannot be merged unless all security gates pass.
 
@@ -297,7 +294,6 @@ env:
 
 Set these in: repo → Settings → Secrets and variables → Actions → New repository secret
 
-> `[SCREENSHOT]` — *GitHub → Settings → Secrets and variables → Actions showing the list of repository secrets (names visible, values masked) — SNYK_TOKEN, AWS_ACCESS_KEY_ID, ECR_REGISTRY listed*
 
 **Better for AWS:** Use OIDC instead of long-lived access keys:
 
@@ -309,7 +305,7 @@ Set these in: repo → Settings → Secrets and variables → Actions → New re
     aws-region: ap-southeast-1
 ```
 
-This generates temporary credentials via the GitHub OIDC provider — no static AWS keys stored anywhere.
+This generates temporary credentials via the GitHub OIDC provider - no static AWS keys stored anywhere.
 
 ---
 
@@ -318,7 +314,7 @@ This generates temporary credentials via the GitHub OIDC provider — no static 
 Running all scans sequentially is slow. Parallelize where possible:
 
 ```yaml
-# Run SAST, SCA, and IaC in parallel — they're independent
+# Run SAST, SCA, and IaC in parallel: they're independent
 jobs:
   sast:
     ...
@@ -338,13 +334,12 @@ jobs:
     ...
 ```
 
-> `[SCREENSHOT]` — *GitHub Actions run showing the parallel execution — sast, sca, and iac-scan running simultaneously, then build-and-scan starting once both complete, then dast last*
 
 **Typical timing:**
 - SAST + SCA + IaC in parallel: ~3-5 minutes
 - Build + image scan: ~3-5 minutes
 - DAST: ~2-3 minutes
-- **Total: ~10-13 minutes** — fast enough for a development workflow
+- **Total: ~10-13 minutes** - fast enough for a development workflow
 
 ---
 
@@ -401,7 +396,7 @@ Before merging your pipeline definition:
 
 - [ ] All tools run with `--exit-code 1` or equivalent on findings above threshold
 - [ ] SARIF output uploaded to GitHub Security tab for all tools
-- [ ] No static AWS credentials — use OIDC or short-lived tokens
+- [ ] No static AWS credentials - use OIDC or short-lived tokens
 - [ ] Snyk token stored as a secret, not hardcoded
 - [ ] Branch protection rules require all checks to pass
 - [ ] IaC scan only triggers on `terraform/**` file changes (performance)
@@ -413,12 +408,12 @@ Before merging your pipeline definition:
 
 ## Key Takeaways
 
-- A secure pipeline is a series of gates — each one catches a different class of problem
-- Run SAST, SCA, and IaC scans in parallel — they're independent and this halves your pipeline time
-- Use `needs:` to enforce ordering — don't build if the code scan fails, don't DAST if the image is not built
-- Branch protection rules are what actually enforce the gates — without them, developers can merge despite failures
-- Use OIDC for AWS auth in GitHub Actions — eliminates long-lived access keys from your secrets store
-- The pipeline is itself code — scan it with Semgrep (`p/ci` ruleset) for misconfigurations
+- A secure pipeline is a series of gates - each one catches a different class of problem
+- Run SAST, SCA, and IaC scans in parallel - they're independent and this halves your pipeline time
+- Use `needs:` to enforce ordering - don't build if the code scan fails, don't DAST if the image is not built
+- Branch protection rules are what actually enforce the gates - without them, developers can merge despite failures
+- Use OIDC for AWS auth in GitHub Actions - eliminates long-lived access keys from your secrets store
+- The pipeline is itself code - scan it with Semgrep (`p/ci` ruleset) for misconfigurations
 
 ---
 
@@ -438,7 +433,6 @@ Before merging your pipeline definition:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

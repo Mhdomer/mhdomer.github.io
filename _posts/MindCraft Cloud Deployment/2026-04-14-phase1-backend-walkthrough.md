@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Phase 1: Building a Secure MERN Backend From a Firebase App —Walkthrough"
+title: "Phase 1: Building a Secure MERN Backend From a Firebase App  - Walkthrough"
 date: 2026-04-14T10:00:00
 categories:
   - MindCraft Cloud Deployment
@@ -24,7 +24,7 @@ Link: "[[2026-03-24-Introduction-about-Application]]"
 Link1:
 ---
 In my [Introduction about the Application](/posts/Introduction-about-Application/), I wrote about why I decided to migrate MindCraft away from Firebase.
-This post is the technical walkthrough of how Phase 1 actually happened — the decisions, the trade-offs, and the parts that took longer than expected.
+This post is the technical walkthrough of how Phase 1 actually happened - the decisions, the trade-offs, and the parts that took longer than expected.
 
 Phase 1 had one job: replace Firebase entirely with a self-managed backend, and do it in a way
 
@@ -38,7 +38,7 @@ Here's what that looked like in practice.
 
   
 
-The original app had no backend in the traditional sense. It was a Next.js monolith — React pages
+The original app had no backend in the traditional sense. It was a Next.js monolith - React pages
 
 on one side, Firebase SDK calls on the other. No Express server, no REST API, no database queries.
 
@@ -54,15 +54,15 @@ it out:
 
 - **Auth:** `onAuthStateChanged` gave you a `user` object with a `uid`. Every Firestore query
 
-  used that `uid` to filter documents.
+  used that `uid` to filter documents.
 
-- **Database:** Firestore collections — `user`, `course`, `module`, `lesson`, `enrollment`,
+- **Database:** Firestore collections - `user`, `course`, `module`, `lesson`, `enrollment`,
 
-  `notification`, `post`, `submission`, `assignment`, `assessment`. Flat structure, string IDs.
+  `notification`, `post`, `submission`, `assignment`, `assessment`. Flat structure, string IDs.
 
-- **API:** 16 Next.js Route Handlers in `app/api/` — thin wrappers around Firebase Admin SDK
+- **API:** 16 Next.js Route Handlers in `app/api/` - thin wrappers around Firebase Admin SDK
 
-  calls. They existed mainly to keep Firebase Admin credentials server-side.
+  calls. They existed mainly to keep Firebase Admin credentials server-side.
 
   
 
@@ -80,7 +80,7 @@ That's what needed to be replaced.
 
 The obvious move was to pick a database. I documented this in
 
-ADR-001 — the short version:
+ADR-001 - the short version:
 
   
 
@@ -102,7 +102,7 @@ behind a Security Group I configure. The rule looks like this:
 
 ```
 
-Inbound: TCP 27017 — Source: sg-app-tier only
+Inbound: TCP 27017 - Source: sg-app-tier only
 
 ```
 
@@ -116,7 +116,7 @@ That's real network isolation.
 
   
 
-The document model also helped. Firestore data is hierarchical documents — MongoDB maps to that
+The document model also helped. Firestore data is hierarchical documents - MongoDB maps to that
 
 directly. A `course` document with an embedded `modules` array translated almost one-to-one.
 
@@ -136,7 +136,7 @@ This was the part that took the most time.
 
   
 
-Firestore uses arbitrary string IDs — something like `"KJh3mN8pQ2rT"`. MongoDB uses ObjectIds —
+Firestore uses arbitrary string IDs - something like `"KJh3mN8pQ2rT"`. MongoDB uses ObjectIds  - 
 
 24-character hex strings like `"507f1f77bcf86cd799439011"`. Every relationship reference in the
 
@@ -144,7 +144,7 @@ database (`courseId`, `createdBy`, `studentId`) was a Firestore string ID.
 
   
 
-You can't just copy the data across. Every reference needs to be translated consistently —
+You can't just copy the data across. Every reference needs to be translated consistently  - 
 
 if course `"KJh3mN8pQ2rT"` becomes ObjectId `"507f..."`, then every enrollment that references
 
@@ -164,13 +164,13 @@ const idMap = new Map();
 
 function getOrCreateId(firestoreId) {
 
-  if (!idMap.has(firestoreId)) {
+  if (!idMap.has(firestoreId)) {
 
-    idMap.set(firestoreId, new mongoose.Types.ObjectId());
+    idMap.set(firestoreId, new mongoose.Types.ObjectId());
 
-  }
+  }
 
-  return idMap.get(firestoreId);
+  return idMap.get(firestoreId);
 
 }
 
@@ -182,7 +182,7 @@ Every Firestore document gets a consistent ObjectId on first encounter. When you
 
 field, you look it up in the map instead of generating a new one. Run users first, then courses,
 
-then enrollments — by the time you're resolving `studentId` in an enrollment, the user's ObjectId
+then enrollments - by the time you're resolving `studentId` in an enrollment, the user's ObjectId
 
 is already in the map.
 
@@ -226,11 +226,11 @@ Mongoose lets you declare these inline:
 
 const NotificationSchema = new Schema({
 
-  userId: { type: String, required: true, index: true },
+  userId: { type: String, required: true, index: true },
 
-  read:   { type: Boolean, default: false, index: true },
+  read:   { type: Boolean, default: false, index: true },
 
-  // ...
+  // ...
 
 });
 
@@ -238,7 +238,7 @@ const NotificationSchema = new Schema({
 
   
 
-**No plain passwords stored anywhere.** The `User` schema stores `passwordHash` only — bcrypt
+**No plain passwords stored anywhere.** The `User` schema stores `passwordHash` only - bcrypt
 
 output. There is no `password` field. The migration script generates a temporary hash for
 
@@ -272,9 +272,9 @@ why in ADR-002.
 
   
 
-The reason: JavaScript cannot read `httpOnly` cookies. That means an XSS vulnerability — an
+The reason: JavaScript cannot read `httpOnly` cookies. That means an XSS vulnerability - an
 
-injected script running on your page — cannot steal the token. localStorage has no such
+injected script running on your page - cannot steal the token. localStorage has no such
 
 protection. If your site has an XSS hole and you're storing JWTs in localStorage, an attacker
 
@@ -290,13 +290,13 @@ The Express login route sets it like this:
 
 res.cookie('auth_token', token, {
 
-  httpOnly: true,
+  httpOnly: true,
 
-  secure: process.env.NODE_ENV === 'production',
+  secure: process.env.NODE_ENV === 'production',
 
-  sameSite: 'lax',
+  sameSite: 'lax',
 
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
 
 });
 
@@ -320,7 +320,7 @@ logged out constantly.
 
 it means cracking a stolen hash database takes ~4x longer. For a portfolio project, 12 is the
 
-right call — it signals you thought about it.
+right call - it signals you thought about it.
 
   
 
@@ -342,7 +342,7 @@ const passwordHash = await bcrypt.hash(password, 12);
 
 The original Next.js app used `app/api/` route handlers. That's fine for a monolith, but it
 
-means the frontend and backend are the same process — you can't put them on separate EC2
+means the frontend and backend are the same process - you can't put them on separate EC2
 
 instances or apply different Security Groups.
 
@@ -350,7 +350,7 @@ instances or apply different Security Groups.
 
 ADR-003 covers this. The result was a standalone
 
-`server/` directory — a full Express application that runs on port 3001.
+`server/` directory - a full Express application that runs on port 3001.
 
   
 
@@ -364,21 +364,21 @@ server/
 
 ├── config/
 
-│   ├── database.js      # mongoose.connect with retry logic
+│   ├── database.js      # mongoose.connect with retry logic
 
-│   └── env.js           # validates required env vars on startup
+│   └── env.js           # validates required env vars on startup
 
 ├── middleware/
 
-│   ├── auth.js          # requireAuth, requireRole, optionalAuth
+│   ├── auth.js          # requireAuth, requireRole, optionalAuth
 
-│   └── ...
+│   └── ...
 
-├── models/              # 13 Mongoose schemas
+├── models/              # 13 Mongoose schemas
 
-├── routes/              # 14 route modules, 40+ endpoints
+├── routes/              # 14 route modules, 40+ endpoints
 
-└── index.js             # Express app entry point
+└── index.js             # Express app entry point
 
 ```
 
@@ -396,25 +396,25 @@ const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 async function request(path, options = {}) {
 
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${BASE}${path}`, {
 
-    ...options,
+    ...options,
 
-    credentials: 'include', // sends the httpOnly cookie
+    credentials: 'include', // sends the httpOnly cookie
 
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers: { 'Content-Type': 'application/json', ...options.headers },
 
-  });
+  });
 
-  if (!res.ok) {
+  if (!res.ok) {
 
-    const body = await res.json().catch(() => ({}));
+    const body = await res.json().catch(() => ({}));
 
-    throw new Error(body.error || `Request failed: ${res.status}`);
+    throw new Error(body.error || `Request failed: ${res.status}`);
 
-  }
+  }
 
-  return res.json();
+  return res.json();
 
 }
 
@@ -422,7 +422,7 @@ async function request(path, options = {}) {
 
   
 
-`credentials: 'include'` is the key line — it tells the browser to attach the `auth_token`
+`credentials: 'include'` is the key line - it tells the browser to attach the `auth_token`
 
 cookie to every request, including cross-origin ones to `localhost:3001`.
 
@@ -466,11 +466,11 @@ one that works. The auth routes get a strict limit:
 
 const authLimiter = rateLimit({
 
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000, // 15 minutes
 
-  max: 20,
+  max: 20,
 
-  message: { error: 'Too many requests, please try again later.' },
+  message: { error: 'Too many requests, please try again later.' },
 
 });
 
@@ -486,7 +486,7 @@ tight enough to make brute-force attacks impractical.
 
   
 
-**Morgan** for request logging. In development it shows coloured output — method, path, status,
+**Morgan** for request logging. In development it shows coloured output - method, path, status,
 
 response time. In production it writes combined Apache format, which CloudWatch can parse. The
 
@@ -518,15 +518,15 @@ const REQUIRED = ['MONGODB_URI', 'JWT_SECRET'];
 
 export function validateEnv() {
 
-  const missing = REQUIRED.filter(k => !process.env[k]);
+  const missing = REQUIRED.filter(k => !process.env[k]);
 
-  if (missing.length) {
+  if (missing.length) {
 
-    console.error(`Missing required env vars: ${missing.join(', ')}`);
+    console.error(`Missing required env vars: ${missing.join(', ')}`);
 
-    process.exit(1);
+    process.exit(1);
 
-  }
+  }
 
 }
 
@@ -560,23 +560,23 @@ Firestore import to fetch the user's role. Every page had its own copy of this p
 
 ```javascript
 
-// Before — in almost every page
+// Before - in almost every page
 
 useEffect(() => {
 
-  const unsub = onAuthStateChanged(auth, async (user) => {
+  const unsub = onAuthStateChanged(auth, async (user) => {
 
-    if (user) {
+    if (user) {
 
-      const doc = await getDoc(doc(db, 'user', user.uid));
+      const doc = await getDoc(doc(db, 'user', user.uid));
 
-      setUserRole(doc.data()?.role);
+      setUserRole(doc.data()?.role);
 
-    }
+    }
 
-  });
+  });
 
-  return () => unsub();
+  return () => unsub();
 
 }, []);
 
@@ -598,7 +598,7 @@ const { userData, loading } = useAuth();
 
   
 
-The hardest component was `NotificationBell` — it had three simultaneous Firestore `onSnapshot`
+The hardest component was `NotificationBell` - it had three simultaneous Firestore `onSnapshot`
 
 listeners running. Real-time updates became 30-second polling:
 
@@ -608,11 +608,11 @@ listeners running. Real-time updates became 30-second polling:
 
 useEffect(() => {
 
-  fetchNotifications();
+  fetchNotifications();
 
-  const interval = setInterval(fetchNotifications, 30000);
+  const interval = setInterval(fetchNotifications, 30000);
 
-  return () => clearInterval(interval);
+  return () => clearInterval(interval);
 
 }, [userData]);
 
@@ -666,9 +666,9 @@ to serve traffic until all three are confirmed healthy.
 
   
 
-Phase 2 is Docker. The goal: `docker compose up` should start the full stack — frontend,
+Phase 2 is Docker. The goal: `docker compose up` should start the full stack - frontend,
 
-Express API, and MongoDB — with no local installs required.
+Express API, and MongoDB - with no local installs required.
 
   
 
@@ -682,7 +682,7 @@ production.
 
   
 
-Phase 3 after that is Terraform — provisioning the actual AWS infrastructure.
+Phase 3 after that is Terraform - provisioning the actual AWS infrastructure.
 
   
 
@@ -695,10 +695,10 @@ Source: [github.com/Mhdomer/mindcraft-aws-migration](https://github.com/Mhdomer/
 
 ---
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **GitHub:** [Mhdomer](https://github.comMhdomer)  
-- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

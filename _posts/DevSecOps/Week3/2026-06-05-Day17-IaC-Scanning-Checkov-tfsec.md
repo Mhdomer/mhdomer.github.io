@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 3 — Day 17: IaC Scanning with Checkov & tfsec"
+title: "Day 17: IaC Scanning with Checkov & tfsec - Catching Cloud Misconfigurations"
 date: 2026-06-05 10:00:00 +0800
 categories:
   - DevSecOps
@@ -13,7 +13,7 @@ tags:
   - DevSecOps
   - CloudSecurity
 author: muhammed
-description: A full walkthrough of Checkov and tfsec — scanning Terraform, CloudFormation, and Kubernetes manifests for security misconfigurations before they reach production.
+description: A full walkthrough of Checkov and tfsec - scanning Terraform, CloudFormation, and Kubernetes manifests for security misconfigurations before they reach production.
 toc: true
 pin: false
 math: false
@@ -23,9 +23,9 @@ image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fgo.snyk.io%2F
 
 ## Why IaC Security Scanning?
 
-Infrastructure as Code defines your cloud environment — security groups, IAM policies, S3 bucket settings, encryption configs. A misconfiguration in Terraform is a misconfiguration in production.
+Infrastructure as Code defines your cloud environment - security groups, IAM policies, S3 bucket settings, encryption configs. A misconfiguration in Terraform is a misconfiguration in production.
 
-IaC scanning catches these **before `terraform apply`** — in the PR, in the pipeline, before any real infrastructure changes.
+IaC scanning catches these **before `terraform apply`** - in the PR, in the pipeline, before any real infrastructure changes.
 
 **Common IaC misconfigurations:**
 - Security groups allowing `0.0.0.0/0` on port 22 or 3389
@@ -73,7 +73,6 @@ checkov -d ./terraform/ --output json > results.json
 checkov -d ./terraform/ --output junitxml > results.xml
 ```
 
-> `[SCREENSHOT]` — *Terminal showing checkov -d ./terraform/ output — a table of passed/failed checks with check IDs (CKV_AWS_*), resource names, and file paths. Summary at the bottom showing X passed, Y failed*
 
 ---
 
@@ -94,12 +93,11 @@ Check: CKV_AWS_145: "Ensure that S3 buckets are encrypted with KMS by default"
 ```
 
 Each check has:
-- **Check ID** — e.g., `CKV_AWS_18` — uniquely identifies the rule
-- **Status** — PASSED / FAILED / SKIPPED
-- **Resource** — the Terraform resource that was checked
-- **File + line** — exactly where in your code
+- **Check ID** - e.g., `CKV_AWS_18` - uniquely identifies the rule
+- **Status** - PASSED / FAILED / SKIPPED
+- **Resource** - the Terraform resource that was checked
+- **File + line** - exactly where in your code
 
-> `[SCREENSHOT]` — *Checkov output showing a mix of PASSED (green) and FAILED (red) checks on Terraform resources, with the check IDs and resource names visible*
 
 ---
 
@@ -133,7 +131,6 @@ checkov -d _posts/MindCraft\ Cloud\ Deployment/ --filter-regex ".*\.tf"
 checkov -d ./terraform/ --check CKV_AWS_20,CKV_AWS_19,CKV_AWS_25
 ```
 
-> `[SCREENSHOT]` — *Checkov running on the MindCraft Terraform code showing the specific failures — e.g., S3 bucket without encryption, security group open to 0.0.0.0/0, with the exact Terraform file and line numbers*
 
 ---
 
@@ -176,7 +173,6 @@ Key Kubernetes checks:
 | `CKV_K8S_30` | Do not admit containers with NET_RAW capability |
 | `CKV_K8S_37` | Minimize the admission of containers with added capability |
 
-> `[SCREENSHOT]` — *Checkov scanning a Kubernetes deployment manifest and showing failures like "Do not admit root containers" and "Image tag is not latest" with the manifest file and line numbers*
 
 ---
 
@@ -186,7 +182,6 @@ Key Kubernetes checks:
 checkov -f Dockerfile --framework dockerfile
 ```
 
-> `[SCREENSHOT]` — *Checkov scanning a Dockerfile and flagging issues like "Ensure that a user for the container has been created" (non-root user) and "Ensure that COPY is used instead of ADD"*
 
 ---
 
@@ -227,7 +222,6 @@ tfsec . --format json --out results.json
 tfsec . --format sarif --out results.sarif
 ```
 
-> `[SCREENSHOT]` — *Terminal showing tfsec . output — colored blocks for each finding with the check ID, description, severity (CRITICAL/HIGH/MEDIUM/LOW), file path, line range, and a code snippet of the offending Terraform resource*
 
 ---
 
@@ -253,7 +247,6 @@ Result #1 HIGH Security group rule allows ingress from public internet.
    18    }
 ```
 
-> `[SCREENSHOT]` — *tfsec output showing a security group with 0.0.0.0/0 on port 22, with the code snippet highlighted showing exactly which line is the problem*
 
 ---
 
@@ -281,7 +274,7 @@ resource "aws_security_group_rule" "bastion-ssh" {
 | Output formats | JSON, JUnit, SARIF, CLI | JSON, SARIF, CLI |
 | Best for | Multi-framework pipelines | Pure Terraform-heavy teams |
 
-**Use both in the pipeline** — they have overlapping but not identical rule sets and catch different things.
+**Use both in the pipeline** - they have overlapping but not identical rule sets and catch different things.
 
 ---
 
@@ -341,13 +334,11 @@ jobs:
           sarif_file: tfsec.sarif
 ```
 
-> `[SCREENSHOT]` — *GitHub Actions run showing both Checkov and tfsec jobs — one passing (green) and one failing (red) due to a misconfigured security group, with the finding details in the job output*
 
-> `[SCREENSHOT]` — *GitHub PR showing a "Security scanning / checkov" check failing with a link to the details, blocking the merge*
 
 ---
 
-## Lab — Scan MindCraft Terraform Code
+## Lab: Scan MindCraft Terraform Code
 
 **Objective:** Run Checkov and tfsec on your existing MindCraft infrastructure code and review findings.
 
@@ -361,18 +352,16 @@ cd "d:/Mhdomer_logs/mhdomer.github.io/_posts/MindCraft Cloud Deployment"
 checkov -d . --compact --framework terraform
 ```
 
-> `[SCREENSHOT]` — *Checkov output showing failed checks on the MindCraft Terraform code with check IDs and resource names*
 
 3. Run tfsec:
 ```bash
 tfsec . --minimum-severity MEDIUM
 ```
 
-> `[SCREENSHOT]` — *tfsec output on the MindCraft Terraform code showing findings with code snippets*
 
 4. Pick 2-3 failing checks → open the Terraform file → apply the fix:
 
-**Example fix — enable S3 bucket encryption:**
+**Example fix - enable S3 bucket encryption:**
 ```hcl
 # Before
 resource "aws_s3_bucket" "app-data" {
@@ -394,18 +383,17 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "app-data" {
 }
 ```
 
-5. Re-run Checkov — confirm the fixed checks now pass
+5. Re-run Checkov - confirm the fixed checks now pass
 
-> `[SCREENSHOT]` — *Checkov output after the fix showing the previously failed S3 encryption check now marked as PASSED*
 
 ---
 
 ## Key Takeaways
 
-- IaC scanning runs before `terraform apply` — fix misconfigs before they become real infrastructure
-- Checkov covers Terraform + Kubernetes + Dockerfile + CloudFormation — use it as the default
-- tfsec is faster and Terraform-focused — run both for maximum coverage
-- Inline skip comments with justifications for intentional exceptions — don't just ignore findings
+- IaC scanning runs before `terraform apply` - fix misconfigs before they become real infrastructure
+- Checkov covers Terraform + Kubernetes + Dockerfile + CloudFormation - use it as the default
+- tfsec is faster and Terraform-focused - run both for maximum coverage
+- Inline skip comments with justifications for intentional exceptions - don't just ignore findings
 - Trigger IaC scans only on changes to `.tf` files to keep the pipeline fast
 - SARIF output + GitHub Security tab = persistent tracking of IaC findings across PRs
 
@@ -428,7 +416,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "app-data" {
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

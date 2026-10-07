@@ -13,7 +13,7 @@ tags:
   - wget
   - web
 author: muhammed
-description: Chapter 5 of Linux Shell Scripting Cookbook — web interaction from the command line using curl, wget, and shell scripting
+description: Chapter 5 of Linux Shell Scripting Cookbook - web interaction from the command line using curl, wget, and shell scripting
 toc: true
 pin: false
 math: false
@@ -24,7 +24,7 @@ Link: "[[Shell Scripting Notes]]"
 
 # Chapter Overview
 
-This chapter covers interacting with the web from the command line — downloading files, scraping pages, making HTTP requests, parsing responses, and automating web tasks. `curl` and `wget` are the two main tools, and they're used in virtually every DevOps and security workflow.
+This chapter covers interacting with the web from the command line - downloading files, scraping pages, making HTTP requests, parsing responses, and automating web tasks. `curl` and `wget` are the two main tools, and they're used in virtually every DevOps and security workflow.
 
 ---
 
@@ -32,7 +32,7 @@ This chapter covers interacting with the web from the command line — downloadi
 
 ### wget
 
-`wget` is built for downloading — it handles retries, resuming, and recursive downloads automatically.
+`wget` is built for downloading - it handles retries, resuming, and recursive downloads automatically.
 
 ```bash
 wget https://example.com/file.tar.gz           # download a file
@@ -218,7 +218,7 @@ curl -w "Status: %{http_code}\nTime: %{time_total}s\nSize: %{size_download} byte
 
 ## Accessing Gmail from the Command Line
 
-**Note:** Gmail now requires OAuth2 — plain password access is disabled. These approaches use `mutt` or `msmtp` with app passwords or OAuth2.
+**Note:** Gmail now requires OAuth2 - plain password access is disabled. These approaches use `mutt` or `msmtp` with app passwords or OAuth2.
 
 ### mutt with Gmail (app password)
 
@@ -303,7 +303,7 @@ curl -s https://example.com | \
   sed '/^[[:space:]]*$/d'
 ```
 
-### pup — HTML parser (cleaner approach)
+### pup: HTML parser (cleaner approach)
 
 ```bash
 curl -s https://example.com | pup 'a[href] attr{href}'    # extract all hrefs
@@ -589,7 +589,7 @@ if [[ -f "$snapshot_file" ]]; then
     echo "$new_content" > "$snapshot_file"
   fi
 else
-  echo "First run — saving snapshot."
+  echo "First run - saving snapshot."
   echo "$new_content" > "$snapshot_file"
 fi
 ```
@@ -613,7 +613,7 @@ current_hash=$(curl -s "$url" | md5sum | cut -d' ' -f1)
 if [[ -f "$hash_file" ]]; then
   saved_hash=$(cat "$hash_file")
   if [[ "$current_hash" != "$saved_hash" ]]; then
-    echo "$(date): CHANGED — $url"
+    echo "$(date): CHANGED - $url"
     echo "$current_hash" > "$hash_file"
   else
     echo "$(date): No change"
@@ -649,7 +649,7 @@ curl -s -X POST \
 ```bash
 curl -i https://example.com                    # headers and body together
 curl -D - https://example.com                  # headers to stdout, body to stdout
-curl -v https://example.com 2>&1               # verbose — everything
+curl -v https://example.com 2>&1               # verbose - everything
 ```
 
 ### Check status code
@@ -701,24 +701,12 @@ esac
 
 ---
 
-## 📚 References
-
-<div class="references">
-<ul>
-  <li><a href="https://www.packtpub.com/product/linux-shell-scripting-cookbook/9781785881985" target="_blank">Linux Shell Scripting Cookbook — Packt</a></li>
-  <li><a href="https://curl.se/docs/manpage.html" target="_blank">curl Man Page</a></li>
-  <li><a href="https://www.gnu.org/software/wget/manual/" target="_blank">GNU Wget Manual</a></li>
-  <li><a href="https://dictionaryapi.dev/" target="_blank">Free Dictionary API</a></li>
-</ul>
-</div>
-
 ---
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer )
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

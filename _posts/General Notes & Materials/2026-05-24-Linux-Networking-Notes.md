@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Linux Networking — Full Reference"
+title: "Linux Networking: Full Reference"
 date: 2026-05-24 10:00:00 +0800
 categories:
   - General Notes
@@ -25,7 +25,7 @@ mermaid: false
 ip link show                      # list all interfaces
 ip addr show                      # list interfaces with IPs
 ip addr show eth0                 # specific interface
-ifconfig                          # legacy — shows active interfaces
+ifconfig                          # legacy - shows active interfaces
 ifconfig -a                       # all including down interfaces
 ```
 
@@ -255,7 +255,7 @@ tshark -z io,stat,1               # traffic stats per second
 
 ---
 
-## Firewall — iptables
+## Firewall: iptables
 
 ### View Rules
 
@@ -317,7 +317,7 @@ iptables-restore < /etc/iptables/rules.v4
 
 ---
 
-## Firewall — ufw (Ubuntu)
+## Firewall: ufw (Ubuntu)
 
 ```bash
 ufw status verbose
@@ -552,7 +552,6 @@ iptables -t nat -L -n -v
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

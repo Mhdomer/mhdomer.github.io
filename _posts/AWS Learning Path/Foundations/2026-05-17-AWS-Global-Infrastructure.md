@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS Global Infrastructure — Regions, AZs, and Edge Locations
+title: AWS Global Infrastructure - Regions, AZs, and Edge Locations
 date: 2026-05-17T11:00:00
 categories:
   - AWS Learning Path
@@ -11,7 +11,7 @@ tags:
   - infrastructure
   - networking
 author: muhammed
-description: A practical breakdown of how AWS physically organises its global infrastructure — regions, availability zones, edge locations, and why the design matters for resilience and latency
+description: A practical breakdown of how AWS physically organises its global infrastructure - regions, availability zones, edge locations, and why the design matters for resilience and latency
 toc: true
 pin: false
 math: false
@@ -24,7 +24,7 @@ img:
 
 ## Why Infrastructure Layout Matters
 
-When you deploy something on AWS, you are making a physical decision — even if it feels like you're just picking a dropdown.
+When you deploy something on AWS, you are making a physical decision - even if it feels like you're just picking a dropdown.
 The region you choose determines where your data lives, how fast users can reach it, and what happens when hardware fails.
 Understanding the global infrastructure model is the foundation for designing systems that are resilient, low-latency, and compliant with data residency laws.
 
@@ -33,7 +33,7 @@ Understanding the global infrastructure model is the foundation for designing sy
 ## Regions
 
 A **region** is a distinct geographic area that contains multiple, isolated data centres.
-Each region is completely independent — it has its own power, networking, and cooling infrastructure.
+Each region is completely independent - it has its own power, networking, and cooling infrastructure.
 A failure in one region has no impact on any other region.
 
 AWS currently operates **30+ regions** worldwide, with more being added regularly.
@@ -72,7 +72,7 @@ aws ec2 describe-instances --region us-east-1             # target a specific re
 
 ### Region vs global services
 
-Most AWS services are **regional** — an EC2 instance, an S3 bucket, a VPC all live in one region.
+Most AWS services are **regional** - an EC2 instance, an S3 bucket, a VPC all live in one region.
 Some services are **global** and have no region concept:
 
 | Global Service | Notes |
@@ -89,7 +89,7 @@ Some services are **global** and have no region concept:
 
 An **Availability Zone** is one or more physical data centres within a region.
 Each AZ has independent power supply, cooling, and physical security.
-AZs within a region are connected to each other with high-bandwidth, low-latency private fibre — typically under 1ms round-trip.
+AZs within a region are connected to each other with high-bandwidth, low-latency private fibre - typically under 1ms round-trip.
 
 A region always has a **minimum of 3 AZs**.
 This separation is the core mechanism for building highly available systems on AWS.
@@ -116,7 +116,7 @@ aws ec2 describe-availability-zones --region eu-west-1 --output table
 | Design | Behaviour on AZ failure |
 |---|---|
 | Single-AZ | Entire application goes down |
-| Multi-AZ | Traffic fails over to healthy AZ — application stays up |
+| Multi-AZ | Traffic fails over to healthy AZ - application stays up |
 
 Multi-AZ is the minimum bar for any production workload.
 Services like RDS Multi-AZ, ALB, and EKS node groups handle AZ distribution automatically.
@@ -143,7 +143,7 @@ Examples:
 - `us-east-1-bos-1` → Boston, extending `us-east-1`
 - `us-east-1-lax-1` → Los Angeles, extending `us-east-1`
 
-Local Zones are opt-in — you enable them per account.
+Local Zones are opt-in - you enable them per account.
 
 ```bash
 aws ec2 describe-availability-zones \
@@ -166,7 +166,7 @@ Use cases: mobile gaming, connected vehicles, AR/VR, real-time IoT.
 ## Edge Locations and the AWS Global Network
 
 **Edge locations** are AWS data centres deployed in cities around the world specifically to run **CloudFront** (CDN) and **Route 53** (DNS).
-There are **400+ edge locations** across 90+ cities — far more than regions.
+There are **400+ edge locations** across 90+ cities - far more than regions.
 
 Edge locations cache content close to end users.
 When a user in Cairo requests a file, CloudFront serves it from the nearest edge location rather than from a distant origin region.
@@ -208,11 +208,11 @@ Think of it as: a rack of AWS hardware sitting in your data centre, managed by A
 ## The AWS Backbone Network
 
 AWS operates its own global private fibre network connecting all regions, AZs, and edge locations.
-Traffic between AWS services in the same region (or between regions) travels over this backbone — not the public internet.
+Traffic between AWS services in the same region (or between regions) travels over this backbone - not the public internet.
 This is why inter-region data transfer is fast and why services like AWS Global Accelerator can offer significantly better performance than routing over the public internet.
 
 **AWS Global Accelerator** uses the AWS backbone to route user traffic to the nearest healthy endpoint.
-It is different from CloudFront — CloudFront caches static content, Global Accelerator routes TCP/UDP traffic (APIs, gaming, VoIP) over the private backbone.
+It is different from CloudFront - CloudFront caches static content, Global Accelerator routes TCP/UDP traffic (APIs, gaming, VoIP) over the private backbone.
 
 ```bash
 # List Global Accelerator accelerators
@@ -227,7 +227,7 @@ aws globalaccelerator list-accelerators --region us-east-1
 
 All AZs serve live traffic at the same time.
 If one AZ fails, the load balancer automatically stops sending traffic there.
-No failover delay — traffic re-routes instantly.
+No failover delay - traffic re-routes instantly.
 
 ```
                     ALB
@@ -240,7 +240,7 @@ No failover delay — traffic re-routes instantly.
 
 Primary database in AZ-a, standby in AZ-b.
 Standby is synchronously replicated but does not serve traffic.
-On primary failure, AWS promotes the standby — typically in 60–120 seconds.
+On primary failure, AWS promotes the standby - typically in 60–120 seconds.
 
 ### Multi-Region Active-Active
 
@@ -301,10 +301,10 @@ aws ssm get-parameters-by-path \
 
 
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **GitHub:** [Mhdomer](https://github.comMhdomer)  
-- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

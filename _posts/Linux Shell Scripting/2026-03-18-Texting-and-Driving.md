@@ -14,7 +14,7 @@ tags:
   - sed
   - grep
 author: muhammed
-description: Chapter 4 of Linux Shell Scripting Cookbook — text processing with grep, sed, awk, cut, and regular expressions
+description: Chapter 4 of Linux Shell Scripting Cookbook - text processing with grep, sed, awk, cut, and regular expressions
 toc: true
 pin: false
 math: false
@@ -25,7 +25,7 @@ Link: "[[Shell Scripting Notes]]"
 
 # Chapter Overview
 
-This chapter is the core of shell text processing — `grep`, `sed`, `awk`, `cut`, and regular expressions. These four tools together can parse, transform, extract, and reformat almost any structured text. Every sysadmin, developer, and security engineer uses them daily.
+This chapter is the core of shell text processing - `grep`, `sed`, `awk`, `cut`, and regular expressions. These four tools together can parse, transform, extract, and reformat almost any structured text. Every sysadmin, developer, and security engineer uses them daily.
 
 ---
 
@@ -35,7 +35,7 @@ Regular expressions (regex) are patterns used to match text. Before diving into 
 
 ### Basic (BRE) vs Extended (ERE)
 
-Most tools support both. ERE is generally cleaner — use `grep -E`, `sed -E`, or `awk` (which uses ERE by default).
+Most tools support both. ERE is generally cleaner - use `grep -E`, `sed -E`, or `awk` (which uses ERE by default).
 
 ### Character classes
 
@@ -71,7 +71,7 @@ $        end of line
 ### Special sequences
 
 ```
-\d       digit (same as [0-9]) — works in some tools
+\d       digit (same as [0-9]) - works in some tools
 \w       word character [a-zA-Z0-9_]
 \s       whitespace
 \D \W \S negations of above
@@ -103,7 +103,7 @@ https?://        # http:// or https://
 ```bash
 grep "pattern" file.txt              # basic search
 grep -i "pattern" file.txt           # case-insensitive
-grep -v "pattern" file.txt           # invert — lines NOT matching
+grep -v "pattern" file.txt           # invert - lines NOT matching
 grep -n "pattern" file.txt           # show line numbers
 grep -c "pattern" file.txt           # count matching lines
 grep -l "pattern" *.txt              # list files that match
@@ -124,7 +124,7 @@ grep -E "^[0-9]{4}-[0-9]{2}-[0-9]{2}" log  # date pattern
 grep -E "\b[A-Z]{2,}\b" file.txt            # all-caps words
 ```
 
-### Fixed string (-F) — no regex, faster for literal searches
+### Fixed string (-F): no regex, faster for literal searches
 
 ```bash
 grep -F "192.168.1.1" access.log     # literal IP, no regex overhead
@@ -183,7 +183,7 @@ cut -d ' ' -f 1 access.log | sort | uniq -c | sort -rn | head
 
 `sed` (stream editor) applies edits to each line of input without opening a file interactively.
 
-### Substitution — the most used command
+### Substitution: the most used command
 
 ```bash
 sed 's/old/new/' file.txt           # replace first match per line
@@ -242,7 +242,7 @@ sed -E 's/[0-9]+/NUM/g' file.txt    # replace all numbers
 sed -E 's/(error|warn)/[\1]/gi'     # wrap matched word in brackets
 ```
 
-**Backreferences** — reference captured groups with `\1`, `\2`:
+**Backreferences** - reference captured groups with `\1`, `\2`:
 
 ```bash
 sed -E 's/([0-9]{4})-([0-9]{2})-([0-9]{2})/\3\/\2\/\1/' file.txt
@@ -261,8 +261,8 @@ sed -E 's/([0-9]{4})-([0-9]{2})-([0-9]{2})/\3\/\2\/\1/' file.txt
 awk 'pattern { action }' file.txt
 ```
 
-- `pattern` — which lines to act on (omit to match all)
-- `action` — what to do (omit to print the line)
+- `pattern` - which lines to act on (omit to match all)
+- `action` - what to do (omit to print the line)
 
 ### Built-in variables
 
@@ -294,7 +294,7 @@ awk 'NF > 3' file.txt                  # lines with more than 3 fields
 
 ```bash
 awk -F ':' '{print $1}' /etc/passwd        # use : as separator
-awk -F ',' '{print $2, $4}' data.csv       # CSV — print columns 2 and 4
+awk -F ',' '{print $2, $4}' data.csv       # CSV - print columns 2 and 4
 awk -F '\t' '{print $3}' file.tsv          # tab-separated
 ```
 
@@ -363,12 +363,12 @@ tr -s '[:space:]' '\n' < file.txt | tr '[:upper:]' '[:lower:]' | \
 ```
 
 Step by step:
-1. `tr -s '[:space:]' '\n'` — replace all whitespace with newlines (one word per line)
-2. `tr '[:upper:]' '[:lower:]'` — lowercase everything
-3. `sort` — sort alphabetically (required for uniq)
-4. `uniq -c` — count consecutive duplicates
-5. `sort -rn` — sort by count descending
-6. `head -20` — top 20
+1. `tr -s '[:space:]' '\n'` - replace all whitespace with newlines (one word per line)
+2. `tr '[:upper:]' '[:lower:]'` - lowercase everything
+3. `sort` - sort alphabetically (required for uniq)
+4. `uniq -c` - count consecutive duplicates
+5. `sort -rn` - sort by count descending
+6. `head -20` - top 20
 
 **With awk (handles punctuation better):**
 
@@ -400,7 +400,7 @@ uglifyjs script.js -o script.min.js --compress --mangle  # compress + mangle nam
 uglifyjs script.min.js --beautify -o script.readable.js  # decompress/beautify
 ```
 
-### Quick sed minification (basic — not production-grade)
+### Quick sed minification (basic: not production-grade)
 
 ```bash
 sed 's/\/\/.*$//g' script.js |   # remove single-line comments
@@ -427,7 +427,7 @@ cat data.json | python3 -m json.tool --compact # compact/minify
 paste file1.txt file2.txt               # tab-separated by default
 paste -d ',' file1.txt file2.txt        # comma-separated
 paste -d ':' file1.txt file2.txt file3.txt  # three files, colon-separated
-paste -s file.txt                       # serial — merge lines of ONE file into one line
+paste -s file.txt                       # serial - merge lines of ONE file into one line
 paste -s -d ',' file.txt               # comma-separated single line
 ```
 
@@ -458,7 +458,7 @@ cat /etc/passwd | column -t -s ':'      # align by delimiter
 
 ## Printing the nth Word or Column
 
-### awk — most reliable
+### awk: most reliable
 
 ```bash
 awk '{print $3}' file.txt          # 3rd field of every line
@@ -531,7 +531,7 @@ awk '/SECTION/{count++} count==2,count==3' file.txt
 
 ### tac
 
-`tac` is `cat` backwards — reverses line order:
+`tac` is `cat` backwards - reverses line order:
 
 ```bash
 tac file.txt                          # reverse all lines
@@ -652,7 +652,7 @@ grep -rl "old_pattern" /path/ | xargs sed -i 's/old_pattern/new_text/g'
 find /path -type f -name "*.txt" -exec sed -i 's/old/new/g' {} \;
 ```
 
-**Safer — preview first:**
+**Safer - preview first:**
 
 ```bash
 grep -rl "old" . | xargs grep -l "old"        # confirm which files
@@ -728,7 +728,7 @@ echo ${var:+other}      # use "other" if var IS set (opposite)
 echo ${var:?error msg}  # exit with error if var is unset
 ```
 
-### Practical example — batch rename with slicing
+### Practical example: batch rename with slicing
 
 ```bash
 for f in IMG_*.jpg; do
@@ -739,24 +739,12 @@ done
 
 ---
 
-## 📚 References
-
-<div class="references">
-<ul>
-  <li><a href="https://www.packtpub.com/product/linux-shell-scripting-cookbook/9781785881985" target="_blank">Linux Shell Scripting Cookbook — Packt</a></li>
-  <li><a href="https://www.gnu.org/software/gawk/manual/" target="_blank">GNU awk Manual</a></li>
-  <li><a href="https://www.gnu.org/software/sed/manual/" target="_blank">GNU sed Manual</a></li>
-  <li><a href="https://www.regular-expressions.info/" target="_blank">Regular-Expressions.info</a></li>
-</ul>
-</div>
-
 ---
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer )
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

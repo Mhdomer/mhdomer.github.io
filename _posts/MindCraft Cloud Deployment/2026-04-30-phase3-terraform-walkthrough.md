@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Phase 3: Provisioning a 3-Tier AWS Network with Terraform —  Walkthrough"
+title: "Phase 3: Provisioning a 3-Tier AWS Network with Terraform:  Walkthrough"
 date: 2026-04-30T10:00:00
 categories:
   - MindCraft Cloud Deployment
@@ -27,7 +27,7 @@ Phase 2 gave us a working MERN stack running in Docker. Three containers, one co
 
 fully isolated networks. Phase 3 takes that same architecture and provisions the real
 
-AWS infrastructure to run it in production — using Terraform so every resource is
+AWS infrastructure to run it in production - using Terraform so every resource is
 
 version-controlled, repeatable, and destroyable.
 
@@ -35,7 +35,7 @@ version-controlled, repeatable, and destroyable.
 
 ```bash
 
-terraform apply   # provision everything
+terraform apply   # provision everything
 
 terraform destroy # tear it all down
 
@@ -55,7 +55,7 @@ That's the goal. Here's what it took to get there.
 
   
 
-Terraform is Infrastructure as Code — you describe the resources you want in `.tf`
+Terraform is Infrastructure as Code - you describe the resources you want in `.tf`
 
 files, and Terraform figures out what to create, update, or delete to match that description.
 
@@ -65,13 +65,13 @@ The alternative is clicking through the AWS console. That approach has three pro
 
   
 
-1. **Not repeatable** — you can't reproduce the exact environment reliably
+1. **Not repeatable** - you can't reproduce the exact environment reliably
 
-2. **Not reviewable** — there's no diff, no history, no code review
+2. **Not reviewable** - there's no diff, no history, no code review
 
-3. **Not destroyable** — deleting 35 resources by hand in the right order is slow and
+3. **Not destroyable** - deleting 35 resources by hand in the right order is slow and
 
-   error-prone
+   error-prone
 
   
 
@@ -79,7 +79,7 @@ With Terraform, the entire infrastructure is a text file. You `git diff` it, `gi
 
 it, spin it up, tear it down, spin it up again identically. For a portfolio project, that
 
-means you can run it for a few hours to test and screenshot, then destroy it — paying
+means you can run it for a few hours to test and screenshot, then destroy it - paying
 
 cents instead of running a $150/month bill indefinitely.
 
@@ -89,13 +89,13 @@ cents instead of running a $150/month bill indefinitely.
 
   
 
-## Remote State — Why It Exists and What We Used
+## Remote State: Why It Exists and What We Used
 
   
 
 Terraform tracks what it has created in a **state file** (`terraform.tfstate`). By
 
-default this lives on your local machine — fine for solo projects, a problem for teams
+default this lives on your local machine - fine for solo projects, a problem for teams
 
 or CI/CD pipelines.
 
@@ -109,49 +109,49 @@ created before the Terraform code, using the AWS CLI:
 
 ```bash
 
-# S3 bucket — stores the state file, versioned and encrypted
+# S3 bucket: stores the state file, versioned and encrypted
 
 aws s3api create-bucket \
 
-  --bucket mindcraft-tfstate-327327821586 \
+  --bucket mindcraft-tfstate-327327821586 \
 
-  --region ap-southeast-1 \
+  --region ap-southeast-1 \
 
-  --create-bucket-configuration LocationConstraint=ap-southeast-1
+  --create-bucket-configuration LocationConstraint=ap-southeast-1
 
   
 
 aws s3api put-bucket-versioning \
 
-  --bucket mindcraft-tfstate-327327821586 \
+  --bucket mindcraft-tfstate-327327821586 \
 
-  --versioning-configuration Status=Enabled
+  --versioning-configuration Status=Enabled
 
   
 
 aws s3api put-public-access-block \
 
-  --bucket mindcraft-tfstate-327327821586 \
+  --bucket mindcraft-tfstate-327327821586 \
 
-  --public-access-block-configuration \
+  --public-access-block-configuration \
 
-  "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+  "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
 
   
 
-# DynamoDB table — provides state locking (prevents concurrent applies)
+# DynamoDB table: provides state locking (prevents concurrent applies)
 
 aws dynamodb create-table \
 
-  --table-name mindcraft-tfstate-lock \
+  --table-name mindcraft-tfstate-lock \
 
-  --attribute-definitions AttributeName=LockID,AttributeType=S \
+  --attribute-definitions AttributeName=LockID,AttributeType=S \
 
-  --key-schema AttributeName=LockID,KeyType=HASH \
+  --key-schema AttributeName=LockID,KeyType=HASH \
 
-  --billing-mode PAY_PER_REQUEST \
+  --billing-mode PAY_PER_REQUEST \
 
-  --region ap-southeast-1
+  --region ap-southeast-1
 
 ```
 
@@ -173,15 +173,15 @@ The backend is configured in `terraform/versions.tf`:
 
 backend "s3" {
 
-  bucket         = "mindcraft-tfstate-327327821586"
+  bucket         = "mindcraft-tfstate-327327821586"
 
-  key            = "mindcraft/terraform.tfstate"
+  key            = "mindcraft/terraform.tfstate"
 
-  region         = "ap-southeast-1"
+  region         = "ap-southeast-1"
 
-  dynamodb_table = "mindcraft-tfstate-lock"
+  dynamodb_table = "mindcraft-tfstate-lock"
 
-  encrypt        = true
+  encrypt        = true
 
 }
 
@@ -191,7 +191,7 @@ backend "s3" {
 
 `encrypt = true` means the state file is encrypted at rest using S3-managed keys.
 
-The state file contains resource IDs, outputs, and potentially sensitive values —
+The state file contains resource IDs, outputs, and potentially sensitive values  - 
 
 keeping it encrypted is standard practice.
 
@@ -209,29 +209,29 @@ keeping it encrypted is standard practice.
 
 terraform/
 
-├── versions.tf          # provider pin + S3 backend config
+├── versions.tf          # provider pin + S3 backend config
 
-├── variables.tf         # all input variables with defaults
+├── variables.tf         # all input variables with defaults
 
-├── main.tf              # root module — calls the 4 child modules
+├── main.tf              # root module - calls the 4 child modules
 
-├── outputs.tf           # ALB DNS, instance IDs, VPC ID
+├── outputs.tf           # ALB DNS, instance IDs, VPC ID
 
 └── modules/
 
-    ├── vpc/             # VPC, 6 subnets, IGW, NAT GW, route tables
+    ├── vpc/             # VPC, 6 subnets, IGW, NAT GW, route tables
 
-    ├── security-groups/ # sg-alb, sg-web, sg-api, sg-db
+    ├── security-groups/ # sg-alb, sg-web, sg-api, sg-db
 
-    ├── ec2/             # IAM role, 3 EC2 instances, EBS volume
+    ├── ec2/             # IAM role, 3 EC2 instances, EBS volume
 
-    └── alb/             # ALB, target group, HTTP listener
+    └── alb/             # ALB, target group, HTTP listener
 
 ```
 
   
 
-Each module is self-contained — it takes inputs via `variables.tf`, creates resources in
+Each module is self-contained - it takes inputs via `variables.tf`, creates resources in
 
 `main.tf`, and exposes outputs via `outputs.tf`. The root `main.tf` wires the modules
 
@@ -243,9 +243,9 @@ together by passing one module's outputs as another module's inputs:
 
 module "security_groups" {
 
-  source = "./modules/security-groups"
+  source = "./modules/security-groups"
 
-  vpc_id = module.vpc.vpc_id          # ← output from vpc module
+  vpc_id = module.vpc.vpc_id          # ← output from vpc module
 
 }
 
@@ -253,11 +253,11 @@ module "security_groups" {
 
 module "ec2" {
 
-  source        = "./modules/ec2"
+  source        = "./modules/ec2"
 
-  sg_web_id     = module.security_groups.sg_web_id   # ← output from sg module
+  sg_web_id     = module.security_groups.sg_web_id   # ← output from sg module
 
-  web_subnet_id = module.vpc.public_subnet_ids[0]    # ← output from vpc module
+  web_subnet_id = module.vpc.public_subnet_ids[0]    # ← output from vpc module
 
 }
 
@@ -279,25 +279,25 @@ correct order automatically.
 
   
 
-The VPC is the foundation — everything else lives inside it.
+The VPC is the foundation - everything else lives inside it.
 
   
 
 ```
 
-10.0.0.0/16  (the full VPC)
+10.0.0.0/16  (the full VPC)
 
-├── 10.0.1.0/24  Public  AZ-a  — Web tier + ALB
+├── 10.0.1.0/24  Public  AZ-a  - Web tier + ALB
 
-├── 10.0.2.0/24  Public  AZ-b  — Web tier + ALB (HA)
+├── 10.0.2.0/24  Public  AZ-b  - Web tier + ALB (HA)
 
-├── 10.0.3.0/24  Private AZ-a  — Express API
+├── 10.0.3.0/24  Private AZ-a  - Express API
 
-├── 10.0.4.0/24  Private AZ-b  — Express API (HA)
+├── 10.0.4.0/24  Private AZ-b  - Express API (HA)
 
-├── 10.0.5.0/24  Private AZ-a  — MongoDB
+├── 10.0.5.0/24  Private AZ-a  - MongoDB
 
-└── 10.0.6.0/24  Private AZ-b  — MongoDB (HA)
+└── 10.0.6.0/24  Private AZ-b  - MongoDB (HA)
 
 ```
 
@@ -309,39 +309,39 @@ traffic. Six subnets gives each tier its own isolated network segment.
 
   
 
-**Public vs Private subnets** — the difference is the route table:
+**Public vs Private subnets** - the difference is the route table:
 
   
 
 ```hcl
 
-# Public subnet route table — has a route to the Internet Gateway
+# Public subnet route table: has a route to the Internet Gateway
 
 resource "aws_route_table" "public" {
 
-  route {
+  route {
 
-    cidr_block = "0.0.0.0/0"
+    cidr_block = "0.0.0.0/0"
 
-    gateway_id = aws_internet_gateway.main.id
+    gateway_id = aws_internet_gateway.main.id
 
-  }
+  }
 
 }
 
   
 
-# Private subnet route table — outbound only via NAT Gateway
+# Private subnet route table: outbound only via NAT Gateway
 
 resource "aws_route_table" "private" {
 
-  route {
+  route {
 
-    cidr_block     = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
 
-    nat_gateway_id = aws_nat_gateway.main.id
+    nat_gateway_id = aws_nat_gateway.main.id
 
-  }
+  }
 
 }
 
@@ -349,21 +349,21 @@ resource "aws_route_table" "private" {
 
   
 
-Public subnets have a route to the Internet Gateway — instances there can receive
+Public subnets have a route to the Internet Gateway - instances there can receive
 
 inbound connections from the internet (controlled by Security Groups). Private subnets
 
-route through the NAT Gateway instead — instances there can make outbound connections
+route through the NAT Gateway instead - instances there can make outbound connections
 
 (to download packages, pull Docker images) but the internet cannot initiate an inbound
 
-connection to them. The MongoDB tier has no NAT either — it has no internet connectivity
+connection to them. The MongoDB tier has no NAT either - it has no internet connectivity
 
 at all.
 
   
 
-**One NAT Gateway, not two** — a second NAT in AZ-b would survive an AZ failure, but
+**One NAT Gateway, not two** - a second NAT in AZ-b would survive an AZ failure, but
 
 costs an extra ~$33/month. For this project, one NAT is the right cost trade-off.
 
@@ -389,7 +389,7 @@ each group only accepts traffic from the security group directly above it.
 
 # sg-alb: accepts HTTP/HTTPS from anywhere (the internet)
 
-ingress 80  from 0.0.0.0/0
+ingress 80  from 0.0.0.0/0
 
 ingress 443 from 0.0.0.0/0
 
@@ -415,7 +415,7 @@ ingress 27017 from sg-api
 
   
 
-The source of `sg-web`'s rule is not an IP range — it's a security group reference
+The source of `sg-web`'s rule is not an IP range - it's a security group reference
 
 (`security_groups = [aws_security_group.alb.id]`). This means: only traffic that
 
@@ -431,21 +431,21 @@ internet even if every other control fails. To reach it, you would need to:
 
   
 
-1. Bypass the ALB and reach the web EC2 directly (blocked — web EC2 has no public IP
+1. Bypass the ALB and reach the web EC2 directly (blocked - web EC2 has no public IP
 
-   and only accepts from `sg-alb`)
+   and only accepts from `sg-alb`)
 
-2. OR pivot from the web tier to the API tier (blocked — API only accepts from `sg-web`)
+2. OR pivot from the web tier to the API tier (blocked - API only accepts from `sg-web`)
 
-3. AND then pivot from the API tier to the database (blocked — DB only accepts from
+3. AND then pivot from the API tier to the database (blocked - DB only accepts from
 
-   `sg-api`)
+   `sg-api`)
 
   
 
 Three independent security boundaries. This is the same isolation we implemented in
 
-Docker Compose with `backend-net: internal: true` — now enforced at the AWS network
+Docker Compose with `backend-net: internal: true` - now enforced at the AWS network
 
 layer.
 
@@ -459,7 +459,7 @@ layer.
 
   
 
-Three EC2 instances — one per tier.
+Three EC2 instances - one per tier.
 
   
 
@@ -471,17 +471,17 @@ Three EC2 instances — one per tier.
 
 resource "aws_instance" "web" {
 
-  ami                    = data.aws_ami.al2023.id
+  ami                    = data.aws_ami.al2023.id
 
-  instance_type          = "t3.micro"
+  instance_type          = "t3.micro"
 
-  subnet_id              = var.web_subnet_id
+  subnet_id              = var.web_subnet_id
 
-  vpc_security_group_ids = [var.sg_web_id]
+  vpc_security_group_ids = [var.sg_web_id]
 
-  iam_instance_profile   = aws_iam_instance_profile.ec2.name
+  iam_instance_profile   = aws_iam_instance_profile.ec2.name
 
-  # no key_name — SSH access via SSM Session Manager instead
+  # no key_name - SSH access via SSM Session Manager instead
 
 }
 
@@ -507,17 +507,17 @@ instance: `aws ssm start-session --target <instance-id>`. No key files, no port 
 
 data "aws_ami" "al2023" {
 
-  most_recent = true
+  most_recent = true
 
-  owners      = ["amazon"]
+  owners      = ["amazon"]
 
-  filter {
+  filter {
 
-    name   = "name"
+    name   = "name"
 
-    values = ["al2023-ami-*-x86_64"]
+    values = ["al2023-ami-*-x86_64"]
 
-  }
+  }
 
 }
 
@@ -533,7 +533,7 @@ On the first plan this resolved to `ami-064ac0bc94e195394` in ap-southeast-1.
 
   
 
-### User Data — Docker Install
+### User Data: Docker Install
 
   
 
@@ -559,7 +559,7 @@ mkdir -p /usr/local/lib/docker/cli-plugins
 
 curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64" \
 
-  -o /usr/local/lib/docker/cli-plugins/docker-compose
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
 
 chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
@@ -569,7 +569,7 @@ chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 This runs automatically on first boot. After the script completes, the instance has
 
-Docker and Docker Compose ready — waiting for the CI/CD pipeline (Phase 4) to pull
+Docker and Docker Compose ready - waiting for the CI/CD pipeline (Phase 4) to pull
 
 and run the containers.
 
@@ -583,11 +583,11 @@ and run the containers.
 
 resource "aws_ebs_volume" "mongodb_data" {
 
-  availability_zone = aws_instance.db.availability_zone
+  availability_zone = aws_instance.db.availability_zone
 
-  size              = 20
+  size              = 20
 
-  type              = "gp3"
+  type              = "gp3"
 
 }
 
@@ -595,11 +595,11 @@ resource "aws_ebs_volume" "mongodb_data" {
 
 resource "aws_volume_attachment" "mongodb_data" {
 
-  device_name = "/dev/sdf"
+  device_name = "/dev/sdf"
 
-  volume_id   = aws_ebs_volume.mongodb_data.id
+  volume_id   = aws_ebs_volume.mongodb_data.id
 
-  instance_id = aws_instance.db.id
+  instance_id = aws_instance.db.id
 
 }
 
@@ -631,13 +631,13 @@ The Application Load Balancer is the only internet-facing entry point.
 
 resource "aws_lb" "main" {
 
-  internal           = false   # internet-facing
+  internal           = false   # internet-facing
 
-  load_balancer_type = "application"
+  load_balancer_type = "application"
 
-  security_groups    = [var.sg_alb_id]
+  security_groups    = [var.sg_alb_id]
 
-  subnets            = var.public_subnets   # spans both AZs
+  subnets            = var.public_subnets   # spans both AZs
 
 }
 
@@ -645,21 +645,21 @@ resource "aws_lb" "main" {
 
 resource "aws_lb_target_group" "web" {
 
-  port        = 3000    # forwards to port 3000 on web EC2
+  port        = 3000    # forwards to port 3000 on web EC2
 
-  protocol    = "HTTP"
+  protocol    = "HTTP"
 
-  target_type = "instance"
+  target_type = "instance"
 
   
 
-  health_check {
+  health_check {
 
-    path    = "/"
+    path    = "/"
 
-    matcher = "200-399"
+    matcher = "200-399"
 
-  }
+  }
 
 }
 
@@ -667,17 +667,17 @@ resource "aws_lb_target_group" "web" {
 
 resource "aws_lb_listener" "http" {
 
-  port     = 80
+  port     = 80
 
-  protocol = "HTTP"
+  protocol = "HTTP"
 
-  default_action {
+  default_action {
 
-    type             = "forward"
+    type             = "forward"
 
-    target_group_arn = aws_lb_target_group.web.arn
+    target_group_arn = aws_lb_target_group.web.arn
 
-  }
+  }
 
 }
 
@@ -685,11 +685,11 @@ resource "aws_lb_listener" "http" {
 
   
 
-The ALB listens on port 80 (HTTP for now — HTTPS requires a domain and ACM certificate,
+The ALB listens on port 80 (HTTP for now - HTTPS requires a domain and ACM certificate,
 
 which is a Phase 4 item). It forwards to the target group, which routes to the web EC2
 
-on port 3000. The health check hits `/` and expects a 2xx or 3xx response — if the
+on port 3000. The health check hits `/` and expects a 2xx or 3xx response - if the
 
 instance fails this check, the ALB stops sending traffic to it.
 
@@ -709,7 +709,7 @@ instance fails this check, the ALB stops sending traffic to it.
 
 ```bash
 
-# 1. Install Terraform (Windows — needs new terminal after)
+# 1. Install Terraform (Windows: needs new terminal after)
 
 winget install HashiCorp.Terraform
 
@@ -721,7 +721,7 @@ aws sts get-caller-identity
 
   
 
-# 3. Initialize — downloads AWS provider, connects to S3 backend
+# 3. Initialize: downloads AWS provider, connects to S3 backend
 
 cd terraform/
 
@@ -749,7 +749,7 @@ code and re-run plan. Nothing is created until you explicitly apply.
 
   
 
-### Apply (creates real AWS resources — costs money while running)
+### Apply (creates real AWS resources: costs money while running)
 
   
 
@@ -773,15 +773,15 @@ Takes 3–5 minutes. At the end, Terraform prints the outputs:
 
 Outputs:
 
-alb_dns_name    = "mindcraft-alb-123456789.ap-southeast-1.elb.amazonaws.com"
+alb_dns_name    = "mindcraft-alb-123456789.ap-southeast-1.elb.amazonaws.com"
 
 web_instance_id = "i-0abc123..."
 
 api_instance_id = "i-0def456..."
 
-db_instance_id  = "i-0ghi789..."
+db_instance_id  = "i-0ghi789..."
 
-vpc_id          = "vpc-0xyz..."
+vpc_id          = "vpc-0xyz..."
 
 ```
 
@@ -803,7 +803,7 @@ aws ssm start-session --target <web_instance_id>
 
   
 
-# App tier (private subnet — no public access at all)
+# App tier (private subnet: no public access at all)
 
 aws ssm start-session --target <api_instance_id>
 
@@ -833,7 +833,7 @@ terraform destroy
 
 Deletes all 35 resources in the correct dependency order. The S3 bucket and DynamoDB
 
-table (created manually) are not managed by Terraform and are not destroyed — they
+table (created manually) are not managed by Terraform and are not destroyed - they
 
 persist for the next apply.
 
@@ -919,11 +919,11 @@ module.alb.aws_lb_target_group_attachment.web
 
   
 
-## What Actually Happened — The First `terraform apply`
+## What Actually Happened: The First `terraform apply`
 
   
 
-The plan was clean. The apply was not — two bugs surfaced immediately, both fixed in
+The plan was clean. The apply was not - two bugs surfaced immediately, both fixed in
 
 under five minutes.
 
@@ -937,7 +937,7 @@ under five minutes.
 
 Error: creating Security Group (mindcraft-sg-alb): api error InvalidParameterValue:
 
-Value (ALB — inbound HTTP and HTTPS from internet) for parameter GroupDescription is
+Value (ALB - inbound HTTP and HTTPS from internet) for parameter GroupDescription is
 
 invalid. Character sets beyond ASCII are not supported.
 
@@ -945,7 +945,7 @@ invalid. Character sets beyond ASCII are not supported.
 
   
 
-The Security Group `description` field in the Terraform code used em dashes (`—`) for
+The Security Group `description` field in the Terraform code used em dashes (` - `) for
 
 readability. AWS only accepts ASCII characters in that field. Fix: replace all em dashes
 
@@ -955,7 +955,7 @@ with plain hyphens (`-`) in all four Security Group descriptions.
 
 The VPC, NAT Gateway, IAM role, and target group had already been created before the
 
-error. Terraform's state tracked all of that — re-running apply only created the
+error. Terraform's state tracked all of that - re-running apply only created the
 
 remaining resources.
 
@@ -983,7 +983,7 @@ module specified 20GB root volumes. Fix: bump `volume_size` from 20 to 30 in the
 
 `root_block_device` block of all three instances. (The separate MongoDB data EBS volume
 
-stays at 20GB — no snapshot constraint there.)
+stays at 20GB - no snapshot constraint there.)
 
   
 
@@ -1005,13 +1005,13 @@ Outputs:
 
   
 
-alb_dns_name    = "mindcraft-alb-1837161131.ap-southeast-1.elb.amazonaws.com"
+alb_dns_name    = "mindcraft-alb-1837161131.ap-southeast-1.elb.amazonaws.com"
 
 api_instance_id = "i-0296fb9f7bb00a1c8"
 
-db_instance_id  = "i-02d3d72ebfd5765bf"
+db_instance_id  = "i-02d3d72ebfd5765bf"
 
-vpc_id          = "vpc-0ee5a275c1d560c5f"
+vpc_id          = "vpc-0ee5a275c1d560c5f"
 
 web_instance_id = "i-0bfa5e840a6be1214"
 
@@ -1019,7 +1019,7 @@ web_instance_id = "i-0bfa5e840a6be1214"
 
   
 
-Total provisioning time: approximately 4 minutes. The NAT Gateway is the bottleneck —
+Total provisioning time: approximately 4 minutes. The NAT Gateway is the bottleneck  - 
 
 it alone takes around 90 seconds to become available, and everything in the private
 
@@ -1027,7 +1027,7 @@ subnets waits on it.
 
   
 
-The ALB URL returns 502 at this point — expected. The EC2 instances have Docker
+The ALB URL returns 502 at this point - expected. The EC2 instances have Docker
 
 installed and running, but no containers have been pulled yet. The ALB health check
 
@@ -1053,7 +1053,7 @@ Clean. All 35 resources removed in the correct dependency order. The S3 bucket a
 
 DynamoDB table (created manually before Terraform) are not managed by Terraform and
 
-remain — they'll be there for the next apply.
+remain - they'll be there for the next apply.
 
   
 
@@ -1061,9 +1061,9 @@ Both bugs are now fixed in the committed code. The corrected files:
 
   
 
-- `terraform/modules/security-groups/main.tf` — all four descriptions use hyphens
+- `terraform/modules/security-groups/main.tf` - all four descriptions use hyphens
 
-- `terraform/modules/ec2/main.tf` — all three instances use 30GB root volumes
+- `terraform/modules/ec2/main.tf` - all three instances use 30GB root volumes
 
   
 
@@ -1085,7 +1085,7 @@ waiting, but no containers are running yet. Phase 4 (GitHub Actions CI/CD) will:
 
 2. Connect to each EC2 via SSM and run `docker pull` + restart
 
-3. Automate this on every push to `main` — so deploying is just `git push`
+3. Automate this on every push to `main` - so deploying is just `git push`
 
   
 
@@ -1096,3 +1096,13 @@ on that instance, the URL in the Terraform output becomes a live application.
   
 
 Source: [github.com/Mhdomer/mindcraft-aws-migration](https://github.com/Mhdomer/mindcraft-aws-migration)
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

@@ -11,7 +11,7 @@ tags:
   - scripting
   - filesystem
 author: muhammed
-description: Chapter 3 of Linux Shell Scripting Cookbook — file creation, permissions, comparison, navigation, and filesystem operations
+description: Chapter 3 of Linux Shell Scripting Cookbook - file creation, permissions, comparison, navigation, and filesystem operations
 toc: true
 pin: false
 math: false
@@ -22,7 +22,7 @@ Link: "[[Shell Scripting Notes]]"
 
 # Chapter Overview
 
-This chapter is all about files — creating them, comparing them, protecting them, navigating around them, and understanding what the filesystem is actually doing. Most of this is foundational for any serious shell scripting or sysadmin work.
+This chapter is all about files - creating them, comparing them, protecting them, navigating around them, and understanding what the filesystem is actually doing. Most of this is foundational for any serious shell scripting or sysadmin work.
 
 ---
 
@@ -45,7 +45,7 @@ dd if=/dev/zero of=swap.img bs=1M count=1024      # 1GB swap file
 
 ### truncate
 
-Creates a sparse file instantly — doesn't actually write data, just sets the size in the filesystem metadata. Much faster than `dd` when you just need a placeholder.
+Creates a sparse file instantly - doesn't actually write data, just sets the size in the filesystem metadata. Much faster than `dd` when you just need a placeholder.
 
 ```bash
 truncate -s 1G bigfile.img     # create a 1GB sparse file
@@ -57,7 +57,7 @@ truncate -s +500M file.img     # extend an existing file by 500MB
 
 ### fallocate
 
-Actually allocates disk space (not sparse) — faster than `dd`:
+Actually allocates disk space (not sparse) - faster than `dd`:
 
 ```bash
 fallocate -l 1G testfile.img   # allocate 1GB immediately
@@ -67,7 +67,7 @@ fallocate -l 1G testfile.img   # allocate 1GB immediately
 
 ## Intersection and Set Difference on Text Files
 
-These are set operations on sorted text files — each line is treated as an element.
+These are set operations on sorted text files - each line is treated as an element.
 
 ### comm
 
@@ -84,9 +84,9 @@ comm file1.txt file2.txt
 Suppress columns to get specific operations:
 
 ```bash
-comm -12 file1.txt file2.txt    # intersection — lines in BOTH
-comm -23 file1.txt file2.txt    # difference A-B — lines only in file1
-comm -13 file1.txt file2.txt    # difference B-A — lines only in file2
+comm -12 file1.txt file2.txt    # intersection - lines in BOTH
+comm -23 file1.txt file2.txt    # difference A-B - lines only in file1
+comm -13 file1.txt file2.txt    # difference B-A - lines only in file2
 ```
 
 **Always sort first:**
@@ -164,7 +164,7 @@ Each set of 3: `r` (read=4), `w` (write=2), `x` (execute=1)
 chmod 755 script.sh          # rwxr-xr-x
 chmod 644 file.txt           # rw-r--r--
 chmod 600 private.key        # rw------- (only owner can read)
-chmod 777 file               # rwxrwxrwx (everyone — avoid this)
+chmod 777 file               # rwxrwxrwx (everyone - avoid this)
 
 chmod +x script.sh           # add execute for everyone
 chmod -x script.sh           # remove execute
@@ -190,25 +190,25 @@ chown -R omar:staff /var/www     # recursive
 
 ### Special bits
 
-**Setuid (4)** — file runs as its owner, not the caller:
+**Setuid (4)** - file runs as its owner, not the caller:
 
 ```bash
 chmod u+s /usr/bin/passwd    # passwd runs as root regardless of caller
 chmod 4755 file              # numeric: 4 = setuid
 ```
 
-**Setgid (2)** — on a directory, new files inherit the directory's group:
+**Setgid (2)** - on a directory, new files inherit the directory's group:
 
 ```bash
 chmod g+s /shared/           # new files in /shared get the directory's group
 chmod 2775 /shared/
 ```
 
-**Sticky bit (1)** — on a directory, only the file owner can delete their own files:
+**Sticky bit (1)** - on a directory, only the file owner can delete their own files:
 
 ```bash
 chmod +t /tmp                # classic sticky bit use case
-chmod 1777 /tmp              # /tmp permissions — anyone writes, only owner deletes
+chmod 1777 /tmp              # /tmp permissions - anyone writes, only owner deletes
 ls -ld /tmp                  # shows as drwxrwxrwt (t at the end)
 ```
 
@@ -228,9 +228,9 @@ lsattr file.txt              # check attributes
 
 | Flag | Meaning |
 |---|---|
-| `+i` | Immutable — no write, delete, rename, link |
-| `+a` | Append-only — can only add to the file, not modify or delete |
-| `+u` | Undeletable — data preserved when deleted (for recovery) |
+| `+i` | Immutable - no write, delete, rename, link |
+| `+a` | Append-only - can only add to the file, not modify or delete |
+| `+u` | Undeletable - data preserved when deleted (for recovery) |
 | `+c` | Compressed automatically by the kernel |
 
 **Protect a directory (recursively):**
@@ -322,7 +322,7 @@ done
 
 ### file
 
-Detects the actual type of a file — ignores the extension, reads the magic bytes:
+Detects the actual type of a file - ignores the extension, reads the magic bytes:
 
 ```bash
 file image.png          # PNG image data, 1920 x 1080
@@ -361,7 +361,7 @@ find . -name "*.log" -exec du -sh {} + | sort -h
 
 ## Using Loopback Files
 
-A loopback file is a regular file treated as a block device — you can format it and mount it as a filesystem. Useful for creating disk images, testing, or portable encrypted containers.
+A loopback file is a regular file treated as a block device - you can format it and mount it as a filesystem. Useful for creating disk images, testing, or portable encrypted containers.
 
 **Create and mount a loopback filesystem:**
 
@@ -435,7 +435,7 @@ isohybrid output.iso            # make it USB-bootable
 dd if=output.iso of=/dev/sdb bs=4M status=progress && sync
 ```
 
-**Always double-check the target device** with `lsblk` before running this — wrong device = data loss.
+**Always double-check the target device** with `lsblk` before running this - wrong device = data loss.
 
 ### Mount an ISO without burning
 
@@ -513,7 +513,7 @@ tail file.txt              # last 10 lines (default)
 tail -n 20 file.txt        # last 20 lines
 tail -c 100 file.txt       # last 100 bytes
 tail -n +50 file.txt       # from line 50 to end (skip first 49)
-tail -f log.txt            # follow — live updates as file grows
+tail -f log.txt            # follow - live updates as file grows
 tail -F log.txt            # follow even if file is rotated (reopens on rename)
 ```
 
@@ -537,7 +537,7 @@ tail -f /var/log/syslog /var/log/auth.log
 
 ## Listing Only Directories
 
-Several ways to list just directories — each has tradeoffs:
+Several ways to list just directories - each has tradeoffs:
 
 ```bash
 ls -d */                      # glob: directories in current dir only
@@ -552,7 +552,7 @@ find . -maxdepth 1 -type d -not -name "."  # exclude current dir itself
 ls -lhd */                    # long format, directories only
 ```
 
-**Recursive — all directories in the tree:**
+**Recursive - all directories in the tree:**
 
 ```bash
 find . -type d
@@ -597,7 +597,7 @@ pushd /tmp > /dev/null        # suppress output
 popd > /dev/null              # return to original directory
 ```
 
-This is cleaner than saving `$(pwd)` and `cd`-ing back — the stack handles multiple levels automatically.
+This is cleaner than saving `$(pwd)` and `cd`-ing back - the stack handles multiple levels automatically.
 
 ---
 
@@ -668,7 +668,7 @@ tree -H . > structure.html     # HTML output
 
 Install: `apt install tree`
 
-### Without tree — using find
+### Without tree: using find
 
 ```bash
 find . | sed -e 's/[^\/]*\//│   /g' -e 's/│   \([^│]\)/└── \1/'
@@ -689,23 +689,12 @@ ls -R | grep ":$" | sed 's/:$//' | sed 's/[^\/]*\//  /g'  # directories only
 
 ---
 
-## 📚 References
-
-<div class="references">
-<ul>
-  <li><a href="https://www.packtpub.com/product/linux-shell-scripting-cookbook/9781785881985" target="_blank">Linux Shell Scripting Cookbook — Packt</a></li>
-  <li><a href="https://www.gnu.org/software/bash/manual/" target="_blank">GNU Bash Manual</a></li>
-  <li><a href="https://man7.org/linux/man-pages/" target="_blank">Linux Man Pages</a></li>
-</ul>
-</div>
-
 ---
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer )
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

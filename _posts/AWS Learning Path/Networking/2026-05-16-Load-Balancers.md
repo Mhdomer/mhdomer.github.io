@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS Load Balancers — ALB, NLB, Target Groups, and Listeners
+title: AWS Load Balancers - ALB, NLB, Target Groups, and Listeners
 date: 2026-05-16T10:00:00
 categories:
   - AWS Learning Path
@@ -12,7 +12,7 @@ tags:
   - networking
   - cloud
 author: muhammed
-description: A full walkthrough of AWS Elastic Load Balancing — ALB vs NLB, listeners, target groups, health checks, sticky sessions, and SSL termination
+description: A full walkthrough of AWS Elastic Load Balancing - ALB vs NLB, listeners, target groups, health checks, sticky sessions, and SSL termination
 toc: true
 pin: false
 math: false
@@ -25,7 +25,7 @@ img:
 
 ## What is Elastic Load Balancing?
 
-**Elastic Load Balancing (ELB)** automatically distributes incoming traffic across multiple targets — EC2 instances, containers, Lambda functions, or IP addresses — in one or more Availability Zones.
+**Elastic Load Balancing (ELB)** automatically distributes incoming traffic across multiple targets - EC2 instances, containers, Lambda functions, or IP addresses - in one or more Availability Zones.
 It is the standard way to make applications highly available and scalable on AWS.
 
 If one target becomes unhealthy or an entire AZ goes down, the load balancer stops sending traffic there automatically.
@@ -39,25 +39,25 @@ AWS has three types of load balancers:
 | **Network Load Balancer (NLB)** | 4 (TCP) | TCP, UDP, TLS | High performance, static IP, gaming, VoIP |
 | **Gateway Load Balancer (GWLB)** | 3 (IP) | All IP traffic | Third-party network appliances (firewalls, IDS) |
 
-The old **Classic Load Balancer** is deprecated — do not use it for new workloads.
+The old **Classic Load Balancer** is deprecated - do not use it for new workloads.
 
 ---
 
 ## Application Load Balancer (ALB)
 
-An ALB operates at **Layer 7** — it understands HTTP/HTTPS.
+An ALB operates at **Layer 7** - it understands HTTP/HTTPS.
 It can make routing decisions based on the request content: URL path, hostname, headers, query strings, and HTTP method.
-This is what makes it ideal for microservices — one ALB can route `/api/users` to one service and `/api/orders` to another.
+This is what makes it ideal for microservices - one ALB can route `/api/users` to one service and `/api/orders` to another.
 
 ### Key features
 
-- **Content-based routing** — route by path, host, header, query string, method
-- **SSL/TLS termination** — decrypts HTTPS at the ALB, forwards HTTP to targets (or HTTPS)
-- **WebSocket support** — long-lived connections for real-time apps
-- **HTTP/2 support** — between client and ALB (ALB → target is HTTP/1.1)
-- **Sticky sessions** — route a user's requests to the same target (cookie-based)
-- **User authentication** — integrate with Cognito or any OIDC provider before forwarding
-- **Lambda targets** — invoke a Lambda function from HTTP traffic
+- **Content-based routing** - route by path, host, header, query string, method
+- **SSL/TLS termination** - decrypts HTTPS at the ALB, forwards HTTP to targets (or HTTPS)
+- **WebSocket support** - long-lived connections for real-time apps
+- **HTTP/2 support** - between client and ALB (ALB → target is HTTP/1.1)
+- **Sticky sessions** - route a user's requests to the same target (cookie-based)
+- **User authentication** - integrate with Cognito or any OIDC provider before forwarding
+- **Lambda targets** - invoke a Lambda function from HTTP traffic
 
 ### Creating an ALB
 
@@ -78,8 +78,8 @@ aws elbv2 describe-load-balancers --output table
 ```
 
 **Scheme:**
-- **Internet-facing** — has a public DNS name, receives traffic from the internet
-- **Internal** — only reachable within the VPC, used between tiers (e.g. frontend ALB → backend ALB)
+- **Internet-facing** - has a public DNS name, receives traffic from the internet
+- **Internal** - only reachable within the VPC, used between tiers (e.g. frontend ALB → backend ALB)
 
 ---
 
@@ -94,7 +94,7 @@ Each target group has its own health check configuration.
 | Type | Use Case |
 |---|---|
 | `instance` | EC2 instances by instance ID |
-| `ip` | Any IP address — EC2, ECS tasks (awsvpc), on-premises |
+| `ip` | Any IP address - EC2, ECS tasks (awsvpc), on-premises |
 | `lambda` | A single Lambda function |
 | `alb` | Another ALB (for NLB → ALB chaining) |
 
@@ -190,7 +190,7 @@ Rules are evaluated in priority order (lowest number first).
 The default rule (priority `*`) matches everything else.
 
 > 📸 **SCREENSHOT:** EC2 → Load Balancers → select ALB → Listeners tab → View/edit rules.
-> Show the rules editor with multiple rules — one matching `/api/*` forwarding to api-tg, one matching `/admin/*` requiring authentication, and the default rule forwarding to web-tg.
+> Show the rules editor with multiple rules - one matching `/api/*` forwarding to api-tg, one matching `/admin/*` requiring authentication, and the default rule forwarding to web-tg.
 
 **Example routing setup:**
 
@@ -215,18 +215,18 @@ aws elbv2 create-rule \
 
 ## Network Load Balancer (NLB)
 
-An NLB operates at **Layer 4** — it works with raw TCP/UDP packets.
+An NLB operates at **Layer 4** - it works with raw TCP/UDP packets.
 It does not read HTTP headers or understand URLs.
 What it offers instead is extreme performance and static IP addresses.
 
 ### Key features
 
-- **Ultra-low latency** — millions of requests per second, sub-millisecond latency
-- **Static IP per AZ** — each AZ gets a fixed Elastic IP, useful for firewall whitelisting
-- **Preserves client IP** — the target sees the original client IP address
-- **TLS passthrough or termination** — can terminate TLS or pass it to targets
-- **Cross-zone load balancing** — disabled by default (costs money when enabled)
-- **PrivateLink** — expose your service to other VPCs without VPC peering
+- **Ultra-low latency** - millions of requests per second, sub-millisecond latency
+- **Static IP per AZ** - each AZ gets a fixed Elastic IP, useful for firewall whitelisting
+- **Preserves client IP** - the target sees the original client IP address
+- **TLS passthrough or termination** - can terminate TLS or pass it to targets
+- **Cross-zone load balancing** - disabled by default (costs money when enabled)
+- **PrivateLink** - expose your service to other VPCs without VPC peering
 
 ### When to use NLB over ALB
 
@@ -252,7 +252,7 @@ aws elbv2 create-load-balancer \
 ## SSL/TLS Termination
 
 The ALB handles the SSL handshake and decrypts HTTPS traffic.
-Your backend targets receive plain HTTP — they do not need to handle SSL.
+Your backend targets receive plain HTTP - they do not need to handle SSL.
 This reduces CPU overhead on your application servers.
 
 ### ACM Integration
@@ -286,14 +286,14 @@ Client → HTTPS → ALB (SSL termination) → HTTPS → Target
 ```
 
 Configure the target group protocol as HTTPS and install a certificate on your application servers.
-The certificate on the targets can be self-signed or from a private CA — the ALB does not validate it by default (but you can enable validation).
+The certificate on the targets can be self-signed or from a private CA - the ALB does not validate it by default (but you can enable validation).
 
 ---
 
 ## Sticky Sessions
 
 **Sticky sessions** (session affinity) ensure a user's requests always go to the same target.
-Used for applications that store session state on the server (not recommended — use Redis instead, but sometimes you need it for legacy apps).
+Used for applications that store session state on the server (not recommended - use Redis instead, but sometimes you need it for legacy apps).
 
 | Stickiness type | Cookie name | Duration |
 |---|---|---|
@@ -369,10 +369,10 @@ aws elbv2 deregister-targets --target-group-arn ARN --targets Id=i-xxx
 ```
 
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **GitHub:** [Mhdomer](https://github.comMhdomer)  
-- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

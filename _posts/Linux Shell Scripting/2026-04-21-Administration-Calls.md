@@ -12,7 +12,7 @@ tags:
   - sysadmin
   - cron
 author: muhammed
-description: Chapter 9 of Linux Shell Scripting Cookbook — process management, signals, system info, /proc, cron scheduling, MySQL from Bash, user admin, and terminal multiplexing
+description: Chapter 9 of Linux Shell Scripting Cookbook - process management, signals, system info, /proc, cron scheduling, MySQL from Bash, user admin, and terminal multiplexing
 toc: true
 pin: false
 math: false
@@ -23,13 +23,13 @@ Link: "[[Shell Scripting Notes]]"
 
 # Chapter Overview
 
-This chapter covers the sysadmin side of shell scripting — managing processes, scheduling tasks, querying databases, administering users, and keeping everything running cleanly from the terminal.
+This chapter covers the sysadmin side of shell scripting - managing processes, scheduling tasks, querying databases, administering users, and keeping everything running cleanly from the terminal.
 
 ---
 
 ## Gathering Information About Processes
 
-### ps — process snapshot
+### ps: process snapshot
 
 ```bash
 ps aux                         # all processes, BSD style
@@ -70,7 +70,7 @@ pstree -u                      # include usernames
 pstree 1234                    # tree from a specific PID
 ```
 
-### lsof — what a process has open
+### lsof: what a process has open
 
 ```bash
 lsof -p 1234                   # all files/sockets open by PID 1234
@@ -121,9 +121,9 @@ pkill -f "python script.py"    # match against full command line
 |---|---|---|---|
 | `SIGHUP` | 1 | Terminate | Reload config (daemons) |
 | `SIGINT` | 2 | Terminate | Ctrl+C from keyboard |
-| `SIGQUIT` | 3 | Core dump | Ctrl+\\ — quit with dump |
+| `SIGQUIT` | 3 | Core dump | Ctrl+\\ - quit with dump |
 | `SIGKILL` | 9 | Terminate (force) | Cannot be caught or ignored |
-| `SIGTERM` | 15 | Terminate | Default kill — graceful shutdown |
+| `SIGTERM` | 15 | Terminate | Default kill - graceful shutdown |
 | `SIGSTOP` | 19 | Stop | Pause process (cannot be caught) |
 | `SIGCONT` | 18 | Continue | Resume a stopped process |
 | `SIGUSR1/2` | 10/12 | User-defined | App-specific (e.g., nginx log rotation) |
@@ -152,14 +152,14 @@ A zombie (`Z` state in `ps`) is a process that has exited but whose parent hasn'
 ```bash
 ps aux | grep 'Z'                  # find zombies
 kill -CHLD <parent_pid>            # ask parent to collect children
-# if parent ignores it — kill the parent
+# if parent ignores it: kill the parent
 ```
 
 ---
 
 ## Sending Messages to User Terminals
 
-### write — send a message to a logged-in user
+### write: send a message to a logged-in user
 
 ```bash
 write username                 # opens interactive session to that user's terminal
@@ -168,14 +168,14 @@ write username pts/1           # target a specific terminal
 
 Type your message, then press Ctrl+D to send.
 
-### wall — broadcast to all logged-in users
+### wall: broadcast to all logged-in users
 
 ```bash
 wall "System rebooting in 5 minutes for maintenance"
 echo "Scheduled downtime at 23:00" | wall
 ```
 
-### mesg — control whether others can write to your terminal
+### mesg: control whether others can write to your terminal
 
 ```bash
 mesg n                         # block write/wall messages
@@ -183,7 +183,7 @@ mesg y                         # allow messages
 mesg                           # check current state
 ```
 
-### notify-send — desktop notification (GUI sessions)
+### notify-send: desktop notification (GUI sessions)
 
 ```bash
 notify-send "Backup complete" "All files synced successfully"
@@ -226,7 +226,7 @@ cat /proc/loadavg              # raw load averages (1, 5, 15 min + running/total
 
 Load average: number of processes wanting CPU time. On a 4-core system, a load of 4.0 means fully utilized; 8.0 means double-loaded.
 
-### free — memory usage
+### free: memory usage
 
 ```bash
 free -h                        # human-readable (KB/MB/GB)
@@ -235,11 +235,11 @@ free -s 2                      # update every 2 seconds
 ```
 
 **Reading the output:**
-- `total` — physical RAM
-- `used` — actually used by processes
-- `free` — completely unused
-- `buff/cache` — used by kernel buffer/cache (can be reclaimed)
-- `available` — what's actually available for new processes (free + reclaimable)
+- `total` - physical RAM
+- `used` - actually used by processes
+- `free` - completely unused
+- `buff/cache` - used by kernel buffer/cache (can be reclaimed)
+- `available` - what's actually available for new processes (free + reclaimable)
 
 ### lshw, lscpu, lspci, lsusb
 
@@ -257,7 +257,7 @@ lsusb -v                       # verbose USB info
 
 ## Using /proc for Gathering Information
 
-`/proc` is a virtual filesystem — it's not real files on disk, it's the kernel exposing live data.
+`/proc` is a virtual filesystem - it's not real files on disk, it's the kernel exposing live data.
 
 ### Key /proc files
 
@@ -405,7 +405,7 @@ result=$(mysql -u root -pPASS mydb -sN -e "SELECT COUNT(*) FROM users;")
 echo "Total users: $result"
 ```
 
-`-s` — silent (no table borders), `-N` — no column headers.
+`-s` - silent (no table borders), `-N` - no column headers.
 
 ### Loop over query results in Bash
 
@@ -416,7 +416,7 @@ while IFS=$'\t' read -r id name; do
 done
 ```
 
-MySQL separates columns with tabs by default in `-s` mode — match with `IFS=$'\t'`.
+MySQL separates columns with tabs by default in `-s` mode - match with `IFS=$'\t'`.
 
 ### Dump and restore
 
@@ -490,7 +490,7 @@ getent passwd username         # user info from /etc/passwd (or LDAP/AD)
 
 Uses **ImageMagick** (`convert` / `mogrify`).
 
-### convert — create a new file
+### convert: create a new file
 
 ```bash
 convert input.png output.jpg                      # format conversion
@@ -501,7 +501,7 @@ convert input.jpg -quality 85 output.jpg          # set JPEG quality (1-100)
 convert input.png -strip output.jpg               # remove EXIF/metadata
 ```
 
-### mogrify — in-place batch processing
+### mogrify: in-place batch processing
 
 ```bash
 mogrify -resize 1024x768 *.jpg                    # resize all JPEGs in place
@@ -525,7 +525,7 @@ for img in *.{jpg,jpeg,png,JPG,PNG}; do
 done
 ```
 
-### identify — inspect image info
+### identify: inspect image info
 
 ```bash
 identify image.jpg                    # format, dimensions, bit depth
@@ -537,7 +537,7 @@ identify -format "%f: %wx%h\n" *.jpg  # filename and dimensions for all
 
 ## Taking Screenshots from the Terminal
 
-### scrot — lightweight screenshot tool
+### scrot: lightweight screenshot tool
 
 ```bash
 scrot screenshot.png                  # full screen screenshot
@@ -585,13 +585,13 @@ done
 
 ## Managing Multiple Terminals with tmux
 
-`tmux` lets you run multiple terminal sessions inside one — and keep them alive when you disconnect from SSH.
+`tmux` lets you run multiple terminal sessions inside one - and keep them alive when you disconnect from SSH.
 
 ### Core concepts
 
-- **Session** — a collection of windows (survives disconnection)
-- **Window** — like a browser tab (one per pane layout)
-- **Pane** — a split view within a window
+- **Session** - a collection of windows (survives disconnection)
+- **Window** - like a browser tab (one per pane layout)
+- **Pane** - a split view within a window
 
 ### Essential commands
 
@@ -640,7 +640,7 @@ tmux send-keys -t "$SESSION:logs.right" "htop" Enter
 tmux attach -t "$SESSION"
 ```
 
-### screen — the older alternative
+### screen: the older alternative
 
 ```bash
 screen                         # start a new screen session
@@ -650,13 +650,13 @@ screen -r sessionname          # reattach
 ```
 
 Key bindings (prefix: Ctrl+A):
-- `Ctrl+A d` — detach
-- `Ctrl+A c` — new window
-- `Ctrl+A n` / `p` — next/previous window
-- `Ctrl+A |` — vertical split
-- `Ctrl+A S` — horizontal split
+- `Ctrl+A d` - detach
+- `Ctrl+A c` - new window
+- `Ctrl+A n` / `p` - next/previous window
+- `Ctrl+A |` - vertical split
+- `Ctrl+A S` - horizontal split
 
-tmux is preferred over screen — better scripting support and active development.
+tmux is preferred over screen - better scripting support and active development.
 
 ---
 
@@ -682,3 +682,13 @@ tmux is preferred over screen — better scripting support and active developmen
 | Start tmux session | `tmux new -s name` |
 | Detach tmux | `Ctrl+B d` |
 | List tmux sessions | `tmux ls` |
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

@@ -51,12 +51,12 @@ echo "10.10.10.0 lookup.thm" | sudo tee -a /etc/hosts
 
 ## Namespaces and cgroups
 
-**Namespaces** isolate a process so it only sees its own version of system resources — its own process list, network stack, filesystem root, and so on.
+**Namespaces** isolate a process so it only sees its own version of system resources - its own process list, network stack, filesystem root, and so on.
 Normally all processes share the same global view of the system.
 Namespaces carve out a private "bubble" for a process or group of processes.
 This is the core technology that makes **containers** (like Docker) possible.
 
-**cgroups** (control groups) limit how much of a resource a process is allowed to use — CPU time, RAM, disk I/O, network bandwidth.
+**cgroups** (control groups) limit how much of a resource a process is allowed to use - CPU time, RAM, disk I/O, network bandwidth.
 
 The key distinction:
 - **Namespaces** → control what a process *can see*
@@ -68,7 +68,7 @@ Together they are the foundation of Linux containers.
 
 | Namespace | Isolates |
 |---|---|
-| `PID` | Process IDs — processes only see their own PID tree |
+| `PID` | Process IDs - processes only see their own PID tree |
 | `Network` | Network interfaces, IPs, routing tables, ports |
 | `Mount` | Filesystem mount points |
 | `UTS` | Hostname and domain name |
@@ -132,7 +132,7 @@ less file.txt              # scroll through file (q to quit)
 head file.txt              # first 10 lines
 head -n 20 file.txt        # first 20 lines
 tail file.txt              # last 10 lines
-tail -f file.txt           # follow (live updates — great for logs)
+tail -f file.txt           # follow (live updates - great for logs)
 tail -n 50 file.txt        # last 50 lines
 wc -l file.txt             # count lines
 wc -w file.txt             # count words
@@ -152,7 +152,7 @@ Each set has three bits: **read (r=4)**, **write (w=2)**, **execute (x=1)**.
        ^^^   others: r-- = 4
 ```
 
-### chmod — change permissions
+### chmod: change permissions
 
 ```bash
 chmod 755 script.sh          # rwxr-xr-x (owner full, group/others read+execute)
@@ -163,7 +163,7 @@ chmod u+x,g-w file.txt       # add execute for owner, remove write from group
 chmod -R 755 /var/www/html   # apply recursively
 ```
 
-### chown — change owner
+### chown: change owner
 
 ```bash
 chown user file.txt           # change owner
@@ -174,12 +174,12 @@ chown -R user:group /data/    # change recursively
 ### Special permissions
 
 ```bash
-chmod u+s /usr/bin/prog     # setuid — runs as file owner, not caller
-chmod g+s /shared/          # setgid — new files inherit the directory's group
-chmod +t /tmp/              # sticky bit — only owner can delete their files
+chmod u+s /usr/bin/prog     # setuid - runs as file owner, not caller
+chmod g+s /shared/          # setgid - new files inherit the directory's group
+chmod +t /tmp/              # sticky bit - only owner can delete their files
 ```
 
-### umask — default permissions
+### umask: default permissions
 
 `umask` subtracts from the maximum permission (666 for files, 777 for directories).
 A umask of `022` means new files are `644` and new directories are `755`.
@@ -193,21 +193,21 @@ umask 027        # set new umask (files=640, dirs=750)
 
 ## Text Processing
 
-### grep — search inside files
+### grep: search inside files
 
 ```bash
 grep "error" logfile.txt             # search for pattern
 grep -i "error" logfile.txt          # case-insensitive
 grep -r "TODO" ./src/                # recursive search
 grep -n "error" logfile.txt          # show line numbers
-grep -v "debug" logfile.txt          # invert — lines that do NOT match
+grep -v "debug" logfile.txt          # invert - lines that do NOT match
 grep -c "error" logfile.txt          # count matching lines
 grep -l "TODO" *.py                  # show only filenames that match
 grep -E "error|warn|fail" log.txt    # extended regex (OR)
 grep -o "[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}" file   # extract IPs
 ```
 
-### cut — extract columns
+### cut: extract columns
 
 ```bash
 cut -d: -f1 /etc/passwd             # extract field 1, delimiter ":"
@@ -227,7 +227,7 @@ sort file.txt | uniq -c             # count occurrences of each line
 sort file.txt | uniq -d             # show only duplicate lines
 ```
 
-### sed — stream editor
+### sed: stream editor
 
 ```bash
 sed 's/old/new/' file.txt           # replace first match per line
@@ -238,7 +238,7 @@ sed -n '10,20p' file.txt            # print lines 10 to 20
 sed '5a\new line' file.txt          # append text after line 5
 ```
 
-### awk — column processing
+### awk: column processing
 
 ```bash
 awk '{print $1}' file.txt           # print first column
@@ -249,7 +249,7 @@ awk '$3 > 100' data.txt             # filter rows where column 3 > 100
 awk '{print NR, $0}' file.txt       # print line numbers
 ```
 
-### Pipelines — chaining commands
+### Pipelines: chaining commands
 
 The pipe `|` passes the output of one command as input to the next.
 You can chain as many commands as you need.
@@ -281,19 +281,19 @@ htop                                # better top (if installed)
 
 ```bash
 kill 1234                           # send SIGTERM (graceful stop) to PID
-kill -9 1234                        # SIGKILL (force kill — no cleanup)
-kill -HUP 1234                      # SIGHUP — reload config
+kill -9 1234                        # SIGKILL (force kill - no cleanup)
+kill -HUP 1234                      # SIGHUP - reload config
 killall nginx                       # kill all processes named nginx
 pkill -f "python app.py"            # kill by matching command line
 ```
 
 | Signal | Number | Meaning |
 |---|---|---|
-| SIGTERM | 15 | Polite stop — default `kill` |
-| SIGKILL | 9 | Force kill — cannot be caught |
-| SIGHUP | 1 | Hangup — reload config |
-| SIGINT | 2 | Interrupt — same as Ctrl+C |
-| SIGSTOP | 19 | Pause — cannot be caught |
+| SIGTERM | 15 | Polite stop - default `kill` |
+| SIGKILL | 9 | Force kill - cannot be caught |
+| SIGHUP | 1 | Hangup - reload config |
+| SIGINT | 2 | Interrupt - same as Ctrl+C |
+| SIGSTOP | 19 | Pause - cannot be caught |
 | SIGCONT | 18 | Resume a paused process |
 
 ### Background jobs
@@ -650,11 +650,10 @@ tail -f /var/log/syslog | grep --line-buffered -i "error\|warn\|fail"
 
 ---
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer)
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

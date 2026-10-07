@@ -10,7 +10,7 @@ tags:
   - bash
   - scripting
 author: muhammed
-description: Chapter 2 of Linux Shell Scripting Cookbook — core command-line tools every scripter needs
+description: Chapter 2 of Linux Shell Scripting Cookbook - core command-line tools every scripter needs
 toc: true
 pin: false
 math: false
@@ -21,7 +21,7 @@ Link: "[[Shell Scripting Notes]]"
 
 # Chapter Overview
 
-This chapter covers the essential command-line tools that turn a basic shell user into someone who can actually get things done fast — file operations, searching, filtering, checksums, parallelism, and more.
+This chapter covers the essential command-line tools that turn a basic shell user into someone who can actually get things done fast - file operations, searching, filtering, checksums, parallelism, and more.
 
 ---
 
@@ -41,7 +41,7 @@ cat file1.txt file2.txt > combined.txt  # merge into one file
 cat -n file.txt    # number every line
 cat -b file.txt    # number only non-blank lines
 cat -s file.txt    # squeeze multiple blank lines into one
-cat -A file.txt    # show hidden chars — tabs as ^I, line endings as $
+cat -A file.txt    # show hidden chars - tabs as ^I, line endings as $
 ```
 
 **Create a file from stdin** (type content, Ctrl+D to finish):
@@ -66,7 +66,7 @@ cat access.log | grep "404" | wc -l
 
 ## Recording and Playing Back Terminal Sessions
 
-`script` records everything printed to the terminal — commands and output. Useful for documentation, demos, and audit trails.
+`script` records everything printed to the terminal - commands and output. Useful for documentation, demos, and audit trails.
 
 **Record a session:**
 
@@ -102,13 +102,13 @@ scriptreplay -d 0.5 timing.log session.log # half speed
 ### ls
 
 ```bash
-ls -l      # long format — permissions, size, date
+ls -l      # long format - permissions, size, date
 ls -a      # show hidden files (starting with .)
 ls -h      # human-readable sizes (KB, MB)
 ls -t      # sort by modification time (newest first)
 ls -S      # sort by size (largest first)
 ls -r      # reverse order
-ls -lhtr   # combine: long, human, time, reversed — most useful combo
+ls -lhtr   # combine: long, human, time, reversed - most useful combo
 ```
 
 ### find
@@ -157,9 +157,9 @@ find . -name "*.txt" | xargs wc -l        # count lines in each
 find . -name "*.py" | xargs grep "import" # search inside each
 ```
 
-**Why not just use pipes?** Some commands don't read from stdin — they only take arguments. `xargs` bridges that gap.
+**Why not just use pipes?** Some commands don't read from stdin - they only take arguments. `xargs` bridges that gap.
 
-**Handle filenames with spaces** — use null delimiter:
+**Handle filenames with spaces** - use null delimiter:
 
 ```bash
 find . -name "*.txt" -print0 | xargs -0 rm
@@ -191,7 +191,7 @@ find . -name "*.png" | xargs -P 4 -I {} convert {} {}.jpg
 
 ## Translating with tr
 
-`tr` translates (replaces) or deletes characters. Works on stdin only — no file arguments.
+`tr` translates (replaces) or deletes characters. Works on stdin only - no file arguments.
 
 ```bash
 echo "hello world" | tr 'a-z' 'A-Z'    # lowercase to uppercase
@@ -220,7 +220,7 @@ cat file.txt | tr -cd '[:print:]\n' > clean.txt
 
 ## Checksum and Verification
 
-Checksums verify file integrity — confirm a file wasn't corrupted or tampered with.
+Checksums verify file integrity - confirm a file wasn't corrupted or tampered with.
 
 **Generate checksums:**
 
@@ -325,7 +325,7 @@ sort -k 1,1 -k 2,2n file.txt  # sort by field 1 alpha, then field 2 numeric
 
 ### uniq
 
-`uniq` only removes *adjacent* duplicates — always sort first.
+`uniq` only removes *adjacent* duplicates - always sort first.
 
 ```bash
 sort file.txt | uniq           # remove duplicates
@@ -362,7 +362,7 @@ comm -23 file1.txt file2.txt   # only lines in file1 (not file2)
 
 ### mktemp
 
-Never manually name temp files — use `mktemp` to avoid race conditions and collisions.
+Never manually name temp files - use `mktemp` to avoid race conditions and collisions.
 
 ```bash
 tmpfile=$(mktemp)                    # /tmp/tmp.XxXxXx
@@ -379,7 +379,7 @@ trap "rm -f $tmpfile" EXIT           # auto-delete when script exits
 
 ### $RANDOM
 
-Bash built-in — generates a random integer between 0 and 32767.
+Bash built-in - generates a random integer between 0 and 32767.
 
 ```bash
 echo $RANDOM                         # random number
@@ -433,7 +433,7 @@ csplit file.txt 10 25                # split at lines 10 and 25
 ```bash
 head -n 100 file.txt                 # first 100 lines
 tail -n 100 file.txt                 # last 100 lines
-tail -f log.txt                      # follow (live updates — great for logs)
+tail -f log.txt                      # follow (live updates - great for logs)
 tail -n +50 file.txt                 # from line 50 to end
 ```
 
@@ -451,7 +451,7 @@ dirname /home/omar/docs/report.pdf          # /home/omar/docs
 
 ### Parameter expansion
 
-The most efficient way — no subshell needed:
+The most efficient way - no subshell needed:
 
 ```bash
 filepath="/home/omar/docs/report.pdf"
@@ -491,7 +491,7 @@ done
 
 ### rename (Perl rename)
 
-More powerful — uses regex:
+More powerful - uses regex:
 
 ```bash
 rename 's/\.txt$/.md/' *.txt          # change extension
@@ -518,7 +518,7 @@ find . -name "*.log" -exec mv {} /archive/ \;
 
 ### look
 
-Search for words starting with a prefix — uses `/usr/share/dict/words`:
+Search for words starting with a prefix - uses `/usr/share/dict/words`:
 
 ```bash
 look uni          # all dictionary words starting with "uni"
@@ -543,7 +543,7 @@ cat essay.txt | aspell list | sort | uniq
 
 ### /usr/share/dict/words
 
-The system word list — useful in scripts:
+The system word list - useful in scripts:
 
 ```bash
 # Check if a word is valid
@@ -559,7 +559,7 @@ wc -l /usr/share/dict/words
 
 ### echo / printf piping
 
-The simplest approach — pipe answers directly:
+The simplest approach - pipe answers directly:
 
 ```bash
 echo "y" | apt-get install package    # auto-answer yes
@@ -568,7 +568,7 @@ echo -e "user\npassword\n" | ftp host # automate login prompts
 
 ### yes
 
-Continuously outputs "y" (or any string) — useful for confirming prompts:
+Continuously outputs "y" (or any string) - useful for confirming prompts:
 
 ```bash
 yes | apt-get install package         # answer yes to everything
@@ -586,7 +586,7 @@ answer3
 EOF
 ```
 
-Real example — automate an FTP session:
+Real example - automate an FTP session:
 
 ```bash
 ftp -n host << EOF
@@ -599,7 +599,7 @@ EOF
 
 ### expect
 
-When timing matters — `expect` waits for specific output before sending input:
+When timing matters - `expect` waits for specific output before sending input:
 
 ```bash
 expect << EOF
@@ -650,7 +650,7 @@ cat urls.txt | xargs -P 8 -I {} curl -O {}
 
 ### GNU parallel
 
-More powerful — handles progress, logging, job control:
+More powerful - handles progress, logging, job control:
 
 ```bash
 parallel gzip ::: *.log                    # compress all .log files in parallel
@@ -686,23 +686,12 @@ The parallel version is typically `N` times faster where `N` is your CPU core co
 
 ---
 
-## 📚 References
-
-<div class="references">
-<ul>
-  <li><a href="https://www.packtpub.com/product/linux-shell-scripting-cookbook/9781785881985" target="_blank">Linux Shell Scripting Cookbook — Packt</a></li>
-  <li><a href="https://www.gnu.org/software/bash/manual/" target="_blank">GNU Bash Manual</a></li>
-  <li><a href="https://www.gnu.org/software/parallel/" target="_blank">GNU Parallel</a></li>
-</ul>
-</div>
-
 ---
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer )
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

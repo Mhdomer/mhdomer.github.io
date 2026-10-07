@@ -80,7 +80,7 @@ echo 'Hello $name'   # Hello $name
 
 ### printf
 
-More control than echo — borrowed from C. Useful for aligned output.
+More control than echo - borrowed from C. Useful for aligned output.
 
 ```bash
 printf "%-10s %5d\n" "Item" 42   # left-align string, right-align number
@@ -93,12 +93,12 @@ printf "Pi is %.2f\n" 3.14159    # 2 decimal places
 
 ## Variables and Environment Variables
 
-Variables are untyped in bash — everything is a string unless told otherwise. No spaces around `=`.
+Variables are untyped in bash - everything is a string unless told otherwise. No spaces around `=`.
 
 ```bash
 name="Omar"
 echo $name        # access with $
-echo ${name}      # braces — safer, avoids ambiguity
+echo ${name}      # braces - safer, avoids ambiguity
 echo "${name}!"   # braces needed: $name! would fail
 ```
 
@@ -150,12 +150,12 @@ Put it in `~/.bashrc` and call it for any directory you want at the front.
 
 ## Math with the Shell
 
-Bash only does integer math natively — use `$(( ))`:
+Bash only does integer math natively - use `$(( ))`:
 
 ```bash
 echo $((10 + 5))     # 15
-echo $((2 ** 8))     # 256 — exponentiation
-echo $((17 % 3))     # 2  — modulo
+echo $((2 ** 8))     # 256 - exponentiation
+echo $((17 % 3))     # 2  - modulo
 result=$((100 / 4))
 ```
 
@@ -163,7 +163,7 @@ For decimals, pipe to `bc`:
 
 ```bash
 echo "scale=2; 10 / 3" | bc      # 3.33
-echo "scale=4; sqrt(2)" | bc -l  # 1.4142 — -l loads math library
+echo "scale=4; sqrt(2)" | bc -l  # 1.4142 - -l loads math library
 ```
 
 ---
@@ -211,7 +211,7 @@ fruits=("apple" "banana" "cherry")
 
 echo ${fruits[0]}     # apple
 echo ${fruits[@]}     # all elements
-echo ${#fruits[@]}    # length — 3
+echo ${#fruits[@]}    # length - 3
 fruits+=("date")      # append
 
 for f in "${fruits[@]}"; do
@@ -219,7 +219,7 @@ for f in "${fruits[@]}"; do
 done
 ```
 
-**Associative arrays** (bash 4+) — key-value pairs:
+**Associative arrays** (bash 4+) - key-value pairs:
 
 ```bash
 declare -A user
@@ -239,7 +239,7 @@ done
 
 ## Aliases
 
-Shortcuts for commands — define in `~/.bashrc`:
+Shortcuts for commands - define in `~/.bashrc`:
 
 ```bash
 alias ll='ls -lah'
@@ -323,7 +323,7 @@ time your_command
 
 ## Debugging Scripts
 
-Trace mode — prints every command before it runs:
+Trace mode - prints every command before it runs:
 
 ```bash
 bash -x script.sh
@@ -337,7 +337,7 @@ set -x   # start tracing
 set +x   # stop tracing
 ```
 
-Best practice — put this at the top of every script:
+Best practice - put this at the top of every script:
 
 ```bash
 #!/bin/bash
@@ -394,10 +394,10 @@ today=$(date +"%Y-%m-%d")
 line_count=$(wc -l < file.txt)
 ```
 
-Use `$()` not backticks — backticks can't be nested cleanly:
+Use `$()` not backticks - backticks can't be nested cleanly:
 
 ```bash
-# Nested — works fine with $()
+# Nested: works fine with $()
 result=$(wc -l < $(find /var/log -name "*.log" | head -1))
 ```
 
@@ -495,7 +495,7 @@ done < /etc/passwd
 
 ## Comparisons and Tests
 
-Use `[[ ]]` over `[ ]` — bash built-in, safer, supports regex.
+Use `[[ ]]` over `[ ]` - bash built-in, safer, supports regex.
 
 **String tests:**
 
@@ -555,28 +555,12 @@ Use `[[ ]]` over `[ ]` — bash built-in, safer, supports regex.
 
 ---
 
-## 📚 References
-
-<div class="references">
-<ul>
-  <li><a href="#" target="_blank">Official Documentation</a></li>
-  <li><a href="#" target="_blank">Research Paper</a></li>
-  <li><a href="#" target="_blank">Related Blog Post</a></li>
-</ul>
-</div>
-
-
-
-
-
-
 ---
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer )
-- **GitHub:** [Mhdomer](https://github.comMhdomer)  
-- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/) 
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

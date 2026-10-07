@@ -14,7 +14,7 @@ tags:
   - rsync
   - gzip
 author: muhammed
-description: Chapter 6 of Linux Shell Scripting Cookbook — archiving, compression, and backup strategies using tar, rsync, gzip, and more
+description: Chapter 6 of Linux Shell Scripting Cookbook - archiving, compression, and backup strategies using tar, rsync, gzip, and more
 toc: true
 pin: false
 math: false
@@ -25,13 +25,13 @@ Link: "[[Shell Scripting Notes]]"
 
 # Chapter Overview
 
-Backups are not optional — they're what separates a recoverable incident from a catastrophe. This chapter covers the full stack of Linux backup and archiving tools: `tar`, `gzip`, `zip`, `rsync`, `cpio`, `pbzip2`, and disk imaging with `fsarchiver`. Each solves a slightly different problem, and knowing when to use which one matters.
+Backups are not optional - they're what separates a recoverable incident from a catastrophe. This chapter covers the full stack of Linux backup and archiving tools: `tar`, `gzip`, `zip`, `rsync`, `cpio`, `pbzip2`, and disk imaging with `fsarchiver`. Each solves a slightly different problem, and knowing when to use which one matters.
 
 ---
 
 ## Archiving with tar
 
-`tar` (tape archive) bundles files into a single archive. It doesn't compress by default — it just packs. Compression is a separate step, though tar can do both at once.
+`tar` (tape archive) bundles files into a single archive. It doesn't compress by default - it just packs. Compression is a separate step, though tar can do both at once.
 
 ### Basic syntax
 
@@ -55,8 +55,8 @@ tar -cvf backup.tar /etc /home /var/log  # archive multiple targets
 
 ```bash
 tar -czvf archive.tar.gz  /path/   # gzip  (.tar.gz or .tgz)
-tar -cjvf archive.tar.bz2 /path/   # bzip2 (.tar.bz2) — smaller, slower
-tar -cJvf archive.tar.xz  /path/   # xz    (.tar.xz)  — smallest, slowest
+tar -cjvf archive.tar.bz2 /path/   # bzip2 (.tar.bz2) - smaller, slower
+tar -cJvf archive.tar.xz  /path/   # xz    (.tar.xz)  - smallest, slowest
 ```
 
 ### Extract
@@ -101,7 +101,7 @@ tar -czvf full_backup.tar.gz \
   --listed-incremental=snapshot.file \
   /home/
 
-# Incremental — only changed files since last run
+# Incremental: only changed files since last run
 tar -czvf incremental_backup.tar.gz \
   --listed-incremental=snapshot.file \
   /home/
@@ -172,7 +172,7 @@ find /source -depth | cpio -pdv /destination
 
 ## Compressing Data with gzip
 
-`gzip` compresses individual files — it replaces the original file with a `.gz` version by default.
+`gzip` compresses individual files - it replaces the original file with a `.gz` version by default.
 
 ### Basic usage
 
@@ -232,7 +232,7 @@ zstd file.txt         # modern: fast + good compression (.zst)
 
 ## Archiving and Compressing with zip
 
-`zip` is the standard for cross-platform archives — primarily for sharing with Windows users. Unlike `tar+gzip`, zip compresses each file individually inside the archive.
+`zip` is the standard for cross-platform archives - primarily for sharing with Windows users. Unlike `tar+gzip`, zip compresses each file individually inside the archive.
 
 ### Create a zip archive
 
@@ -289,7 +289,7 @@ zip -d archive.zip oldfile.txt             # delete a file from archive
 
 ## Faster Archiving with pbzip2
 
-`pbzip2` is a parallel implementation of bzip2 — it uses all CPU cores, making compression significantly faster on multi-core machines.
+`pbzip2` is a parallel implementation of bzip2 - it uses all CPU cores, making compression significantly faster on multi-core machines.
 
 ```bash
 pbzip2 file.txt                   # compress using all cores → file.txt.bz2
@@ -331,9 +331,9 @@ Use pigz/pbzip2 for large backups where speed matters.
 
 ## Creating Filesystems with Compression
 
-Compressed filesystems store data compressed at the block level — reads are transparent, and data is always compressed on disk.
+Compressed filesystems store data compressed at the block level - reads are transparent, and data is always compressed on disk.
 
-### SquashFS — read-only compressed filesystem
+### SquashFS: read-only compressed filesystem
 
 Used in live CDs, embedded systems, and container layers.
 
@@ -397,8 +397,8 @@ rsync -av --dry-run /source/ /dest/    # preview what would change
 ```
 
 **Trailing slash matters:**
-- `/source/` — sync the *contents* of source
-- `/source` — sync the source *directory itself*
+- `/source/` - sync the *contents* of source
+- `/source` - sync the source *directory itself*
 
 ### Common flags
 
@@ -476,13 +476,13 @@ rsync -avz --delete \
 ln -snf "$BACKUP_DIR/$DATE" "$LATEST"
 ```
 
-`--link-dest` creates hardlinks for unchanged files — each snapshot looks complete but only stores the differences. Disk usage is minimal.
+`--link-dest` creates hardlinks for unchanged files - each snapshot looks complete but only stores the differences. Disk usage is minimal.
 
 ---
 
 ## Version Control Based Backup with Git
 
-Git isn't just for code — it can back up any text-based configuration or document with full history.
+Git isn't just for code - it can back up any text-based configuration or document with full history.
 
 ### Basic git backup workflow
 
@@ -509,7 +509,7 @@ git push -u origin main
 git add -A && git commit -m "Auto backup $(date +%Y-%m-%d %H:%M)" && git push
 ```
 
-### etckeeper — automated /etc version control
+### etckeeper: automated /etc version control
 
 ```bash
 apt install etckeeper
@@ -544,7 +544,7 @@ git push backup main
 
 ## Creating Disk Images with fsarchiver
 
-`fsarchiver` creates filesystem images — it understands the filesystem structure (unlike `dd`) so it can compress and restore efficiently, and even restore to a filesystem of a different size.
+`fsarchiver` creates filesystem images - it understands the filesystem structure (unlike `dd`) so it can compress and restore efficiently, and even restore to a filesystem of a different size.
 
 ### Save a filesystem to an archive
 
@@ -569,7 +569,7 @@ fsarchiver restfs /backup/root.fsa id=0,dest=/dev/sda1
 
 ```bash
 fsarchiver restfs /backup/root.fsa id=0,dest=/dev/sdb1
-# fsarchiver handles the resize automatically — unlike dd
+# fsarchiver handles the resize automatically: unlike dd
 ```
 
 ### Inspect an archive
@@ -605,24 +605,12 @@ echo "Backup complete."
 
 ---
 
-## 📚 References
-
-<div class="references">
-<ul>
-  <li><a href="https://www.packtpub.com/product/linux-shell-scripting-cookbook/9781785881985" target="_blank">Linux Shell Scripting Cookbook — Packt</a></li>
-  <li><a href="https://rsync.samba.org/documentation.html" target="_blank">rsync Documentation</a></li>
-  <li><a href="https://www.fsarchiver.org/" target="_blank">fsarchiver Official Site</a></li>
-  <li><a href="https://www.gnu.org/software/tar/manual/" target="_blank">GNU tar Manual</a></li>
-</ul>
-</div>
-
 ---
 
-##  You can find me online at:
+## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
 
-- **X (Twitter):** [Md3omer](https://x.com/Md3omer )
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
-- **Tryhackme:**  [nonlouy](https://tryhackme.com/p/nonlouy)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

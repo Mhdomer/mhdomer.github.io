@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AWS CodePipeline and CodeBuild — CI/CD on AWS
+title: AWS CodePipeline and CodeBuild - CI/CD on AWS
 date: 2026-06-09T10:00:00
 categories:
   - AWS Learning Path
@@ -14,7 +14,7 @@ tags:
   - devops
   - cloud
 author: muhammed
-description: A full walkthrough of AWS CI/CD tools — CodePipeline stages and actions, CodeBuild buildspec, CodeDeploy deployment strategies, and end-to-end pipeline examples
+description: A full walkthrough of AWS CI/CD tools - CodePipeline stages and actions, CodeBuild buildspec, CodeDeploy deployment strategies, and end-to-end pipeline examples
 toc: true
 pin: false
 math: false
@@ -31,8 +31,8 @@ AWS provides a suite of managed services for building, testing, and deploying ap
 
 | Service | Role |
 |---|---|
-| **CodePipeline** | Orchestrates the CI/CD pipeline — connects source, build, test, deploy stages |
-| **CodeBuild** | Managed build service — compiles code, runs tests, produces artifacts |
+| **CodePipeline** | Orchestrates the CI/CD pipeline - connects source, build, test, deploy stages |
+| **CodeBuild** | Managed build service - compiles code, runs tests, produces artifacts |
 | **CodeDeploy** | Deploys applications to EC2, ECS, Lambda, or on-premises |
 | **CodeCommit** | Managed Git repository (largely replaced by GitHub/GitLab in practice) |
 | **CodeArtifact** | Managed artifact repository for npm, Maven, pip, NuGet packages |
@@ -48,12 +48,12 @@ A pipeline consists of a series of **stages**, each containing one or more **act
 
 | Term | Meaning |
 |---|---|
-| **Pipeline** | The overall workflow — source → build → test → deploy |
+| **Pipeline** | The overall workflow - source → build → test → deploy |
 | **Stage** | A logical phase (Source, Build, Test, Deploy) |
 | **Action** | A task within a stage (checkout from GitHub, run CodeBuild, deploy to ECS) |
 | **Artifact** | Files passed between stages (source code, compiled binary, Docker image digest) |
 | **Artifact store** | S3 bucket where CodePipeline stores artifacts between stages |
-| **Transition** | The link between stages — can be disabled to pause the pipeline |
+| **Transition** | The link between stages - can be disabled to pause the pipeline |
 
 ### Action Types
 
@@ -85,7 +85,7 @@ aws codepipeline get-pipeline-state --name my-app-pipeline
 aws codepipeline list-pipelines --output table
 ```
 
-### Example Pipeline — GitHub to ECS Fargate
+### Example Pipeline: GitHub to ECS Fargate
 
 ```json
 {
@@ -178,7 +178,7 @@ aws codepipeline list-pipelines --output table
 
 **CodeBuild** is a fully managed build service.
 It compiles source code, runs tests, and produces deployable artifacts.
-You don't manage servers — CodeBuild provisions a fresh environment for each build, runs it, and tears it down.
+You don't manage servers - CodeBuild provisions a fresh environment for each build, runs it, and tears it down.
 
 ### Build Environments
 
@@ -236,7 +236,7 @@ phases:
 
   post_build:
     commands:
-      - echo "Build completed — creating imagedefinitions.json"
+      - echo "Build completed - creating imagedefinitions.json"
       - printf '[{"name":"web","imageUri":"%s"}]' $ECR_REGISTRY/web-app:$CODEBUILD_RESOLVED_SOURCE_VERSION > imagedefinitions.json
 
 artifacts:
@@ -344,9 +344,9 @@ Controls how fast traffic is shifted during a deployment:
 
 | Config | Behaviour |
 |---|---|
-| `CodeDeployDefault.AllAtOnce` | Shifts all traffic at once — fastest, highest risk |
+| `CodeDeployDefault.AllAtOnce` | Shifts all traffic at once - fastest, highest risk |
 | `CodeDeployDefault.HalfAtATime` | Half of instances at a time |
-| `CodeDeployDefault.OneAtATime` | One instance at a time — slowest, lowest risk |
+| `CodeDeployDefault.OneAtATime` | One instance at a time - slowest, lowest risk |
 | **Canary** | Shift X% first, wait N minutes, then shift the rest (e.g. 10% for 5 min) |
 | **Linear** | Shift X% every N minutes until complete (e.g. 10% every 1 minute) |
 
@@ -409,7 +409,7 @@ Hooks:
 
 ---
 
-## End-to-End Pipeline — GitHub to ECS with CodeDeploy Blue/Green
+## End-to-End Pipeline: GitHub to ECS with CodeDeploy Blue/Green
 
 Here is a complete pipeline for deploying a containerised application:
 
@@ -417,19 +417,19 @@ Here is a complete pipeline for deploying a containerised application:
 GitHub (push to main)
     │
     ▼
-CodePipeline — Source Stage
+CodePipeline - Source Stage
     │  (checkout code, store in S3 artifact)
     ▼
-CodePipeline — Build Stage (CodeBuild)
+CodePipeline - Build Stage (CodeBuild)
     │  1. Run tests
     │  2. Build Docker image
     │  3. Push to ECR
     │  4. Generate imagedefinitions.json + taskdef.json + appspec.yaml
     ▼
-CodePipeline — Approve Stage
+CodePipeline - Approve Stage
     │  (SNS notification → manual approval in console)
     ▼
-CodePipeline — Deploy Stage (CodeDeploy Blue/Green)
+CodePipeline - Deploy Stage (CodeDeploy Blue/Green)
     │  1. Register new ECS task definition
     │  2. Create new task set (Green)
     │  3. Run BeforeAllowTraffic Lambda (health check)
@@ -447,7 +447,7 @@ Production serving new version
 ## CodeArtifact
 
 **CodeArtifact** is a managed artifact repository for software packages.
-It acts as a proxy to public repositories (npmjs.com, PyPI, Maven Central) — packages are cached in your account after the first download.
+It acts as a proxy to public repositories (npmjs.com, PyPI, Maven Central) - packages are cached in your account after the first download.
 
 Use it to:
 - Cache public packages internally (avoids dependency on public internet)
@@ -501,3 +501,13 @@ aws deploy list-deployments --application-name web-app --deployment-group-name p
 aws deploy get-deployment --deployment-id d-ABC123XYZ
 aws deploy stop-deployment --deployment-id d-ABC123XYZ --auto-rollback-enabled
 ```
+
+---
+
+## You can find me online at:
+
+![My signature image](/assets/img/footer-signature.png)
+
+- **GitHub:** [Mhdomer](https://github.com/Mhdomer)
+- **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
+- **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)

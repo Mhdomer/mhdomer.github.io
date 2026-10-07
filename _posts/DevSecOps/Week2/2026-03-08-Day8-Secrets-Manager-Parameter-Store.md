@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Week 2 — Day 8: AWS Secrets Manager & Parameter Store"
+title: "Day 8: AWS Secrets Manager & Parameter Store - Securing Credentials"
 date: 2026-03-08 10:00:00 +0800
 categories:
   - DevSecOps
@@ -12,7 +12,7 @@ tags:
   - CloudSecurity
   - DevSecOps
 author: muhammed
-description: A full walkthrough of AWS Secrets Manager and SSM Parameter Store — how to store, rotate, and retrieve secrets securely without hardcoding credentials anywhere.
+description: A practical walkthrough of AWS Secrets Manager and SSM Parameter Store - how to store, rotate, and retrieve secrets securely without hardcoding credentials anywhere.
 toc: true
 pin: false
 math: false
@@ -20,267 +20,246 @@ mermaid: false
 image: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fdevio2023-media.developers.io%2Fwp-content%2Fuploads%2F2023%2F08%2Faws-systems-manager.png&f=1&nofb=1&ipt=a02cd36b5d7af05a4fd3e370e26ac7a893429252720ae25a097e21575a4adce1
 ---
 
-## The Problem With Hardcoded Credentials
+## The #1 Cause of Cloud Breaches: Hardcoded Secrets
 
-Hardcoded credentials in source code, environment variables in plaintext, or `.env` files committed to git — these are among the most common causes of cloud breaches. The fix is centralized secrets management.
+Every junior developer has done it or been tempted to do it:
 
-AWS offers two services for this:
-- **Secrets Manager** — for secrets that need automatic rotation (DB passwords, API keys)
-- **SSM Parameter Store** — for configuration values and simpler secrets (no auto-rotation needed)
+```javascript
+// database.js
+const db = mysql.createConnection({
+  host: "prod-db.c91823.ap-southeast-1.rds.amazonaws.com",
+  user: "admin",
+  password: "SuperSecretPassword2026!" // DO NOT DO THIS!
+});
+```
+
+You tell yourself: *"I will just test it locally, and before I push to GitHub I will remove the password."*
+
+Then at 11:30 PM, you run `git add . && git commit -m "fix db query" && git push origin main`.
+
+Within five minutes, automated GitHub scrapers find your commit, extract the credentials, and attackers begin enumerating your database. Even if you make a new commit deleting the password, the credential remains baked into your repository's git commit history forever!
+
+The fundamental rule of modern cloud development is simple: **Code must never contain credentials.** Secrets must live in a centralized, encrypted secrets store and be fetched dynamically at runtime.
+
+In AWS, we have two primary tools for this: **AWS Secrets Manager** and **AWS Systems Manager Parameter Store**.
 
 ---
 
-## AWS Secrets Manager
+## Secrets Manager vs Parameter Store: The Big Confusion
+
+When I started, I asked: *"Why does AWS have two different services that store encrypted strings? Why would I pay $0.40 a month for Secrets Manager when Parameter Store is free?"*
+
+Here is the simple mental model:
+
+- **SSM Parameter Store is an Encrypted Digital Notebook:** It stores configuration settings, environment variables, feature flags, license keys, and static API tokens. It is simple, fast, and completely free in the Standard tier.
+- **AWS Secrets Manager is a High-Security Digital Safe with an Automated Combination Lock (Rotation):** It does everything Parameter Store does, but with a killer feature: **automatic secret rotation**. It integrates with AWS Lambda and RDS to automatically change database passwords every 30 days without human intervention or downtime.
+
+```
++-------------------------------------------------------------+
+|                      Secrets Architecture                   |
++-------------------------------------------------------------+
+                 |                                  |
+                 v                                  v
+    [ SSM Parameter Store ]              [ AWS Secrets Manager ]
+    - Config values & env vars           - High-value DB passwords
+    - Static API keys                    - Automatic Lambda rotation
+    - Free (Standard tier)               - ~$0.40 / secret / month
+    - Max 4KB - 8KB                      - Max 65KB
+```
+
+---
+
+## AWS Secrets Manager Deep Dive
 
 ### What It Stores
 
-- Database credentials (RDS, Redshift, DocumentDB)
-- API keys and OAuth tokens
-- SSH keys
-- Any arbitrary text or binary up to 65KB
+Secrets Manager stores JSON payloads up to 65KB, perfect for structured database credentials:
 
-### Creating a Secret
+```json
+{
+  "engine": "postgres",
+  "host": "production-db.c91823.ap-southeast-1.rds.amazonaws.com",
+  "port": 5432,
+  "username": "app_user",
+  "password": "n8!vK9#mQ2$pL0@z"
+}
+```
 
-1. Secrets Manager → Store a new secret
-2. Secret type: **Credentials for Amazon RDS database** (or "Other type of secret" for custom)
-3. Enter username and password
-4. Select the RDS instance (Secrets Manager links the secret to the DB for rotation)
-5. Name: `prod/myapp/db-password`
-6. Store
+### Hierarchical Secret Naming
 
- — *Secrets Manager → Store a new secret wizard showing the secret type selection (RDS credentials) and the username/password fields*
+Always structure secret names using hierarchical forward slashes:
 
-**Naming convention:** Use a path structure like `env/app/secret-name` — it helps with IAM policies and organization.
+```
+prod/ecommerce/database
+prod/ecommerce/stripe-api-key
+staging/ecommerce/database
+```
+
+Using paths makes writing least-privilege IAM policies straightforward: you can grant a microservice access to `arn:aws:secretsmanager:*:*:secret:prod/ecommerce/*` without having to list every secret ARN manually.
 
 ---
 
-### Retrieving a Secret
+## Retrieving Secrets at Runtime
 
-**From CLI:**
+### 1. From the AWS CLI
+
 ```bash
 aws secretsmanager get-secret-value \
-  --secret-id prod/myapp/db-password \
+  --secret-id prod/ecommerce/database \
   --query SecretString \
   --output text
 ```
 
-**From Python (boto3):**
+### 2. From Python (boto3)
+
+Instead of reading from `.env` files on disk, your application queries Secrets Manager on startup:
+
 ```python
 import boto3
 import json
+from botocore.exceptions import ClientError
 
-client = boto3.client('secretsmanager', region_name='ap-southeast-1')
+def get_database_credentials():
+    secret_name = "prod/ecommerce/database"
+    region_name = "ap-southeast-1"
 
-response = client.get_secret_value(SecretId='prod/myapp/db-password')
-secret = json.loads(response['SecretString'])
+    session = boto3.session.Session()
+    client = session.client(
+        service_name="secretsmanager",
+        region_name=region_name
+    )
 
-db_user = secret['username']
-db_pass = secret['password']
+    try:
+        get_secret_value_response = client.get_secret_value(
+            SecretId=secret_name
+        )
+    except ClientError as e:
+        # Handle access denied or missing secret errors cleanly
+        raise e
+
+    secret = json.loads(get_secret_value_response["SecretString"])
+    return secret["username"], secret["password"]
 ```
 
- — *Secrets Manager → a secret detail page showing the secret name, ARN, description, rotation status, and the "Retrieve secret value" button*
+### 3. Least-Privilege IAM Policy
 
-The application never stores the password — it calls Secrets Manager at runtime. The IAM role on the EC2/Lambda must have `secretsmanager:GetSecretValue` permission on that specific secret ARN.
-
----
-
-### IAM Policy for Secret Access
+Your ECS task execution role or EC2 instance profile only needs read access to that specific secret path:
 
 ```json
 {
-  "Effect": "Allow",
-  "Action": "secretsmanager:GetSecretValue",
-  "Resource": "arn:aws:secretsmanager:ap-southeast-1:123456789:secret:prod/myapp/*"
-}
-```
-
-Scope to the exact path — don't allow `*` on all secrets.
-
----
-
-### Automatic Secret Rotation
-
-Secrets Manager can automatically rotate secrets on a schedule using a Lambda function.
-
-**For RDS (supported natively):**
-1. Secrets Manager → select your secret → Edit rotation
-2. Enable automatic rotation
-3. Rotation schedule: every 30 days
-4. Rotation function: use the AWS-provided template for your DB engine
-
- — *Secrets Manager → Edit rotation panel showing "Automatic rotation" toggled on, rotation schedule set to 30 days, and the Lambda function ARN selected*
-
-**What happens during rotation:**
-1. Lambda creates a new password on the database
-2. Updates the secret in Secrets Manager
-3. Tests the new credentials
-4. Marks rotation complete
-
-Your application using `get_secret_value` automatically gets the new password on the next call — no redeployment needed.
-
----
-
-### Secrets Manager in ECS and Lambda
-
-**ECS task definition — inject secret as environment variable:**
-```json
-{
-  "secrets": [
+  "Version": "2012-10-17",
+  "Statement": [
     {
-      "name": "DB_PASSWORD",
-      "valueFrom": "arn:aws:secretsmanager:ap-southeast-1:123456789:secret:prod/myapp/db-password"
+      "Sid": "AllowGetAppSecretsOnly",
+      "Effect": "Allow",
+      "Action": "secretsmanager:GetSecretValue",
+      "Resource": "arn:aws:secretsmanager:ap-southeast-1:123456789012:secret:prod/ecommerce/*"
     }
   ]
 }
 ```
 
-**Lambda — reference secret as environment variable:**
-Same pattern — reference the secret ARN in the Lambda environment variables config.
+---
 
- — *ECS task definition JSON editor showing the "secrets" block with a secret ARN reference for DB_PASSWORD*
+## How Automatic Secret Rotation Works
+
+If an employee leaves your company or an API key is suspected of being exposed, manually rotating 20 database passwords across 10 microservices is a recipe for broken deployments.
+
+AWS Secrets Manager automates this using an AWS Lambda function:
+
+```
+[ Secrets Manager Timer: Every 30 Days ]
+                   |
+                   v
+         [ Trigger Lambda ]
+                   |
+    1. Create new password on database
+    2. Test connection with new password
+    3. Update secret in Secrets Manager
+    4. Retire old password
+```
+
+1. **createSecret:** Lambda generates a new password.
+2. **setSecret:** Lambda connects to the database as admin and updates the user's password.
+3. **testSecret:** Lambda tests logging in with the new credentials.
+4. **finishSecret:** Secrets Manager switches the current secret version to the new password.
+
+When your application re-authenticates, it receives the updated credentials seamlessly.
 
 ---
 
-## SSM Parameter Store
+## Direct Injection in ECS & AWS Lambda
 
-### Secrets Manager vs Parameter Store
+You do not even need to write custom `boto3` retrieval code if you are deploying to ECS or Lambda. AWS can inject secrets directly into environment variables at container launch:
 
-| | Secrets Manager | Parameter Store |
-|--|-----------------|-----------------|
-| Cost | ~$0.40/secret/month | Free (Standard tier) |
-| Auto rotation | Yes (built-in) | No |
-| Cross-account | Yes | Limited |
-| Max size | 65KB | 4KB (Standard), 8KB (Advanced) |
-| Best for | DB passwords, API keys needing rotation | Config values, feature flags, non-rotating secrets |
+### ECS Task Definition Integration
 
-Use **Secrets Manager** when you need rotation. Use **Parameter Store** for everything else.
+```json
+{
+  "name": "ecommerce-api",
+  "image": "123456789012.dkr.ecr.ap-southeast-1.amazonaws.com/api:v1.2",
+  "secrets": [
+    {
+      "name": "DB_PASSWORD",
+      "valueFrom": "arn:aws:secretsmanager:ap-southeast-1:123456789012:secret:prod/ecommerce/database-xYz123:password::"
+    }
+  ]
+}
+```
+
+The ECS agent calls Secrets Manager on container boot and injects `DB_PASSWORD` into process memory. The secret is never baked into the Docker image layers!
 
 ---
+
+## SSM Parameter Store: The Lightweight Alternative
+
+For configuration data, environment variables, and static secrets where automated rotation is not needed, **Systems Manager Parameter Store** is the ideal tool.
 
 ### Parameter Types
 
-| Type | Description |
-|------|-------------|
-| `String` | Plaintext value |
-| `StringList` | Comma-separated list |
-| `SecureString` | Encrypted with KMS |
+| Type | How It Works | Best Use Case |
+| :--- | :--- | :--- |
+| `String` | Plaintext string | API endpoints, log levels, environment names |
+| `StringList` | Comma-separated strings | Allowed CORS domains, subnet lists |
+| `SecureString`| Encrypted at rest with AWS KMS | API tokens, private signing keys |
 
-Always use `SecureString` for sensitive values.
+Always select `SecureString` for sensitive credentials!
 
----
+### Retrieving Parameters via CLI
 
-### Creating Parameters
-
-1. Systems Manager → Parameter Store → Create parameter
-2. Name: `/prod/myapp/api-key`
-3. Tier: Standard
-4. Type: SecureString
-5. KMS key: use your CMK or the default `aws/ssm` key
-6. Value: paste your secret value
-7. Create
-
- — *SSM Parameter Store → Create parameter form showing the name "/prod/myapp/api-key", type SecureString, and KMS key selection*
-
----
-
-### Retrieving Parameters
-
-**CLI:**
 ```bash
-# Get a single parameter (decrypted)
+# Retrieve a single encrypted secret with automatic KMS decryption
 aws ssm get-parameter \
-  --name /prod/myapp/api-key \
+  --name /prod/ecommerce/stripe-key \
   --with-decryption \
   --query Parameter.Value \
   --output text
 
-# Get all parameters under a path
+# Fetch all configuration parameters for an app in one recursive call
 aws ssm get-parameters-by-path \
-  --path /prod/myapp/ \
+  --path /prod/ecommerce/ \
   --with-decryption \
   --recursive
 ```
 
-**Python:**
-```python
-import boto3
-
-ssm = boto3.client('ssm', region_name='ap-southeast-1')
-
-response = ssm.get_parameter(
-    Name='/prod/myapp/api-key',
-    WithDecryption=True
-)
-api_key = response['Parameter']['Value']
-```
-
- — *Terminal showing the output of the get-parameter CLI command returning the decrypted value*
-
 ---
 
-### Parameter Store in ECS and Lambda
+## Junior Pitfalls to Avoid
 
-**ECS task definition:**
-```json
-{
-  "secrets": [
-    {
-      "name": "API_KEY",
-      "valueFrom": "arn:aws:ssm:ap-southeast-1:123456789:parameter/prod/myapp/api-key"
-    }
-  ]
-}
-```
-
-The same `secrets` block in ECS task definitions works for both Secrets Manager and Parameter Store — just change the ARN format.
-
----
-
-## Lab — Store and Retrieve a DB Password
-
-**Objective:** Store a fake DB password in Secrets Manager, retrieve it in a Python script.
-
-1. Secrets Manager → Store a new secret → Other type of secret
-2. Key: `username`, value: `dbadmin`
-3. Key: `password`, value: `S3cr3tP@ssword!`
-4. Name: `lab/testapp/db-creds` → Store
-
- — *Secrets Manager → the newly created secret showing its name, ARN, and "Last retrieved" timestamp*
-
-5. Create a Python script locally:
-
-```python
-import boto3
-import json
-
-client = boto3.client('secretsmanager', region_name='ap-southeast-1')
-
-response = client.get_secret_value(SecretId='lab/testapp/db-creds')
-creds = json.loads(response['SecretString'])
-
-print(f"User: {creds['username']}")
-print(f"Pass: {creds['password']}")
-```
-
-6. Run the script — confirm it retrieves the values without them being in the code
-
- — *Terminal showing the Python script output printing the username and password retrieved from Secrets Manager*
-
-7. Go back to Secrets Manager → enable rotation for the secret using the Lambda template
-8. Trigger rotation manually: Actions → Rotate secret immediately
-9. Re-run the script — it should return the new rotated password
-
- — *Secrets Manager → secret detail showing rotation enabled, last rotated timestamp updated, and rotation status "Successful"*
+1. **The In-Memory Caching Bug:** If your application queries Secrets Manager once at boot and caches the database password in memory forever, what happens when Secrets Manager automatically rotates the password at 3:00 AM? Your app will keep using the old password, fail authentication, and crash! Always implement retry logic: if a DB connection fails with authentication errors, fetch the fresh secret from Secrets Manager before failing.
+2. **Using Secrets Manager for Every Single Setting:** At $0.40 per secret per month, storing 500 minor config settings in Secrets Manager costs $200/month. Use Parameter Store (free) for general configs, and reserve Secrets Manager for credentials requiring automated rotation.
+3. **Leaving Hardcoded Secrets in Git History:** If you accidentally commit a secret, changing the code in a new commit does NOT delete it. You must revoke the secret immediately in AWS, and purge git history using `git-filter-repo` or BFG Repo-Cleaner.
+4. **Granting Wildcard Permissions:** Never write `"Resource": "arn:aws:secretsmanager:*:*:secret:*"` in an IAM policy. Always restrict secret access to specific application path prefixes.
 
 ---
 
 ## Key Takeaways
 
-- Never hardcode credentials — retrieve them at runtime from Secrets Manager or Parameter Store
-- Use Secrets Manager when you need automatic rotation — especially for DB passwords
-- Use Parameter Store for non-rotating config values — it's free at the Standard tier
-- Scope IAM permissions to specific secret paths — never `secretsmanager:GetSecretValue` on `*`
-- ECS and Lambda can inject secrets directly via the `secrets` block — no custom code needed for basic cases
+- Never hardcode passwords or API keys in source code, Dockerfiles, or git repositories.
+- Use AWS Secrets Manager when you need automated secret rotation (especially for RDS databases).
+- Use SSM Parameter Store with `SecureString` for static configuration values and general API keys.
+- Inject secrets directly into container memory via ECS task definition `secrets` blocks to avoid storing secrets in image layers.
+- Always implement re-fetch logic in applications to handle seamless password rotation without restarts.
 
 ---
 
@@ -289,8 +268,9 @@ print(f"Pass: {creds['password']}")
 <div class="references">
 <ul>
   <li><a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html" target="_blank">AWS Secrets Manager User Guide</a></li>
-  <li><a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" target="_blank">SSM Parameter Store Guide</a></li>
-  <li><a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/rotating-secrets.html" target="_blank">Rotating Secrets in Secrets Manager</a></li>
+  <li><a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" target="_blank">AWS Systems Manager Parameter Store Guide</a></li>
+  <li><a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/rotating-secrets.html" target="_blank">Rotating AWS Secrets Manager Secrets</a></li>
+  <li><a href="https://aws.amazon.com/blogs/compute/specifying-sensitive-data-in-aws-lambda-using-aws-systems-manager-parameter-store-and-aws-secrets-manager/" target="_blank">AWS Compute Blog: Injecting Secrets into Lambda</a></li>
 </ul>
 </div>
 
@@ -299,7 +279,6 @@ print(f"Pass: {creds['password']}")
 ## You can find me online at:
 
 ![My signature image](/assets/img/footer-signature.png)
-
 
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
