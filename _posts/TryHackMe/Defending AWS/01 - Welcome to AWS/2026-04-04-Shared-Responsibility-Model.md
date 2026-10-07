@@ -22,7 +22,9 @@ pin: false
 math: false
 mermaid: true
 permalink: /posts/Defending-AWS-Shared-Responsibility-Model/
-image: https://cdn-images.tryhackme.com/room-icons/68baea2454c82afe90fd7020-1782373876785
+image:
+  path: /assets/img/posts/aws_shared_responsibility_excalidraw.png
+  alt: "AWS Shared Responsibility Model Architecture Breakdown"
 ---
 
 ## Overview
