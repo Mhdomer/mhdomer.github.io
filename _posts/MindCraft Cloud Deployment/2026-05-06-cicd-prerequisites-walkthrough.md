@@ -430,7 +430,7 @@ a critical CVE in the frontend image should not block an API deploy.
 
 GitHub Secrets are encrypted values stored at the repository level. Workflows can
 
-reference them as `${{ secrets.SECRET_NAME }}` - they are injected into the runner
+reference them as `{% raw %}${{ secrets.SECRET_NAME }}{% endraw %}` - they are injected into the runner
 
 environment at job start and are never visible in logs.
 

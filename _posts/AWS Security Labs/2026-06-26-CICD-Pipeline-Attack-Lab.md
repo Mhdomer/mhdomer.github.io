@@ -24,6 +24,8 @@ mermaid: false
 image:
 ---
 
+{% raw %}
+
 ## Objective
 
 Steal AWS credentials stored as GitHub Actions secrets using four different attack techniques - all from a normal-looking GitHub pull request.
@@ -774,3 +776,5 @@ aws iam delete-open-id-connect-provider \
 - **GitHub:** [Mhdomer](https://github.com/Mhdomer)
 - **LinkedIn:** [mhd3omar](https://www.linkedin.com/in/mhd3omar/)
 - **Tryhackme:** [nonlouy](https://tryhackme.com/p/nonlouy)
+
+{% endraw %}

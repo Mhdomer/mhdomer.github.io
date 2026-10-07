@@ -113,7 +113,7 @@ Vagrant builds and maintains reproducible virtual development environments. Key 
 
 Ansible handles post-boot configuration management using an agentless, push-based architecture over SSH or WinRM:
 - **Playbook:** A YAML manifest describing tasks, target hosts (`hosts: all`), privilege escalation (`become: yes`), and assigned roles.
-- **Template:** Base configuration files (e.g., SQL scripts, web server configs) written with Jinja2 placeholders (e.g., `{{ db_password }}`). Ansible substitutes variables dynamically at execution time.
+- **Template:** Base configuration files (e.g., SQL scripts, web server configs) written with Jinja2 placeholders (e.g., `{% raw %}{{ db_password }}{% endraw %}`). Ansible substitutes variables dynamically at execution time.
 - **Role:** A standardized, modular collection of instructions, templates, default variables, and handlers organized into a structured directory tree (`defaults/`, `tasks/`, `templates/`, `vars/`). Assigning a role to a host executes its complete workflow.
 - **Variable Precedence:** Allows setting global defaults in `defaults/main.yml` while selectively overriding them for specific environments via `vars_files` (e.g., `variables/var.yml`).
 
@@ -161,7 +161,7 @@ end
 The web server provisioning executes `web-playbook.yml`, which invokes the `webapp` role. Its tasks are split cleanly:
 1. **Database Initialization (`db-setup.yml`):**
    - Creates a temporary directory `/tmp/sql`
-   - Injects variables (`{{ db_name }}`, `{{ db_user }}`, `{{ db_password }}`, `{{ db_host }}`) into `createdb.sql` and `createsp.sql` templates
+   - Injects variables (`{% raw %}{{ db_name }}{% endraw %}`, `{% raw %}{{ db_user }}{% endraw %}`, `{% raw %}{{ db_password }}{% endraw %}`, `{% raw %}{{ db_host }}{% endraw %}`) into `createdb.sql` and `createsp.sql` templates
    - Executes SQL creation scripts against the MySQL database at `172.20.128.3`
    - Cleans up `/tmp/sql`
 2. **Application Deployment (`app-setup.yml`):**

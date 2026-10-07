@@ -598,6 +598,7 @@ RUN npm run build
 
 And in `deploy.yml`:
 
+{% raw %}
 ```yaml
 
 - name: Build frontend image
@@ -613,6 +614,7 @@ And in `deploy.yml`:
       .
 
 ```
+{% endraw %}
 
   
 

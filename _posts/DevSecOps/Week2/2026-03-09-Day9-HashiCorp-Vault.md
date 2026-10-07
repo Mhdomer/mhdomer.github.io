@@ -173,6 +173,7 @@ The generated IAM user exists only for the lease duration. When the lease expire
 
 Same concept for databases - Vault generates a unique username/password per request, valid for a limited time.
 
+{% raw %}
 ```bash
 # Enable database secrets engine
 vault secrets enable database
@@ -195,6 +196,7 @@ vault write database/roles/readonly \
 # Get credentials
 vault read database/creds/readonly
 ```
+{% endraw %}
 
 
 Every application gets a unique DB user. If one app is compromised, its credentials expire within the hour and never worked for anything else.

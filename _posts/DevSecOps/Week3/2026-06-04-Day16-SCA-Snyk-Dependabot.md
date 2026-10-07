@@ -137,6 +137,7 @@ snyk monitor --project-name=myapp-production
 
 ### Snyk in GitHub Actions
 
+{% raw %}
 ```yaml
 # .github/workflows/snyk.yml
 name: Snyk SCA Scan
@@ -166,6 +167,7 @@ jobs:
         with:
           sarif_file: snyk.sarif
 ```
+{% endraw %}
 
 
 ---

@@ -298,6 +298,7 @@ migrations/
 
 ## Integrating into GitHub Actions
 
+{% raw %}
 ```yaml
 # .github/workflows/semgrep.yml
 name: Semgrep SAST
@@ -336,6 +337,7 @@ jobs:
         with:
           sarif_file: semgrep.sarif
 ```
+{% endraw %}
 
 
 

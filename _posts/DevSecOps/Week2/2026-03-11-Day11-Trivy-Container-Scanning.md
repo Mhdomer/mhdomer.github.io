@@ -228,6 +228,7 @@ trivy image --ignorefile .trivyignore myapp:latest
 
 ### Basic Image Scan
 
+{% raw %}
 ```yaml
 # .github/workflows/trivy.yml
 name: Trivy Security Scan
@@ -263,6 +264,7 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
 ```
+{% endraw %}
 
 
 The SARIF upload makes findings appear in the **GitHub Security tab → Code scanning alerts**.

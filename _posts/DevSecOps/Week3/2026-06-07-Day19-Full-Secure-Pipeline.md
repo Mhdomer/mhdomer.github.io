@@ -73,6 +73,7 @@ Merge allowed (all gates passed)
 
 ## Full Pipeline: GitHub Actions
 
+{% raw %}
 ```yaml
 # .github/workflows/secure-pipeline.yml
 name: Secure CI/CD Pipeline
@@ -256,6 +257,7 @@ jobs:
         if: always()
         run: docker compose -f docker-compose.staging.yml down
 ```
+{% endraw %}
 
 
 
@@ -284,6 +286,7 @@ Now a PR literally cannot be merged unless all security gates pass.
 
 Never hardcode credentials in workflow files. Use GitHub Actions secrets:
 
+{% raw %}
 ```yaml
 env:
   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -291,6 +294,7 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
 ```
+{% endraw %}
 
 Set these in: repo → Settings → Secrets and variables → Actions → New repository secret
 

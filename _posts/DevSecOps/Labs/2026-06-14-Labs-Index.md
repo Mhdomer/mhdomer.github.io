@@ -40,7 +40,7 @@ Every lab below is structured around a clear workflow:
 - **Objective:** Create a role with minimal S3 access and verify no unintended permissions exist.
 - **Tools:** AWS IAM, Policy Simulator, AWS CLI
 - **Success Criteria:** `s3:GetObject` allowed, `s3:DeleteObject` denied, `ec2:*` denied in simulator.
-- **Walkthrough:** [Day 1: AWS IAM Deep Dive]({% post_url DevSecOps/Week1/2026-03-01-Day1-AWS-IAM %}) and [AWS Beginner Lab: IAM Policy Simulator]({% post_url AWS Security Labs/2026-06-11-IAM-Policy-Simulator-Lab %})
+- **Walkthrough:** [Day 1: Demystifying AWS IAM - Roles, Policies, and Least Privilege]({% post_url DevSecOps/Week1/2026-03-01-Day1-AWS-IAM %})
 
 ---
 
@@ -48,7 +48,7 @@ Every lab below is structured around a clear workflow:
 - **Objective:** Generate real threat detections, trace findings into Security Hub, and automate alerts.
 - **Tools:** AWS GuardDuty, Security Hub, Amazon EventBridge
 - **Success Criteria:** Sample findings populate Security Hub with severity ratings, EventBridge rule triggers on High severity finding.
-- **Walkthrough:** [Day 4: GuardDuty & Security Hub]({% post_url DevSecOps/Week1/2026-03-04-Day4-GuardDuty-Security-Hub %}) and [EC2 Attack Chain GuardDuty Lab]({% post_url AWS Security Labs/2026-06-20-EC2-Attack-Chain-GuardDuty-Lab %})
+- **Walkthrough:** [Day 4: AWS GuardDuty & Security Hub - Threat Detection & Centralized Posture]({% post_url DevSecOps/Week1/2026-03-04-Day4-GuardDuty-Security-Hub %})
 
 ---
 
@@ -56,7 +56,7 @@ Every lab below is structured around a clear workflow:
 - **Objective:** Build an AWS Config rule that detects publicly accessible S3 buckets and automatically reverts them.
 - **Tools:** AWS Config, S3, SSM Automation Documents
 - **Success Criteria:** Public bucket triggers a NON_COMPLIANT status within minutes and auto-remediates.
-- **Walkthrough:** [Day 3: CloudTrail & AWS Config]({% post_url DevSecOps/Week1/2026-03-03-Day3-CloudTrail-AWS-Config %}) and [AWS Config Basics Lab]({% post_url AWS Security Labs/2026-06-17-AWS-Config-Basics-Lab %})
+- **Walkthrough:** [Day 3: AWS CloudTrail & AWS Config - Forensic Auditing & Compliance Posture]({% post_url DevSecOps/Week1/2026-03-03-Day3-CloudTrail-AWS-Config %})
 
 ---
 
@@ -64,7 +64,7 @@ Every lab below is structured around a clear workflow:
 - **Objective:** Log all management events and run SQL queries in Athena to hunt suspicious API calls.
 - **Tools:** AWS CloudTrail, Amazon Athena, S3
 - **Success Criteria:** Query isolates the exact assumed role session, source IP, and parameters of simulated malicious actions.
-- **Walkthrough:** [Day 3: CloudTrail & AWS Config]({% post_url DevSecOps/Week1/2026-03-03-Day3-CloudTrail-AWS-Config %}) and [CloudTrail From Scratch Lab]({% post_url AWS Security Labs/2026-06-16-CloudTrail-From-Scratch-Lab %})
+- **Walkthrough:** [Day 3: AWS CloudTrail & AWS Config - Forensic Auditing & Compliance Posture]({% post_url DevSecOps/Week1/2026-03-03-Day3-CloudTrail-AWS-Config %})
 
 ---
 
@@ -72,7 +72,7 @@ Every lab below is structured around a clear workflow:
 - **Objective:** Attach AWS WAF Web ACL to an Application Load Balancer and block SQL injection and cross-site scripting attempts.
 - **Tools:** AWS WAF v2, ALB, curl
 - **Success Criteria:** Clean HTTP GET requests return 200 OK, payloads containing `' OR 1=1 --` trigger immediate 403 Forbidden responses.
-- **Walkthrough:** [Day 6: AWS WAF & Shield]({% post_url DevSecOps/Week1/2026-03-06-Day6-WAF-Shield %})
+- **Walkthrough:** [Day 6: AWS WAF & Shield - Protecting Web Apps from Layer 7 Attacks]({% post_url DevSecOps/Week1/2026-03-06-Day6-WAF-Shield %})
 
 ---
 
@@ -82,7 +82,7 @@ Every lab below is structured around a clear workflow:
 - **Objective:** Centralize database credentials and execute automatic rotation using Lambda.
 - **Tools:** AWS Secrets Manager, RDS, Lambda, Python boto3
 - **Success Criteria:** Application pulls credentials via SDK without hardcoding, rotation lambda updates DB credentials seamlessly.
-- **Walkthrough:** [Day 8: AWS Secrets Manager & Parameter Store]({% post_url DevSecOps/Week2/2026-03-08-Day8-Secrets-Manager-Parameter-Store %}) and [Secrets Manager & KMS Abuse Lab]({% post_url AWS Security Labs/2026-07-08-Secrets-Manager-KMS-Key-Abuse-Lab %})
+- **Walkthrough:** [Day 8: AWS Secrets Manager & Systems Manager Parameter Store - Dynamic Secrets]({% post_url DevSecOps/Week2/2026-03-08-Day8-Secrets-Manager-Parameter-Store %})
 
 ---
 
