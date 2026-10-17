@@ -29,7 +29,7 @@ image: /assets/img/posts/aegis-aws-architecture.drawio.png
 
 ---
 
-## The Spark: When Cloud Ops Agents Meet The Real World
+## 1. The Agentic Cloud Dilemma: When Cloud Ops Agents Meet The Real World
 
 Over the past year, I have spent most of my free time building and testing autonomous cloud security pipelines on AWS. Watching an agent ingest a GuardDuty or Security Hub alert, diagnose the misconfiguration, and fix it via Boto3 in seconds is an awesome feeling. But it is also terrifying right up until you think about what happens when an autonomous agent makes a mistake on a live production account.
 
@@ -45,7 +45,7 @@ When AWS introduced the experimental **Strands Decider 2B** concept (a small, no
 
 ---
 
-## Production AWS Architecture
+## 2. Architecture & Botocore Interception
 
 Here is the complete end-to-end architecture showing how findings flow from AWS Security Hub into the Aegis-2B runtime, through the circuit breaker boundary, and out to live AWS targets alongside declarative Terraform patches:
 
@@ -305,7 +305,7 @@ aegis-2b security self-audit: 10/10 passed (HARDENED_PASS) in 113.26 ms
 
 ---
 
-## Empirical Benchmark Log (100% Measured Data)
+## 3. Benchmarks: The Measured Differentiator (100% Empirical Data)
 
 Measured directly on local hardware (**CachyOS Linux, Kernel 6.13+, Python 3.14.7**) against live AWS `us-east-1` (`3273****1586`) with `simulate_local_latency=False`:
 
@@ -327,6 +327,89 @@ For operations teams, Aegis-2B includes a monochromatic, high-efficiency Web Ope
 *Figure 2: Aegis-2B Web Operations Center showing real-time telemetry, embedded terminal emulator, live AWS posture scanner, and cryptographic audit receipts.*
 
 You can test the full 6-tab dashboard right now in your browser without entering any credentials: [mhdomer.github.io/aegis-2b](https://mhdomer.github.io/aegis-2b/)
+
+---
+
+## 4. The Reusable Decision Pattern: Drop-In Botocore Gatekeeper
+
+A core requirement of the Strands Decider 2B initiative is providing reusable decision patterns that any cloud builder can drop into their agentic workflows. In Aegis-2B, this logic is isolated into a standalone pattern in [`reusable-patterns/botocore_guardrail_pattern.py`](https://github.com/Mhdomer/aegis-2b/tree/main/reusable-patterns).
+
+It hooks directly into the Botocore event bus (`before-parameter-build.*`) to intercept any outgoing AWS API call before network serialization:
+
+```python
+"""
+REUSABLE PATTERN: Botocore SDK Blast-Radius & Break-Glass Gatekeeper
+TAG: #guardrails / #policy
+MODEL: Strands Decider 2B
+"""
+
+from typing import Literal
+from pydantic import BaseModel, Field
+
+# 1. Typed Decision Schema
+class GuardrailDecision(BaseModel):
+    action: Literal["PERMIT", "ENFORCE_BREAK_GLASS", "QUARANTINE"] = Field(
+        description="The safety verdict for the intercepted AWS API operation."
+    )
+    confidence: float = Field(
+        ge=0.0, le=1.0, description="Confidence score of the classification."
+    )
+    risk_factor: Literal["LOW", "MEDIUM", "CRITICAL_BLAST_RADIUS"] = Field(
+        description="Assessed blast radius on cloud infrastructure."
+    )
+    reasoning: str = Field(description="Short rationale explaining the policy verdict.")
+
+# 2. Decision Prompt / Question Set
+DECISION_PROMPT = """
+You are a Cloud Infrastructure Circuit Breaker running locally inside the AWS SDK.
+Analyze the intercepted API call and determine if it risks destructive cloud disruption.
+
+Target Service: {service}
+Operation: {operation}
+Target Resource: {resource_identifier}
+Payload: {normalized_params}
+
+Rubric:
+- If modifying production VPC routing (0.0.0.0/0), default Security Groups, or wildcard IAM: ENFORCE_BREAK_GLASS.
+- If applying defensive/remediation locks (S3 Block Public Access, attaching read-only guardrail): PERMIT.
+
+Emit JSON matching the GuardrailDecision schema.
+"""
+
+# 3. Wiring Hook Example
+def attach_decider_to_session(boto_session, decider_engine):
+    def hook(model, params, **kwargs):
+        service = model.service_model.service_name
+        op = model.name
+        
+        decision: GuardrailDecision = decider_engine.evaluate(
+            DECISION_PROMPT.format(
+                service=service,
+                operation=op,
+                resource_identifier=params.get("RouteTableId", "unknown"),
+                normalized_params=params,
+            )
+        )
+        
+        if decision.action == "ENFORCE_BREAK_GLASS":
+            raise PermissionError(f"[HALTED] Decider 2B triggered Break-Glass: {decision.reasoning}")
+
+    boto_session.events.register("before-parameter-build.*", hook)
+```
+
+You can view the full pattern, schemas, and wiring documentation in the [Aegis-2B Reusable Patterns Directory](https://github.com/Mhdomer/aegis-2b/tree/main/reusable-patterns).
+
+---
+
+## 5. Next Steps: Extending to Kubernetes and Terraform Pre-Execution Hooks
+
+The SDK-level circuit breaker pattern is not limited to Boto3. The same lightweight, fail-closed classification architecture extends naturally across the cloud-native ecosystem:
+
+1. **Kubernetes API Mutations (Validating Admission Controller):**
+   By embedding Strands Decider 2B inside a Kubernetes `ValidatingAdmissionWebhook` or client-side interceptor (in `client-go` or the Python Kubernetes client), we can inspect mutating admission reviews (`CREATE`, `UPDATE`, `DELETE`) on Pods, Deployments, and ClusterRoleBindings. If an agent attempts to deploy privileged containers (`privileged: true`, `hostNetwork: true`) or bind wildcard ClusterRoles (`*`), Decider 2B returns an immediate rejection in under 1 ms, well within Kubernetes API webhook timeout limits (typically 1 to 3 seconds).
+
+2. **Terraform & OpenTofu Pre-Execution Hooks:**
+   When agents generate Infrastructure-as-Code modifications, Aegis-2B hooks into the CI/CD pipeline before `terraform apply`. By parsing `terraform plan -json`, Decider 2B evaluates the blast radius of planned deletions and replacements. High-blast mutations (such as replacing an Amazon RDS database cluster or modifying VPC Peering connections) automatically trigger `ENFORCE_BREAK_GLASS` in the GitHub Actions / GitLab CI pipeline, preventing out-of-band state destruction.
 
 ---
 
