@@ -3,8 +3,8 @@ layout: post
 title: "Sensitive Information Disclosure in RAG - Vectors, Multi-Tenancy, and Access Boundaries"
 date: 2026-10-02T18:00:00+03:00
 categories:
-  - TryHackMe
   - AI Security
+  - 05 - Data Poisoning
 tags:
   - tryhackme
   - ai-security

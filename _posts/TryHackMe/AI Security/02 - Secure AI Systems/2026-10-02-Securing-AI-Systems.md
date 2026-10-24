@@ -3,9 +3,10 @@ layout: post
 title: "TryHackMe: Securing AI Systems"
 date: 2026-10-02T00:35:00
 categories:
-  - TryHackMe
   - AI Security
+  - 02 - Secure AI Systems
 tags:
+  - tryhackme
   - thm
   - ai
   - ai-security

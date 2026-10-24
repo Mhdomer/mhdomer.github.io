@@ -3,9 +3,10 @@ layout: post
 title: "TryHackMe: AI Forensics"
 date: 2026-10-02T00:20:00
 categories:
-  - TryHackMe
   - AI Security
+  - 01 - AI Fundamentals
 tags:
+  - tryhackme
   - thm
   - ai
   - dfir

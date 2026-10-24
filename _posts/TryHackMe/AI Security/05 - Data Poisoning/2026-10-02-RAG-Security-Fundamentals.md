@@ -3,8 +3,8 @@ layout: post
 title: "RAG Security Fundamentals - Architecture, Attack Surfaces, and Context Manipulation"
 date: 2026-10-02T16:00:00+03:00
 categories:
-  - TryHackMe
   - AI Security
+  - 05 - Data Poisoning
 tags:
   - tryhackme
   - ai-security

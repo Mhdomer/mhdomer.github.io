@@ -3,9 +3,10 @@ layout: post
 title: "TryHackMe: AI System Reconnaissance"
 date: 2026-10-02T00:55:00
 categories:
-  - TryHackMe
   - AI Security
+  - 02 - Secure AI Systems
 tags:
+  - tryhackme
   - thm
   - ai
   - reconnaissance

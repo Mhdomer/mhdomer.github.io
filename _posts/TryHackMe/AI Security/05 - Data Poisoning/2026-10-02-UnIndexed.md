@@ -3,8 +3,8 @@ layout: post
 title: "UnIndexed - Auditing Enterprise RAG Access Boundaries and Boardroom Secrets"
 date: 2026-10-02T19:00:00+03:00
 categories:
-  - TryHackMe
   - AI Security
+  - 05 - Data Poisoning
 tags:
   - tryhackme
   - ai-security

@@ -3,9 +3,10 @@ layout: post
 title: "TryHackMe: Jailbreaking"
 date: 2026-10-02T01:15:00
 categories:
-  - TryHackMe
   - AI Security
+  - 03 - Prompt Security
 tags:
+  - tryhackme
   - thm
   - ai
   - prompt-security

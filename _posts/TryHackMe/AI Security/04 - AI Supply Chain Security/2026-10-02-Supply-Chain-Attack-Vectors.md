@@ -3,8 +3,8 @@ layout: post
 title: "Supply Chain Attack Vectors - Weaponizing ML Components"
 date: 2026-10-02T16:00:00+03:00
 categories:
-  - TryHackMe
   - AI Security
+  - 04 - AI Supply Chain Security
 tags:
   - tryhackme
   - ai-security

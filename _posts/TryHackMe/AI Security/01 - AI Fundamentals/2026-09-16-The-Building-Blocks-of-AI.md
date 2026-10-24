@@ -3,9 +3,10 @@ layout: post
 title: "TryHackMe: The Building Blocks of AI"
 date: 2026-09-16T19:45:00
 categories:
-  - TryHackMe
   - AI Security
+  - 01 - AI Fundamentals
 tags:
+  - tryhackme
   - thm
   - ai
   - machine-learning

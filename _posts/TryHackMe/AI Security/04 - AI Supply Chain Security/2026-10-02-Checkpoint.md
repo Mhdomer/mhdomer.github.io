@@ -3,8 +3,8 @@ layout: post
 title: "Checkpoint - AI Supply Chain Candidate Evaluation"
 date: 2026-10-02T19:00:00+03:00
 categories:
-  - TryHackMe
   - AI Security
+  - 04 - AI Supply Chain Security
 tags:
   - tryhackme
   - ai-security

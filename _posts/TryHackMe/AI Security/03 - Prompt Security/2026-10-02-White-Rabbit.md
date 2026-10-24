@@ -3,8 +3,8 @@ layout: post
 title: "White Rabbit - Prompt Injection CTF Challenge"
 date: 2026-10-02T14:00:00+03:00
 categories:
-  - TryHackMe
   - AI Security
+  - 03 - Prompt Security
 tags:
   - tryhackme
   - ai-security

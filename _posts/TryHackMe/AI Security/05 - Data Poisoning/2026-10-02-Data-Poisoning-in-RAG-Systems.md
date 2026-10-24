@@ -3,8 +3,8 @@ layout: post
 title: "Data Poisoning in RAG Systems - Vectors, Ingestion Pipelines, and Behavioral Drift"
 date: 2026-10-02T17:00:00+03:00
 categories:
-  - TryHackMe
   - AI Security
+  - 05 - Data Poisoning
 tags:
   - tryhackme
   - ai-security

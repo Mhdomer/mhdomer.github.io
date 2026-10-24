@@ -3,8 +3,8 @@ layout: post
 title: "LLMborghini - Indirect Prompt Injection Challenge"
 date: 2026-10-02T13:00:00+03:00
 categories:
-  - TryHackMe
   - AI Security
+  - 03 - Prompt Security
 tags:
   - tryhackme
   - ai-security

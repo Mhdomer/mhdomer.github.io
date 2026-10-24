@@ -3,8 +3,8 @@ layout: post
 title: "Understanding AI Supply Chains - Threat Surfaces and Component Risks"
 date: 2026-10-02T15:00:00+03:00
 categories:
-  - TryHackMe
   - AI Security
+  - 04 - AI Supply Chain Security
 tags:
   - tryhackme
   - ai-security

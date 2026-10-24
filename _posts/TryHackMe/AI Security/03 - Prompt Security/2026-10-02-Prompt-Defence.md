@@ -3,9 +3,10 @@ layout: post
 title: "TryHackMe: Prompt Defence"
 date: 2026-10-02T01:20:00
 categories:
-  - TryHackMe
   - AI Security
+  - 03 - Prompt Security
 tags:
+  - tryhackme
   - thm
   - ai
   - prompt-security

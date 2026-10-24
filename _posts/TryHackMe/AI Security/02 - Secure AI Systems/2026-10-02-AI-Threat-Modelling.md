@@ -3,9 +3,10 @@ layout: post
 title: "TryHackMe: AI Threat Modelling"
 date: 2026-10-02T00:50:00
 categories:
-  - TryHackMe
   - AI Security
+  - 02 - Secure AI Systems
 tags:
+  - tryhackme
   - thm
   - ai
   - threat-modelling

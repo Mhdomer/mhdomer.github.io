@@ -3,8 +3,8 @@ layout: post
 title: "Securing the AI Supply Chain - Hardening Models and Dependencies"
 date: 2026-10-02T17:00:00+03:00
 categories:
-  - TryHackMe
   - AI Security
+  - 04 - AI Supply Chain Security
 tags:
   - tryhackme
   - ai-security
